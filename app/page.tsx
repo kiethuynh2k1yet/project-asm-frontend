@@ -1,7 +1,7 @@
-import Image from "next/image";
+import LoginForm from "@/app/components/login/login-form";
 
 export default function Home() {
   return (
-    <>Hello world</>
+    <LoginForm />
   );
 }

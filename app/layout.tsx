@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Poppins } from "next/font/google";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+import StyledComponentsRegistry from '@/app/lib/registry';
+import { AppProvider } from '@/app/components/providers/app-provider';
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const poppins = Poppins({
+  variable: "--font-poppins",
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -20,9 +20,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${poppins.variable} h-full antialiased`}
+      data-scroll-behavior="smooth"
     >
-      <body>{children}</body>
+      <body>
+        <StyledComponentsRegistry>
+          <AppProvider>
+            {children}
+          </AppProvider>
+        </StyledComponentsRegistry>
+      </body>
     </html>
   );
 }
