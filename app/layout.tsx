@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 
 import StyledComponentsRegistry from '@/app/lib/registry';
-import { AppProvider } from '@/app/components/providers/app-provider';
+import { AppProvider } from '@/components/providers/app-provider';
 
 const poppins = Poppins({
   variable: "--font-poppins",

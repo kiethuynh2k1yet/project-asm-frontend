@@ -5,6 +5,10 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   typedRoutes: true,
 
+  compiler: {
+    styledComponents: true,
+  },
+
   images: {
     remotePatterns: [
       {

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+
 import {
   Checkbox,
   FloatingCircle,
@@ -27,7 +29,6 @@ import {
   MockupLogo,
   MockupTitle,
   PageWrapper,
-  RegisterLink,
   RegisterText,
   RememberLabel,
   Subtitle,
@@ -37,40 +38,56 @@ import {
   VisualPanel,
   VisualTitle,
 } from "./login-form.styles";
+import { loginService } from "../../services/auth.service";
 
 export default function LoginForm() {
-  const [email, setEmail] = useState("");
+  const router = useRouter();
+
+  const [usernameOrEmail, setUsernameOrEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [remember, setRemember] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (event: React.SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!email.trim() && !password.trim()) {
-      setMessage('Vui lòng nhập đầy đủ email và mật khẩu.');
+    setMessage("");
+
+    if (!usernameOrEmail.trim()) {
+      setMessage("Vui lòng nhập username hoặc email.");
       return;
     }
 
-    if (!email.trim()) {
-      setMessage('Vui lòng nhập email.');
+    if (!password) {
+      setMessage("Vui lòng nhập mật khẩu.");
       return;
     }
 
-    if (!password.trim()) {
-      setMessage('Vui lòng nhập mật khẩu.');
-      return;
+    try {
+      setIsLoading(true);
+
+      const data = await loginService({
+        login: usernameOrEmail.trim(),
+        password,
+      });
+
+      console.log("Login success:", data);
+
+      // Nếu backend trả accessToken nhưng chưa dùng cookie:
+      // localStorage.setItem("accessToken", data.accessToken || "");
+
+      router.replace("/dashboard");
+      router.refresh();
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Đăng nhập thất bại.";
+
+      setMessage(message);
+    } finally {
+      setIsLoading(false);
     }
-
-    // Gọi API đăng nhập khi đã có backend
-    console.log({
-      email,
-      password,
-      remember,
-    });
-
-    setMessage('Đăng nhập thành công (demo).');
-    };
+  };
 
   return (
     <PageWrapper>
@@ -118,9 +135,9 @@ export default function LoginForm() {
         </VisualPanel>
 
         <FormPanel>
-
           <Header>
             <Title>Đăng nhập</Title>
+
             <Subtitle>
               Nhập thông tin tài khoản để tiếp tục sử dụng hệ thống.
             </Subtitle>
@@ -128,16 +145,17 @@ export default function LoginForm() {
 
           <LoginFormWrapper onSubmit={handleSubmit}>
             <FormGroup>
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="usernameOrEmail">Tên đăng nhập hoặc email</Label>
 
               <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="example@gmail.com"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                autoComplete="email"
+                id="usernameOrEmail"
+                name="usernameOrEmail"
+                type="text"
+                placeholder="Nhập username hoặc example@gmail.com"
+                value={usernameOrEmail}
+                onChange={(event) => setUsernameOrEmail(event.target.value)}
+                autoComplete="username"
+                disabled={isLoading}
               />
             </FormGroup>
 
@@ -152,6 +170,7 @@ export default function LoginForm() {
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 autoComplete="current-password"
+                disabled={isLoading}
               />
             </FormGroup>
 
@@ -161,7 +180,9 @@ export default function LoginForm() {
                   type="checkbox"
                   checked={remember}
                   onChange={(event) => setRemember(event.target.checked)}
+                  disabled={isLoading}
                 />
+
                 <span>Ghi nhớ đăng nhập</span>
               </RememberLabel>
 
@@ -172,13 +193,12 @@ export default function LoginForm() {
 
             {message && <Message>{message}</Message>}
 
-            <LoginButton type="submit">Đăng nhập</LoginButton>
+            <LoginButton type="submit" disabled={isLoading}>
+              {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
+            </LoginButton>
           </LoginFormWrapper>
 
-          <RegisterText>
-            Bạn chưa có tài khoản?{" "}
-            <RegisterLink href="/register">Đăng ký ngay</RegisterLink>
-          </RegisterText>
+          <RegisterText>Hãy liên hệ quản trị viên để có thể đăng nhập</RegisterText>
         </FormPanel>
       </LoginLayout>
     </PageWrapper>

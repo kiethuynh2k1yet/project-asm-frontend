@@ -50,6 +50,7 @@ export const PageWrapper = styled.main`
   min-height: 100vh;
   padding: 32px;
   background-color: #f1f5f9;
+  user-select: none;
 
   @media (max-width: 640px) {
     padding: 0;
@@ -397,7 +398,7 @@ export const Message = styled.p`
   margin: -4px 0 0;
   padding: 10px 12px;
   border-radius: 8px;
-  color: #4338ca;
+  color: red;
   font-size: 13px;
   background-color: #eef2ff;
 `;
@@ -430,18 +431,8 @@ export const LoginButton = styled.button`
 export const RegisterText = styled.p`
   margin: 24px 0 0;
   color: #64748b;
-  font-size: 14px;
+  font-size: 1.4rem;
   text-align: center;
-`;
-
-export const RegisterLink = styled.a`
-  color: #4f46e5;
-  font-weight: 600;
-  text-decoration: none;
-
-  &:hover {
-    text-decoration: underline;
-  }
 `;
 
 export const MotionAccessibility = styled.div`

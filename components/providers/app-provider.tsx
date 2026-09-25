@@ -1,6 +1,6 @@
 'use client';
 
-import { GlobalStyle } from '@/app/styles/global-styles';
+import { GlobalStyle } from '@/styles/global-styles';
 
 type AppProviderProps = {
   children: React.ReactNode;
