@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+
 import {
   Card,
   Description,
@@ -20,7 +21,7 @@ import {
   Title,
 } from "./ForgotPassword.styles";
 
-export default function ResetPasswordForm() {
+export default function ForgotPassword() {
   const [login, setLogin] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -28,7 +29,9 @@ export default function ResetPasswordForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
+  const handleSubmit = async (
+    event: React.SubmitEvent<HTMLFormElement>,
+  ) => {
     event.preventDefault();
 
     setError("");
@@ -43,8 +46,8 @@ export default function ResetPasswordForm() {
       return;
     }
 
-    if (newPassword.length < 6) {
-      setError("Mật khẩu mới phải có ít nhất 6 ký tự.");
+    if (newPassword.length < 8) {
+      setError("Mật khẩu mới phải có ít nhất 8 ký tự.");
       return;
     }
 
@@ -61,29 +64,41 @@ export default function ResetPasswordForm() {
     try {
       setIsLoading(true);
 
-      // Thay bằng API backend thật khi bạn đã làm API.
-      //
-      // const response = await fetch("/api/auth/reset-password", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify({
-      //     login,
-      //     newPassword,
-      //     confirmPassword,
-      //   }),
-      // });
-      //
-      // if (!response.ok) {
-      //   throw new Error("Đổi mật khẩu thất bại");
-      // }
+      const response = await fetch(
+        "api/auth/forgot-password",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            login: login.trim(),
+            newPassword,
+            confirmPassword,
+          }),
+        },
+      );
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const data = await response.json();
+
+      if (!response.ok) {
+        const message = Array.isArray(data.message)
+          ? data.message[0]
+          : data.message;
+
+        throw new Error(
+          message ??
+            "Đặt lại mật khẩu thất bại. Vui lòng thử lại.",
+        );
+      }
 
       setIsSuccess(true);
-    } catch {
-      setError("Đổi mật khẩu thất bại. Vui lòng thử lại.");
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Đặt lại mật khẩu thất bại. Vui lòng thử lại.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -99,8 +114,8 @@ export default function ResetPasswordForm() {
             <Title>Đặt lại mật khẩu thành công</Title>
 
             <Description>
-              Mật khẩu của tài khoản <strong>{login}</strong> đã được cập nhật.
-              Bạn có thể đăng nhập bằng mật khẩu mới.
+              Mật khẩu của tài khoản <strong>{login}</strong> đã được
+              cập nhật. Bạn có thể đăng nhập bằng mật khẩu mới.
             </Description>
 
             <PrimaryButton as={Link} href="/login">
@@ -135,13 +150,15 @@ export default function ResetPasswordForm() {
           <Title>Quên mật khẩu</Title>
 
           <Description>
-            Nhập thông tin tài khoản và mật khẩu mới của bạn.
+            Nhập username hoặc email và mật khẩu mới của bạn.
           </Description>
         </Heading>
 
         <Form onSubmit={handleSubmit} noValidate>
           <FormGroup>
-            <Label htmlFor="login">Username hoặc email đăng nhập</Label>
+            <Label htmlFor="login">
+              Username hoặc email đăng nhập
+            </Label>
 
             <Input
               id="login"
@@ -149,9 +166,12 @@ export default function ResetPasswordForm() {
               type="text"
               placeholder="Nhập username hoặc email"
               value={login}
-              onChange={(event) => setLogin(event.target.value)}
+              onChange={(event) =>
+                setLogin(event.target.value)
+              }
               autoComplete="username"
               aria-invalid={Boolean(error)}
+              disabled={isLoading}
             />
           </FormGroup>
 
@@ -164,14 +184,19 @@ export default function ResetPasswordForm() {
               type="password"
               placeholder="Nhập mật khẩu mới"
               value={newPassword}
-              onChange={(event) => setNewPassword(event.target.value)}
+              onChange={(event) =>
+                setNewPassword(event.target.value)
+              }
               autoComplete="new-password"
               aria-invalid={Boolean(error)}
+              disabled={isLoading}
             />
           </FormGroup>
 
           <FormGroup>
-            <Label htmlFor="confirmPassword">Nhập lại mật khẩu mới</Label>
+            <Label htmlFor="confirmPassword">
+              Nhập lại mật khẩu mới
+            </Label>
 
             <Input
               id="confirmPassword"
@@ -179,16 +204,25 @@ export default function ResetPasswordForm() {
               type="password"
               placeholder="Nhập lại mật khẩu mới"
               value={confirmPassword}
-              onChange={(event) => setConfirmPassword(event.target.value)}
+              onChange={(event) =>
+                setConfirmPassword(event.target.value)
+              }
               autoComplete="new-password"
               aria-invalid={Boolean(error)}
+              disabled={isLoading}
             />
           </FormGroup>
 
-          {error && <ErrorMessage>{error}</ErrorMessage>}
+          {error && (
+            <ErrorMessage role="alert">
+              {error}
+            </ErrorMessage>
+          )}
 
           <PrimaryButton type="submit" disabled={isLoading}>
-            {isLoading ? "Đang cập nhật..." : "Đặt lại mật khẩu"}
+            {isLoading
+              ? "Đang cập nhật..."
+              : "Đặt lại mật khẩu"}
           </PrimaryButton>
         </Form>
 
