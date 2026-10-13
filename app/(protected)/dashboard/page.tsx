@@ -1,13 +1,14 @@
 "use client";
 
-import LogoutButton from "@/features/auth/components/Logout/logout-button";
+import Header from "@/components/layouts/Header/header";
+
 
 export default function DashboardPage() {
     return (
-        <div>
+        <>
+            <Header />
             <h1>Dashboard</h1>
             <p>Welcome to the dashboard page!</p>
-            <LogoutButton />
-        </div>
+        </>
     );
 }
