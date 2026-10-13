@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import LogoutButtonPage from "@/features/auth/components/Logout/logout-button";
 
@@ -13,8 +13,39 @@ import {
   CurrentPage
 } from "./header.styles";
 
- export default function HeaderPage() {
+  type User = {
+    name: string;
+    email: string;
+  };
 
+
+ export default function HeaderPage() {
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await fetch("/api/auth/profile");
+
+        if (!response.ok) {
+          setUser(null);
+          return;
+        }
+
+        const data = await response.json();
+
+        if (data.user) {
+          setUser(data.user);
+        }
+      } catch (error) {
+        console.error("Fetch user error:", error);
+        setUser(null);
+      }
+    };
+
+    fetchUser();
+  }, []);
+  
   return (
     <HeaderWrapper>
       <HeaderContainer>
@@ -25,7 +56,17 @@ import {
 
           <CurrentPage>Home</CurrentPage>
         </HomeInformation>
-        <LogoutButtonPage />
+        {user ? (
+          <LogoutButtonPage
+            name={user.name}
+            email={user.email}
+          />
+        ) : (
+          <LogoutButtonPage
+            name="Guest User"
+            email="guest@example.com"
+          />
+        )}
       </HeaderContainer>
     </HeaderWrapper>
   );

@@ -3,6 +3,7 @@ import styled from "styled-components";
 export const AvatarWrapper = styled.div`
   position: relative;
   display: inline-block;
+  user-select: none;
 `;
 
 export const AvatarButton = styled.button`
@@ -61,18 +62,21 @@ export const UserEmail = styled.p`
   white-space: nowrap;
 `;
 
+export const ContainerButton = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width:100%;
+  height: 50px;
+`;
+
 export const LogoutButton = styled.button`
-  width: 100%;
-  background-color: #dc2626;
-  color: #ffffff;
-  border: none;
-  border-radius: 8px;
-  padding: 10px 16px;
+  color: #000;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
 
   &:hover {
-    background-color: #b91c1c;
+    color: #b91c1c;
   }
 `;

@@ -8,7 +8,7 @@ export const DashboardContainer = styled.div`
 `;
 
 export const Sidebar = styled.aside`
-  width: 320px;
+  width: 280px;
   height: 100%;
   background-color: #1f2937;
   color: #ffffff;
