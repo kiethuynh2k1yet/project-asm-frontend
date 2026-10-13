@@ -2,7 +2,10 @@
 
 import { useRouter } from "next/navigation";
 
-export default function LogoutButton() {
+import { LogoutButton } from "./logout.styles";
+
+
+export default function LogoutButtonPage() {
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -14,5 +17,5 @@ export default function LogoutButton() {
     router.refresh();
   };
 
-  return <button onClick={handleLogout}>Đăng xuất</button>;
+  return <LogoutButton onClick={handleLogout}>Đăng xuất</LogoutButton>;
 }
