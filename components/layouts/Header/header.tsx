@@ -7,19 +7,29 @@ import LogoutButtonPage from "@/features/auth/components/Logout/logout-button";
 import {
   HeaderWrapper,
   HeaderContainer,
+  HeaderLeft,
+  MenuButton,
+  MenuIcon,
   HomeInformation,
   HomeTitle,
   BreadcrumbSeparator,
-  CurrentPage
+  CurrentPage,
 } from "./header.styles";
 
-  type User = {
-    name: string;
-    email: string;
-  };
+type User = {
+  name: string;
+  email: string;
+};
 
+type HeaderPageProps = {
+  isSidebarOpen: boolean;
+  onToggleSidebar: () => void;
+};
 
- export default function HeaderPage() {
+export default function HeaderPage({
+  isSidebarOpen,
+  onToggleSidebar,
+}: HeaderPageProps) {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -45,22 +55,30 @@ import {
 
     fetchUser();
   }, []);
-  
+
   return (
     <HeaderWrapper>
       <HeaderContainer>
-        <HomeInformation>
-          <HomeTitle>SUPPORT</HomeTitle>
+        <HeaderLeft>
+          <MenuButton
+            type="button"
+            onClick={onToggleSidebar}
+            aria-label={isSidebarOpen ? "Đóng sidebar" : "Mở sidebar"}
+          >
+            <MenuIcon $isOpen={isSidebarOpen} />
+          </MenuButton>
 
-          <BreadcrumbSeparator>/</BreadcrumbSeparator>
+          <HomeInformation>
+            <HomeTitle>SUPPORT</HomeTitle>
 
-          <CurrentPage>Home</CurrentPage>
-        </HomeInformation>
+            <BreadcrumbSeparator>/</BreadcrumbSeparator>
+
+            <CurrentPage>Home</CurrentPage>
+          </HomeInformation>
+        </HeaderLeft>
+
         {user ? (
-          <LogoutButtonPage
-            name={user.name}
-            email={user.email}
-          />
+          <LogoutButtonPage name={user.name} email={user.email} />
         ) : (
           <LogoutButtonPage
             name="Guest User"

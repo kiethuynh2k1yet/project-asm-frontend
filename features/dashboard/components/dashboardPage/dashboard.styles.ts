@@ -7,20 +7,16 @@ export const DashboardContainer = styled.div`
   overflow: hidden;
 `;
 
-export const Sidebar = styled.aside`
-  width: 280px;
+export const Sidebar = styled.aside<{ $isOpen: boolean }>`
+  width: ${({ $isOpen }) => ($isOpen ? "280px" : "0px")};
   height: 100%;
-  background-color: #1f2937;
-  color: #ffffff;
+  background-color: #e2e8f0;
+  color: #000;
   display: flex;
-  align-items: center;
   justify-content: center;
   flex-shrink: 0;
-`;
-
-export const SidebarText = styled.span`
-  font-size: 18px;
-  font-weight: 600;
+  overflow: hidden;
+  transition: width 0.3s ease;
 `;
 
 export const MainArea = styled.main`
@@ -34,7 +30,7 @@ export const MainArea = styled.main`
 export const Content = styled.section`
   flex: 1;
   width: 100%;
-  background-color: #f3f4f6;
+  background-color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;

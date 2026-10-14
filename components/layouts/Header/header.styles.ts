@@ -3,9 +3,11 @@ import styled from "styled-components";
 export const HeaderWrapper = styled.header`
   width: 100%;
   height: 64px;
-  background-color: #222222;
+  background-color: #1A365D;
   border-bottom: 1px solid #e5e7eb;
+  border-radius: 0 0 8px 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  user-select: none;
 `;
 
 export const HeaderContainer = styled.div`
@@ -25,15 +27,79 @@ export const HomeInformation = styled.div`
   gap: 10px;
 `;
 
-export const HomeTitle = styled.a`
+export const HeaderLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+export const MenuButton = styled.button`
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 8px;
+  background-color: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  &:active {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+`;
+
+export const MenuIcon = styled.span<{ $isOpen: boolean }>`
+  display: block;
+  width: 20px;
+  height: 2px;
+  background-color: #ffffff;
+  position: relative;
+  transition: background-color 0.3s ease;
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    width: 20px;
+    height: 2px;
+    background-color: #ffffff;
+    transition:
+      transform 0.3s ease,
+      top 0.3s ease,
+      opacity 0.3s ease;
+  }
+
+  &::before {
+    top: ${({ $isOpen }) => ($isOpen ? "0" : "-6px")};
+    transform: ${({ $isOpen }) =>
+      $isOpen ? "rotate(45deg)" : "rotate(0deg)"};
+  }
+
+  &::after {
+    top: ${({ $isOpen }) => ($isOpen ? "0" : "6px")};
+    transform: ${({ $isOpen }) =>
+      $isOpen ? "rotate(-45deg)" : "rotate(0deg)"};
+  }
+
+  ${({ $isOpen }) =>
+    $isOpen &&
+    `
+    background-color: transparent;
+  `}
+`;
+
+export const HomeTitle = styled.h1`
   color: #fff;
   font-size: 20px;
   font-weight: 700;
   text-decoration: none;
-
-  &:hover {
-    color: #1d4ed8;
-  }
 `;
 
 export const BreadcrumbSeparator = styled.span`
