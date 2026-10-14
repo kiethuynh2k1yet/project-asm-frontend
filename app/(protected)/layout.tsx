@@ -1,15 +1,13 @@
-import type { ReactNode } from 'react';
+import type { ReactNode } from "react";
 
-type AuthLayoutProps = {
+import Dashboard from "@/features/dashboard/components/dashboardPage/dashboard";
+
+type DashboardLayoutProps = {
   children: ReactNode;
 };
 
-export default function AuthLayout({
+export default function DashboardLayout({
   children,
-}: Readonly<AuthLayoutProps>) {
-  return (
-    <main>
-      <section>{children}</section>
-    </main>
-  );
+}: DashboardLayoutProps) {
+  return <Dashboard>{children}</Dashboard>;
 }

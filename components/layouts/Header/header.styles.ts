@@ -98,7 +98,7 @@ export const MenuIcon = styled.span<{ $isOpen: boolean }>`
 export const HomeTitle = styled.h1`
   color: #fff;
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 600;
   text-decoration: none;
 `;
 

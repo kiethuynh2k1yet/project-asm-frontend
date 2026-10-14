@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 import LogoutButtonPage from "@/features/auth/components/Logout/logout-button";
+
+import { categoryItems } from "@/components/layouts/Sidebar/categoryIteam";
 
 import {
   HeaderWrapper,
@@ -30,7 +33,31 @@ export default function HeaderPage({
   isSidebarOpen,
   onToggleSidebar,
 }: HeaderPageProps) {
+  const pathname = usePathname();
+
   const [user, setUser] = useState<User | null>(null);
+
+  // Lấy toàn bộ mục con từ các nhóm cấp 1.
+  const childItems = categoryItems.flatMap(
+    (item) => item.children ?? []
+  );
+
+  // Ưu tiên đường dẫn khớp chính xác.
+  // Nếu đang ở trang chi tiết, lấy mục có đường dẫn cha dài nhất.
+  const currentItem =
+    childItems.find((item) => item.href === pathname) ??
+    childItems
+      .filter(
+        (item) =>
+          item.href &&
+          pathname.startsWith(`${item.href}/`)
+      )
+      .sort(
+        (a, b) =>
+          (b.href?.length ?? 0) - (a.href?.length ?? 0)
+      )[0];
+
+  const currentPageTitle = currentItem?.label ?? "Home";
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -44,9 +71,7 @@ export default function HeaderPage({
 
         const data = await response.json();
 
-        if (data.user) {
-          setUser(data.user);
-        }
+        setUser(data.user ?? null);
       } catch (error) {
         console.error("Fetch user error:", error);
         setUser(null);
@@ -63,28 +88,27 @@ export default function HeaderPage({
           <MenuButton
             type="button"
             onClick={onToggleSidebar}
-            aria-label={isSidebarOpen ? "Đóng sidebar" : "Mở sidebar"}
+            aria-label={
+              isSidebarOpen ? "Đóng sidebar" : "Mở sidebar"
+            }
+            aria-expanded={isSidebarOpen}
           >
             <MenuIcon $isOpen={isSidebarOpen} />
           </MenuButton>
 
           <HomeInformation>
-            <HomeTitle>SUPPORT</HomeTitle>
+            <HomeTitle>IT Hỗ Trợ</HomeTitle>
 
             <BreadcrumbSeparator>/</BreadcrumbSeparator>
 
-            <CurrentPage>Home</CurrentPage>
+            <CurrentPage>{currentPageTitle}</CurrentPage>
           </HomeInformation>
         </HeaderLeft>
 
-        {user ? (
-          <LogoutButtonPage name={user.name} email={user.email} />
-        ) : (
-          <LogoutButtonPage
-            name="Guest User"
-            email="guest@example.com"
-          />
-        )}
+        <LogoutButtonPage
+          name={user?.name ?? "Guest User"}
+          email={user?.email ?? "guest@example.com"}
+        />
       </HeaderContainer>
     </HeaderWrapper>
   );

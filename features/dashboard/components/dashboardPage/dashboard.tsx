@@ -1,6 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
+
+import HeaderPage from "@/components/layouts/Header/header";
+import Sidebar from "@/components/layouts/Sidebar/sidebar";
 
 import {
   DashboardContainer,
@@ -8,10 +11,11 @@ import {
   Content,
 } from "./dashboard.styles";
 
-import HeaderPage from "@/components/layouts/Header/header";
-import Sidebar from "@/components/layouts/Sidebar/sidebar";
+type DashboardProps = {
+  children: ReactNode;
+};
 
-export default function Dashboard() {
+export default function Dashboard({ children }: DashboardProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const toggleSidebar = () => {
@@ -28,9 +32,7 @@ export default function Dashboard() {
           onToggleSidebar={toggleSidebar}
         />
 
-        <Content>
-          <h1>Nội dung chính</h1>
-        </Content>
+        <Content>{children}</Content>
       </MainArea>
     </DashboardContainer>
   );
