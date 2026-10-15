@@ -1,7 +1,12 @@
 "use client";
 
 import { useId, useState } from "react";
-import { CirclePlus, Search, SquarePen } from "lucide-react";
+import {
+  CirclePlus,
+  Search,
+  SquarePen,
+  Trash2,
+} from "lucide-react";
 
 import type {
   JobFilters,
@@ -16,8 +21,10 @@ type TaskToolbarProps = {
   statusError?: string;
   onAdd?: () => void;
   onEdit?: () => void;
+  onDelete?: () => void;
   onSearch?: (filters: JobFilters) => void;
   editDisabled?: boolean;
+  deleteDisabled?: boolean;
 };
 
 export default function TaskToolbar({
@@ -26,13 +33,16 @@ export default function TaskToolbar({
   statusError = "",
   onAdd,
   onEdit,
+  onDelete,
   onSearch,
   editDisabled = false,
+  deleteDisabled = false,
 }: TaskToolbarProps) {
   const id = useId();
 
   const [keyword, setKeyword] = useState("");
-  const [status, setStatus] = useState<JobFilters["status"]>("");
+  const [statusId, setStatusId] =
+    useState<JobFilters["statusId"]>("");
 
   const jobStatuses = statuses.filter(
     (item) => Number(item.parent_id) === 2,
@@ -48,6 +58,13 @@ export default function TaskToolbar({
       : isLoading
         ? "Đang tải..."
         : "Không có trạng thái";
+
+  const applyFilters = (nextStatusId = statusId) => {
+    onSearch?.({
+      keyword: keyword.trim(),
+      statusId: nextStatusId,
+    });
+  };
 
   return (
     <S.Toolbar>
@@ -65,16 +82,21 @@ export default function TaskToolbar({
           <SquarePen size={16} aria-hidden="true" />
           Sửa
         </S.EditButton>
+
+        <S.DeleteButton
+          type="button"
+          onClick={onDelete}
+          disabled={deleteDisabled}
+        >
+          <Trash2 size={16} aria-hidden="true" />
+          Xóa
+        </S.DeleteButton>
       </S.Actions>
 
       <S.Filters
         onSubmit={(event) => {
           event.preventDefault();
-
-          onSearch?.({
-            keyword: keyword.trim(),
-            status,
-          });
+          applyFilters();
         }}
       >
         <S.SearchField>
@@ -107,22 +129,26 @@ export default function TaskToolbar({
 
           <S.Select
             id={`${id}-status`}
-            value={status}
+            value={statusId}
             disabled={!hasStatuses}
             aria-busy={isLoading}
             title={statusError || undefined}
-            onChange={(event) =>
-              setStatus(
-                event.target.value as JobFilters["status"],
-              )
-            }
+            onChange={(event) => {
+              const nextStatusId =
+                event.target.value === ""
+                  ? ""
+                  : Number(event.target.value);
+
+              setStatusId(nextStatusId);
+              applyFilters(nextStatusId);
+            }}
           >
             <option value="">{placeholder}</option>
 
             {jobStatuses.map((item) => (
               <option
-                key={item.status_code}
-                value={item.status_code}
+                key={item.id}
+                value={item.id}
               >
                 {item.status_name}
               </option>

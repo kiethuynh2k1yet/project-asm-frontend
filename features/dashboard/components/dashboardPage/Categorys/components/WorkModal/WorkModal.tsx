@@ -5,7 +5,7 @@ import {
   useId,
   useRef,
   useState,
-  type SubmitEvent,
+  type ComponentProps,
 } from "react";
 
 import { X } from "lucide-react";
@@ -14,53 +14,53 @@ import type {
   Job,
   JobFormValues,
   JobStatus,
-  JobStatusCode,
 } from "../../constants/jobStatuses";
 
-import * as S from "./JobModal.styles";
+import * as S from "./WorkModal.styles";
 
-type JobModalProps = {
+type WorkModalProps = {
   job?: Job;
   statuses: JobStatus[];
   statusLoading?: boolean;
-  existingJobs: Job[];
+  saving?: boolean;
+  saveError?: string;
   onClose: () => void;
-  onSave: (values: JobFormValues) => void;
+  onSave: (values: JobFormValues) => Promise<void>;
 };
 
-export default function JobModal({
+export default function WorkModal({
   job,
   statuses,
   statusLoading = false,
-  existingJobs,
+  saving = false,
+  saveError = "",
   onClose,
   onSave,
-}: JobModalProps) {
+}: WorkModalProps) {
   const id = useId();
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   const [code, setCode] = useState(job?.code ?? "");
   const [name, setName] = useState(job?.name ?? "");
 
-  const [selectedStatus, setSelectedStatus] = useState<
-    JobStatusCode | ""
-  >(job?.status ?? "");
+  const [selectedStatusId, setSelectedStatusId] =
+    useState<number | "">(job?.status_id ?? "");
 
   const [error, setError] = useState("");
 
-  // Khi thêm mới, ưu tiên trạng thái "Còn sử dụng".
-  // Không cần gọi setState trong effect để đặt mặc định.
+  const jobStatuses = statuses.filter(
+    (item) => Number(item.parent_id) === 2,
+  );
+
   const defaultStatus =
-    statuses.find((item) => item.status_code === "IN_USE")
-      ?.status_code ??
-    statuses[0]?.status_code ??
-    "";
+    jobStatuses.find(
+      (item) => item.status_code === "IN_USE",
+    ) ?? jobStatuses[0];
 
-  const status = selectedStatus || defaultStatus;
-
-  const canSave =
-    !statusLoading &&
-    statuses.some((item) => item.status_code === status);
+  const statusId =
+    selectedStatusId === ""
+      ? (defaultStatus?.id ?? "")
+      : selectedStatusId;
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -69,60 +69,50 @@ export default function JobModal({
       dialog.showModal();
     }
 
-    return () => {
-      dialog?.close();
-    };
+    return () => dialog?.close();
   }, []);
 
-  const handleSubmit = (
-    event: SubmitEvent<HTMLFormElement>,
-  ) => {
+  const handleSubmit: NonNullable<
+    ComponentProps<"form">["onSubmit"]
+  > = (event) => {
     event.preventDefault();
     setError("");
+
+    if (saving) return;
 
     const numericCode = Number(code);
 
     if (
-      !/^\d+$/.test(code) ||
+      !/^\d{1,4}$/.test(code) ||
       !Number.isInteger(numericCode) ||
       numericCode < 1 ||
       numericCode > 1000
     ) {
-      setError("Mã công việc phải là số nguyên từ 1 đến 1000.");
+      setError("Mã công việc phải là số từ 1 đến 1000.");
       return;
     }
 
-    const isDuplicate = existingJobs.some(
-      (item) =>
-        item.id !== job?.id &&
-        Number(item.code) === numericCode,
-    );
-
-    if (isDuplicate) {
-      setError("Mã công việc đã tồn tại.");
-      return;
-    }
-
-    const trimmedName = name.trim();
-
-    if (!trimmedName) {
+    if (!name.trim()) {
       setError("Vui lòng nhập tên công việc.");
       return;
     }
 
     if (
       statusLoading ||
-      !status ||
-      !statuses.some((item) => item.status_code === status)
+      typeof statusId !== "number" ||
+      !Number.isInteger(statusId) ||
+      !jobStatuses.some(
+        (item) => item.id === statusId,
+      )
     ) {
       setError("Vui lòng chọn trạng thái hợp lệ.");
       return;
     }
 
-    onSave({
+    void onSave({
       code,
-      name: trimmedName,
-      status,
+      name: name.trim(),
+      status_id: statusId,
     });
   };
 
@@ -132,7 +122,10 @@ export default function JobModal({
       aria-labelledby={`${id}-title`}
       onCancel={(event) => {
         event.preventDefault();
-        onClose();
+
+        if (!saving) {
+          onClose();
+        }
       }}
     >
       <S.Header>
@@ -143,6 +136,7 @@ export default function JobModal({
         <S.CloseButton
           type="button"
           aria-label="Đóng"
+          disabled={saving}
           onClick={onClose}
         >
           <X size={23} aria-hidden="true" />
@@ -160,15 +154,13 @@ export default function JobModal({
               id={`${id}-code`}
               type="text"
               inputMode="numeric"
-              pattern="[0-9]+"
               maxLength={4}
               placeholder="Nhập mã từ 1 đến 1000"
               value={code}
+              disabled={saving}
               onChange={(event) => {
-                const value = event.target.value;
-
-                if (/^\d*$/.test(value)) {
-                  setCode(value);
+                if (/^\d*$/.test(event.target.value)) {
+                  setCode(event.target.value);
                   setError("");
                 }
               }}
@@ -188,9 +180,10 @@ export default function JobModal({
 
             <S.Input
               id={`${id}-name`}
-              type="text"
-              placeholder="VD: Hỗ trợ phần mềm"
               value={name}
+              maxLength={255}
+              placeholder="VD: Hỗ trợ phần mềm"
+              disabled={saving}
               onChange={(event) => {
                 setName(event.target.value);
                 setError("");
@@ -206,44 +199,44 @@ export default function JobModal({
 
             <S.Select
               id={`${id}-status`}
-              value={status}
-              disabled={statusLoading || statuses.length === 0}
-              onChange={(event) => {
-                setSelectedStatus(
-                  event.target.value as JobStatusCode,
-                );
-
-                setError("");
-              }}
+              value={statusId}
+              disabled={
+                saving ||
+                statusLoading ||
+                jobStatuses.length === 0
+              }
+              onChange={(event) =>
+                setSelectedStatusId(
+                  Number(event.target.value),
+                )
+              }
               required
             >
               <option value="" disabled>
                 {statusLoading
-                  ? "Đang tải trạng thái..."
-                  : statuses.length === 0
-                    ? "Không có trạng thái"
-                    : "Chọn trạng thái"}
+                  ? "Đang tải..."
+                  : "Chọn trạng thái"}
               </option>
 
-              {statuses.map((item) => (
-                <option
-                  key={item.status_code}
-                  value={item.status_code}
-                >
+              {jobStatuses.map((item) => (
+                <option key={item.id} value={item.id}>
                   {item.status_name}
                 </option>
               ))}
             </S.Select>
           </S.Field>
 
-          {error && (
-            <S.Error role="alert">{error}</S.Error>
+          {(error || saveError) && (
+            <S.Error role="alert">
+              {error || saveError}
+            </S.Error>
           )}
         </S.Body>
 
         <S.Footer>
           <S.CancelButton
             type="button"
+            disabled={saving}
             onClick={onClose}
           >
             Hủy
@@ -251,9 +244,17 @@ export default function JobModal({
 
           <S.SaveButton
             type="submit"
-            disabled={!canSave}
+            disabled={
+              saving ||
+              statusLoading ||
+              jobStatuses.length === 0
+            }
           >
-            {job ? "Lưu thay đổi" : "Thêm mới"}
+            {saving
+              ? "Đang lưu..."
+              : job
+                ? "Lưu thay đổi"
+                : "Thêm mới"}
           </S.SaveButton>
         </S.Footer>
       </S.Form>

@@ -108,6 +108,26 @@ export const EditButton = styled(Button)`
   }
 `;
 
+export const DeleteButton = styled(Button)`
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+
+  &:hover:not(:disabled) {
+    background: #b91c1c;
+    border-color: #b91c1c;
+  }
+
+  &:active:not(:disabled) {
+    background: #991b1b;
+    border-color: #991b1b;
+  }
+
+  &:focus-visible {
+    outline-color: #f87171;
+  }
+`;
+
 export const Filters = styled.form`
   display: flex;
   align-items: flex-end;
@@ -264,4 +284,3 @@ export const SearchButton = styled(Button)`
     outline-offset: 2px;
   }
 `;
-

@@ -34,10 +34,10 @@ export const categoryItems: CategoryItem[] = [
     icon: FolderClosed,
     children: [
       {
-        id: "jobs",
+        id: "works",
         label: "Công việc",
         icon: BriefcaseBusiness,
-        href: "/dashboard/Category/jobs",
+        href: "/dashboard/Category/works",
       },
       {
         id: "levels",

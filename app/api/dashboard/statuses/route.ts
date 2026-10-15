@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 const BACKEND_API_URL = process.env.BACKEND_API_URL;
 
 export async function GET() {
-  console.log(">>> ĐÃ VÀO NEXT.JS /api/statuses")
+  console.log(">>> ĐÃ VÀO NEXT.JS /api/dashboard/statuses")
   
   try {
     if (!BACKEND_API_URL) {
@@ -108,19 +108,42 @@ export async function GET() {
       );
     }
 
-    const isValid = statuses.every(
-      (item: unknown) =>
-        typeof item === "object" &&
-        item !== null &&
-        "parent_id" in item &&
-        item.parent_id === 2 &&
-        "status_code" in item &&
-        typeof item.status_code === "string" &&
-        "status_name" in item &&
-        typeof item.status_name === "string",
-    );
+    const normalizedStatuses = statuses
+      .map((item: unknown) => {
+        if (
+          typeof item !== "object" ||
+          item === null ||
+          !("id" in item) ||
+          !("parent_id" in item) ||
+          !("status_code" in item) ||
+          !("status_name" in item)
+        ) {
+          return null;
+        }
 
-    if (!isValid) {
+        const id = Number(item.id);
+        const parentId = Number(item.parent_id);
+
+        if (
+          !Number.isInteger(id) ||
+          id < 0 ||
+          id > 255 ||
+          parentId !== 2 ||
+          typeof item.status_code !== "string" ||
+          typeof item.status_name !== "string"
+        ) {
+          return null;
+        }
+
+        return {
+          id,
+          parent_id: parentId,
+          status_code: item.status_code,
+          status_name: item.status_name,
+        };
+      });
+
+    if (normalizedStatuses.some((item) => item === null)) {
       return NextResponse.json(
         {
           message:
@@ -130,7 +153,7 @@ export async function GET() {
       );
     }
 
-    return NextResponse.json(statuses, {
+    return NextResponse.json(normalizedStatuses, {
       headers: {
         "Cache-Control": "no-store",
       },
