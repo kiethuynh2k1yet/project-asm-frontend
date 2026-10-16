@@ -118,7 +118,6 @@ export const MenuGroupButton = styled.button`
   background-color: transparent;
   color: #30383d;
 
-  font-family: inherit;
   font-size: 16px;
   font-weight: 400;
   text-align: left;
@@ -214,7 +213,6 @@ const subMenuItemStyles = css<SubMenuItemProps>`
   color: ${({ $isActive }) =>
     $isActive ? "#2563eb" : "#30383d"};
 
-  font-family: inherit;
   font-size: 15px;
   font-weight: ${({ $isActive }) => ($isActive ? 500 : 400)};
   text-align: left;

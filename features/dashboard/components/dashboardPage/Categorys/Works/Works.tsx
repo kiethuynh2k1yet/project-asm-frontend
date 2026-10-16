@@ -20,8 +20,8 @@ import type {
   WorkApiRow,
 } from "../constants/jobStatuses";
 
-import * as S from "./Works.styles";
-import { ModalStyles } from "./Works.styles";
+import * as S from "../styles/styles";
+import { ModalStyles } from "../styles/styles";
 
 const PAGE_SIZE = 10;
 
@@ -221,7 +221,7 @@ export default function Jobs() {
       const queryString = query.toString();
 
       const response = await fetch(
-        `/api/dashboard/works${queryString ? `?${queryString}` : ""}`,
+        `/api/dashboard/master-data/works${queryString ? `?${queryString}` : ""}`,
         {
           cache: "no-store",
           signal,
@@ -326,8 +326,8 @@ export default function Jobs() {
     try {
       const response = await fetch(
         editingJob
-          ? `/api/dashboard/works/${editingJob.id}`
-          : "/api/dashboard/works",
+          ? `/api/dashboard/master-data/works/${editingJob.id}`
+          : "/api/dashboard/master-data/works",
         {
           method: editingJob ? "PATCH" : "POST",
           headers: {
@@ -397,7 +397,7 @@ export default function Jobs() {
 
     try {
       const response = await fetch(
-        `/api/dashboard/works/${selectedJob.id}`,
+        `/api/dashboard/master-data/works/${selectedJob.id}`,
         { method: "DELETE" },
       );
 

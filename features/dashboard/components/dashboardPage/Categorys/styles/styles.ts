@@ -13,7 +13,6 @@ export const Page = styled.div`
 
   background: #edf2f5;
   color: #334155;
-  font-family: Arial, sans-serif;
 
   &,
   & * {
@@ -93,6 +92,7 @@ export const Table = styled.table`
 
   th:first-child,
   td:first-child {
+    width: 65px;
     text-align: center;
   }
 
@@ -104,6 +104,7 @@ export const Table = styled.table`
   td:last-child {
     border-right: none;
   }
+
 `;
 
 export const TableRow = styled.tr<{ $selected: boolean }>`
@@ -220,7 +221,6 @@ export const PageButton = styled.button`
   border: 1px solid #cbd5e1;
   border-radius: 5px;
 
-  font-family: inherit;
   font-size: 12px;
   cursor: pointer;
 
@@ -266,7 +266,6 @@ export const ModalStyles = {
     border: none;
     border-radius: 10px;
     box-shadow: 0 24px 70px rgba(15, 23, 42, 0.25);
-    font-family: inherit;
 
     &,
     & * {
@@ -344,7 +343,6 @@ export const ModalStyles = {
     color: #1e293b;
     border: 1px solid #cbd5e1;
     border-radius: 6px;
-    font-family: inherit;
     font-size: 14px;
 
     &::placeholder {
@@ -365,7 +363,6 @@ export const ModalStyles = {
     color: #1e293b;
     border: 1px solid #cbd5e1;
     border-radius: 6px;
-    font-family: inherit;
     font-size: 14px;
     cursor: pointer;
 
@@ -402,7 +399,6 @@ export const ModalStyles = {
     color: #475569;
     border: 1px solid #cbd5e1;
     border-radius: 6px;
-    font-family: inherit;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
@@ -423,7 +419,6 @@ export const ModalStyles = {
     color: #ffffff;
     border: 1px solid #2563eb;
     border-radius: 6px;
-    font-family: inherit;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;

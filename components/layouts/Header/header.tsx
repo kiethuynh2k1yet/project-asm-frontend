@@ -57,7 +57,17 @@ export default function HeaderPage({
           (b.href?.length ?? 0) - (a.href?.length ?? 0)
       )[0];
 
-  const currentPageTitle = currentItem?.label ?? "Home";
+  // Tìm nhóm cấp 1 chứa mục con hiện tại.
+  const parentItem = categoryItems.find((group) =>
+    group.children?.some((child) => child.id === currentItem?.id)
+  );
+
+  // Ví dụ: Danh mục / Công việc
+  const currentPageTitle = currentItem
+    ? parentItem
+      ? `${parentItem.label} / ${currentItem.label}`
+      : currentItem.label
+    : "Home";
 
   useEffect(() => {
     const fetchUser = async () => {

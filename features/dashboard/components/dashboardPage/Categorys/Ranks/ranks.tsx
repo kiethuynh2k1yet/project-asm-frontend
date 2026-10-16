@@ -15,8 +15,8 @@ import type {
   JobFilters,
   JobStatus,
 } from "../constants/jobStatuses";
-import * as S from "../Works/Works.styles";
-import { ModalStyles as M } from "../Works/Works.styles";
+import * as S from "../styles/styles";
+import { ModalStyles as M } from "../styles/styles";
 
 const PAGE_SIZE = 10;
 
@@ -135,7 +135,7 @@ export default function Ranks() {
   }, []);
 
   const loadRanks = useCallback(async (signal?: AbortSignal) => {
-    const response = await fetch("/api/dashboard/ranks", {
+    const response = await fetch("/api/dashboard/master-data/ranks", {
       cache: "no-store",
       signal,
     });
@@ -291,8 +291,8 @@ export default function Ranks() {
     try {
       const response = await fetch(
         editingRank
-          ? `/api/dashboard/ranks/${editingRank.id}`
-          : "/api/dashboard/ranks",
+          ? `/api/dashboard/master-data/ranks/${editingRank.id}`
+          : "/api/dashboard/master-data/ranks",
         {
           method: editingRank ? "PUT" : "POST",
           headers: { "Content-Type": "application/json" },
@@ -336,7 +336,7 @@ export default function Ranks() {
 
     try {
       const response = await fetch(
-        `/api/dashboard/ranks/${selectedRank.id}`,
+        `/api/dashboard/master-data/ranks/${selectedRank.id}`,
         { method: "DELETE" },
       );
       toRank(await readJson(response));
@@ -378,13 +378,13 @@ export default function Ranks() {
 
       <S.TableSection>
         <S.TableScroll>
-          <S.Table style={{ minWidth: 1000 }}>
+          <S.Table>
             <colgroup>
-              <col style={{ width: 65 }} />
-              <col style={{ width: "15%" }} />
-              <col style={{ width: "26%" }} />
-              <col style={{ width: "40%" }} />
-              <col style={{ width: "19%" }} />
+              <col />
+              <col />
+              <col />
+              <col />
+              <col />
             </colgroup>
             <thead>
               <tr>

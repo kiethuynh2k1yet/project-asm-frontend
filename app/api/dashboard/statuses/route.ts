@@ -4,8 +4,6 @@ import { cookies } from "next/headers";
 const BACKEND_API_URL = process.env.BACKEND_API_URL;
 
 export async function GET() {
-  console.log(">>> ĐÃ VÀO NEXT.JS /api/dashboard/statuses")
-  
   try {
     if (!BACKEND_API_URL) {
       return NextResponse.json(

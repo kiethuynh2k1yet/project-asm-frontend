@@ -19,12 +19,19 @@ import {
 } from "lucide-react";
 import type { Route } from "next";
 
+export type CategoryChildItem = {
+  id: string;
+  label: string;
+  icon: LucideIcon;
+  href?: Route;
+};
+
 export type CategoryItem = {
   id: string;
   label: string;
   icon: LucideIcon;
   href?: Route;
-  children?: CategoryItem[];
+  children?: CategoryChildItem[];
 };
 
 export const categoryItems: CategoryItem[] = [
@@ -49,25 +56,25 @@ export const categoryItems: CategoryItem[] = [
         id: "locations",
         label: "Vị trí",
         icon: MapPin,
-        // href: "/dashboard/Category/locations",
+        href: "/dashboard/Category/locations",
       },
       {
         id: "repair-types",
         label: "Loại sửa chữa",
         icon: Wrench,
-        // href: "/dashboard/Category/levels",
+        href: "/dashboard/Category/repair-types",
       },
       {
         id: "tax-rates",
         label: "Thuế suất",
         icon: Percent,
-        // href: "/dashboard/Category/levels",
+        // href: "/dashboard/Category/tax-rates",
       },
       {
         id: "asset-types",
         label: "Loại tài sản",
         icon: Box,
-        // href: "/dashboard/Category/levels",
+        href: "/dashboard/Category/asset-types",
       },
       {
         id: "asset-groups",
@@ -85,25 +92,25 @@ export const categoryItems: CategoryItem[] = [
         id: "units",
         label: "Đơn vị tính",
         icon: Ruler,
-        // href: "/dashboard/Category/levels",
+        href: "/dashboard/Category/units",
       },
       {
         id: "licenses",
         label: "Loại license",
         icon: KeyRound,
-        // href: "/dashboard/Category/levels",
+        href: "/dashboard/Category/licenses",
       },
       {
         id: "suppliers",
         label: "Nhà cung cấp",
         icon: Truck,
-        // href: "/dashboard/Category/levels",
+        href: "/dashboard/Category/suppliers",
       },
       {
         id: "warehouses",
         label: "Kho",
         icon: Building,
-        // href: "/dashboard/Category/levels",
+        href: "/dashboard/Category/warehouses",
       },
       {
         id: "maintenance-cycles",
