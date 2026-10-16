@@ -107,7 +107,9 @@ export default function HeaderPage({
           </MenuButton>
 
           <HomeInformation>
-            <HomeTitle>IT Hỗ Trợ</HomeTitle>
+            <HomeTitle href="/dashboard" aria-label="IT Hỗ Trợ - Trang chủ">
+              IT Hỗ Trợ
+            </HomeTitle>
 
             <BreadcrumbSeparator>/</BreadcrumbSeparator>
 

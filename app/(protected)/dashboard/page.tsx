@@ -1,7 +1,7 @@
 "use client";
 
-import Dashboard from "@/features/dashboard/components/dashboardPage/dashboard";
+import Dashboardcomponent from "@/features/dashboard/components/dashboardPage/dashboard";
 
 export default function DashboardPage() {
-  return <h1>Nội dung chính</h1>;
+  return <Dashboardcomponent />;
 }

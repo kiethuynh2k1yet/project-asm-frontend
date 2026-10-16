@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import Link from "next/link";
 
 export const HeaderWrapper = styled.header`
   width: 100%;
@@ -95,11 +96,21 @@ export const MenuIcon = styled.span<{ $isOpen: boolean }>`
   `}
 `;
 
-export const HomeTitle = styled.h1`
+export const HomeTitle = styled(Link)`
   color: #fff;
   font-size: 20px;
   font-weight: 600;
   text-decoration: none;
+
+  &:hover {
+    color: #dbeafe;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 4px;
+    border-radius: 2px;
+  }
 `;
 
 export const BreadcrumbSeparator = styled.span`
