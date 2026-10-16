@@ -6,6 +6,7 @@ import {
   Search,
   SquarePen,
   Trash2,
+  X,
 } from "lucide-react";
 
 import type {
@@ -19,6 +20,7 @@ type TaskToolbarProps = {
   statuses: JobStatus[];
   statusLoading?: boolean;
   statusError?: string;
+  searchPlaceholder?: string;
   onAdd?: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
@@ -31,6 +33,7 @@ export default function TaskToolbar({
   statuses,
   statusLoading = false,
   statusError = "",
+  searchPlaceholder = "Nhập mã hoặc tên công việc...",
   onAdd,
   onEdit,
   onDelete,
@@ -59,11 +62,20 @@ export default function TaskToolbar({
         ? "Đang tải..."
         : "Không có trạng thái";
 
-  const applyFilters = (nextStatusId = statusId) => {
+  const applyFilters = (
+    nextStatusId = statusId,
+    nextKeyword = keyword,
+  ) => {
     onSearch?.({
-      keyword: keyword.trim(),
+      keyword: nextKeyword.trim(),
       statusId: nextStatusId,
     });
+  };
+
+  const clearFilters = () => {
+    setKeyword("");
+    setStatusId("");
+    onSearch?.({ keyword: "", statusId: "" });
   };
 
   return (
@@ -108,12 +120,28 @@ export default function TaskToolbar({
             <S.Input
               id={`${id}-search`}
               type="search"
-              placeholder="Nhập mã hoặc tên công việc..."
+              placeholder={searchPlaceholder}
               value={keyword}
-              onChange={(event) =>
-                setKeyword(event.target.value)
-              }
+              onChange={(event) => {
+                const nextKeyword = event.target.value;
+                setKeyword(nextKeyword);
+
+                if (nextKeyword === "") {
+                  clearFilters();
+                }
+              }}
             />
+
+            {(keyword || statusId !== "") && (
+              <S.ClearButton
+                type="button"
+                aria-label="Xóa bộ lọc tìm kiếm"
+                title="Xóa bộ lọc tìm kiếm"
+                onClick={clearFilters}
+              >
+                <X size={16} aria-hidden="true" />
+              </S.ClearButton>
+            )}
 
             <S.SearchButton type="submit">
               <Search size={16} aria-hidden="true" />

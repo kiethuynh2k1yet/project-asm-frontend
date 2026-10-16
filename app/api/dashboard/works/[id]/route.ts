@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { worksProxy } from "@/app/lib/worksProxy";
+import { dashboardProxy } from "@/app/lib/dashboardProxy";
 
 export const runtime = "nodejs";
 
@@ -37,7 +37,7 @@ export async function PATCH(
     );
   }
 
-  return worksProxy(`/works/${numericId}`, "PATCH", body);
+  return dashboardProxy(`/works/${numericId}`, "PATCH", body);
 }
 
 export async function DELETE(
@@ -59,5 +59,5 @@ export async function DELETE(
     );
   }
 
-  return worksProxy(`/works/${numericId}`, "DELETE");
+  return dashboardProxy(`/works/${numericId}`, "DELETE");
 }

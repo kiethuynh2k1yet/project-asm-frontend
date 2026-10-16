@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
-export async function worksProxy(
+export async function dashboardProxy(
   path: string,
-  method: "GET" | "POST" | "PATCH" | "DELETE",
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
   body?: unknown,
 ) {
   try {
@@ -50,14 +50,14 @@ export async function worksProxy(
     try {
       data = JSON.parse(text);
     } catch {
-      console.error("[WORKS] Backend không trả JSON:", {
+      console.error("[DASHBOARD API] Backend không trả JSON:", {
         path,
         status: response.status,
       });
 
       return NextResponse.json(
         {
-          message: "Backend công việc không trả JSON.",
+          message: "Backend không trả JSON.",
         },
         {
           status: response.ok ? 502 : response.status,
@@ -72,10 +72,10 @@ export async function worksProxy(
       },
     });
   } catch (error) {
-    console.error("[WORKS] PROXY ERROR:", error);
+    console.error("[DASHBOARD API] PROXY ERROR:", error);
 
     return NextResponse.json(
-      { message: "Không thể kết nối API công việc." },
+      { message: "Không thể kết nối API." },
       { status: 502 },
     );
   }

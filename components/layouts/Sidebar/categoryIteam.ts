@@ -43,13 +43,13 @@ export const categoryItems: CategoryItem[] = [
         id: "levels",
         label: "Cấp bậc",
         icon: Network,
-        href: "/dashboard/Category/levels",
+        href: "/dashboard/Category/ranks",
       },
       {
         id: "locations",
         label: "Vị trí",
         icon: MapPin,
-        // href: "/dashboard/Category/levels",
+        // href: "/dashboard/Category/locations",
       },
       {
         id: "repair-types",

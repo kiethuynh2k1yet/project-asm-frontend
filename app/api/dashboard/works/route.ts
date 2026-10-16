@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { worksProxy } from "@/app/lib/worksProxy";
+import { dashboardProxy } from "@/app/lib/dashboardProxy";
 
 export const runtime = "nodejs";
 
@@ -21,7 +21,7 @@ export async function GET(request: Request) {
 
   const queryString = query.toString();
 
-  return worksProxy(
+  return dashboardProxy(
     `/works${queryString ? `?${queryString}` : ""}`,
     "GET",
   );
@@ -39,5 +39,5 @@ export async function POST(request: Request) {
     );
   }
 
-  return worksProxy("/works", "POST", body);
+  return dashboardProxy("/works", "POST", body);
 }

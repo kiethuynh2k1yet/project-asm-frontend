@@ -266,6 +266,44 @@ export const Input = styled.input`
   &::placeholder {
     color: #94a3b8;
   }
+
+  &::-webkit-search-cancel-button,
+  &::-webkit-search-decoration {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  &::-ms-clear {
+    display: none;
+  }
+`;
+
+export const ClearButton = styled.button`
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+
+  width: 38px;
+  margin: 0;
+  padding: 0;
+
+  background: #ffffff;
+  color: #64748b;
+  border: none;
+
+  cursor: pointer;
+
+  &:hover {
+    color: #1e293b;
+  }
+
+  &:focus-visible {
+    position: relative;
+    z-index: 1;
+    outline: 2px solid #60a5fa;
+    outline-offset: -3px;
+  }
 `;
 
 export const SearchButton = styled(Button)`
