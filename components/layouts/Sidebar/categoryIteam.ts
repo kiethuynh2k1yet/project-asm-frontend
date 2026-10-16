@@ -68,7 +68,7 @@ export const categoryItems: CategoryItem[] = [
         id: "tax-rates",
         label: "Thuế suất",
         icon: Percent,
-        // href: "/dashboard/Category/tax-rates",
+        href: "/dashboard/Category/taxs",
       },
       {
         id: "asset-types",
@@ -80,13 +80,13 @@ export const categoryItems: CategoryItem[] = [
         id: "asset-groups",
         label: "Nhóm tài sản",
         icon: Boxes,
-        // href: "/dashboard/Category/levels",
+        href: "/dashboard/Category/asset-groups",
       },
       {
         id: "asset-categories",
         label: "Chủng loại tài sản",
         icon: Tags,
-        // href: "/dashboard/Category/levels",
+        href: "/dashboard/Category/asset-categorys",
       },
       {
         id: "units",
@@ -116,13 +116,13 @@ export const categoryItems: CategoryItem[] = [
         id: "maintenance-cycles",
         label: "Chu kỳ bảo dưỡng",
         icon: RefreshCw,
-        // href: "/dashboard/Category/levels",
+        href: "/dashboard/Category/maintenance-cycles",
       },
       {
         id: "organization-levels",
         label: "Cấp tổ chức công ty",
         icon: GitBranch,
-        // href: "/dashboard/Category/levels",
+        href: "/dashboard/Category/organization-levels",
       },
       {
         id: "standard-parameters",
