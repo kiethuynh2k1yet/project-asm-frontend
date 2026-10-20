@@ -500,10 +500,11 @@ function OrganizationLevelModal({
           </M.Field>
           <M.Field>
             <M.Label htmlFor="organization-level-description">Mô tả</M.Label>
-            <M.Input
+            <M.Textarea
               id="organization-level-description"
               value={description}
               maxLength={255}
+              rows={3}
               onChange={(event) => setDescription(event.target.value)}
             />
           </M.Field>
@@ -521,16 +522,15 @@ function OrganizationLevelModal({
             </M.Select>
             <M.Hint>Chỉ chọn từ cấp 1 đến cấp 4.</M.Hint>
           </M.Field>
-          <M.Field>
-            <M.Label htmlFor="organization-level-last">Cấp cuối cùng</M.Label>
+          <M.CheckField>
             <input
               id="organization-level-last"
               type="checkbox"
               checked={isLastLevel}
               onChange={(event) => setIsLastLevel(event.target.checked)}
-              style={{ width: 18, height: 18, margin: 0 }}
             />
-          </M.Field>
+            <M.Label htmlFor="organization-level-last">Cấp cuối cùng</M.Label>
+          </M.CheckField>
           <M.Field>
             <M.Label htmlFor="organization-level-status">Trạng thái <M.Required>*</M.Required></M.Label>
             <M.Select

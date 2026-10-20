@@ -327,6 +327,17 @@ export const ModalStyles = {
     flex-direction: column;
     gap: 8px;
   `,
+  CheckField: styled.div`
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    input {
+      width: 16px;
+      height: 16px;
+      accent-color: #2563eb;
+    }
+  `,
   Label: styled.label`
     color: #1e293b;
     font-size: 14px;
@@ -348,6 +359,26 @@ export const ModalStyles = {
     &::placeholder {
       color: #94a3b8;
     }
+
+    &:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+    }
+  `,
+  Textarea: styled.textarea`
+    display: block;
+    width: 100%;
+    min-height: 84px;
+    padding: 10px 12px;
+    resize: vertical;
+    background: #ffffff;
+    color: #1e293b;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font: inherit;
+    font-size: 14px;
+    line-height: 1.5;
 
     &:focus {
       outline: none;

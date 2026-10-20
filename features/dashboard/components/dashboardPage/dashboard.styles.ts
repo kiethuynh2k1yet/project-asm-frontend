@@ -30,8 +30,11 @@ export const MainArea = styled.main`
 export const Content = styled.section`
   flex: 1;
   width: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
   background-color: #ffffff;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: stretch;
+  justify-content: stretch;
 `;

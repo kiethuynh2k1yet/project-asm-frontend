@@ -595,10 +595,11 @@ function RankModal({
           </M.Field>
           <M.Field>
             <M.Label htmlFor="rank-note">Ghi chú</M.Label>
-            <M.Input
+            <M.Textarea
               id="rank-note"
               value={note}
               maxLength={255}
+              rows={3}
               disabled={saving}
               onChange={(event) => setNote(event.target.value)}
             />

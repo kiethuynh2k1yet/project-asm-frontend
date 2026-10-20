@@ -306,6 +306,8 @@ export const Modal = {
     border: 1px solid #cbd5e1;
     border-radius: 6px;
     font: inherit;
+    font-size: 14px;
+    line-height: 1.5;
 
     &:focus {
       outline: none;
