@@ -1,6 +1,8 @@
 import {
   FolderClosed,
   BriefcaseBusiness,
+  Building2,
+  Layers3,
   Network,
   MapPin,
   Wrench,
@@ -35,6 +37,19 @@ export type CategoryItem = {
 };
 
 export const categoryItems: CategoryItem[] = [
+  {
+    id: "departments",
+    label: "Phòng Ban",
+    icon: Building2,
+    children: [
+      {
+        id: "room-types",
+        label: "Loại phòng ban",
+        icon: Layers3,
+        href: "/dashboard/Department/room-types",
+      },
+    ],
+  },
   {
     id: "categories",
     label: "Danh mục",
