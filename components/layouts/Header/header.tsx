@@ -22,6 +22,7 @@ import {
 type User = {
   name: string;
   email: string;
+  fullName?: string | null;
 };
 
 type HeaderPageProps = {
@@ -118,7 +119,7 @@ export default function HeaderPage({
         </HeaderLeft>
 
         <LogoutButtonPage
-          name={user?.name ?? "Guest User"}
+          name={user?.fullName || user?.name || "Guest User"}
           email={user?.email ?? "guest@example.com"}
         />
       </HeaderContainer>

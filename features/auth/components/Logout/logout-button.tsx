@@ -37,10 +37,14 @@ function getInitials(name?: string) {
   const words = name.trim().split(/\s+/);
 
   if (words.length === 1) {
-    return words[0].slice(0, 2);
+    return Array.from(words[0]).slice(0, 2).join("").toLocaleUpperCase("vi-VN");
   }
 
-  return `${words[0][0]}${words[words.length - 1][0]}`;
+  return words
+    .slice(-2)
+    .map((word) => Array.from(word)[0])
+    .join("")
+    .toLocaleUpperCase("vi-VN");
 }
 
 function getRandomColor(name?: string) {
