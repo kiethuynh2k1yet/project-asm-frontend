@@ -17,6 +17,7 @@ import {
   RefreshCw,
   GitBranch,
   SlidersHorizontal,
+  UserRound,
   type LucideIcon,
 } from "lucide-react";
 import type { Route } from "next";
@@ -37,6 +38,19 @@ export type CategoryItem = {
 };
 
 export const categoryItems: CategoryItem[] = [
+  {
+    id: "human-resources",
+    label: "Phòng Nhân sự",
+    icon: Building2,
+    children: [
+      {
+        id: "employees",
+        label: "Nhân viên",
+        icon: UserRound,
+        href: "/dashboard/HumanResources/employees",
+      },
+    ],
+  },
   {
     id: "departments",
     label: "Phòng Ban",

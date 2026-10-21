@@ -298,7 +298,7 @@ export default function DiagramOrganization() {
     let active = true;
     const loadLookups = async () => {
       const [employeeResult, statusResult, departmentTypeResult] = await Promise.allSettled([
-        fetch("/api/dashboard/department/employees", { cache: "no-store" })
+        fetch("/api/dashboard/human-resources/employees", { cache: "no-store" })
           .then(readJson),
         fetch("/api/dashboard/statuses", { cache: "no-store" })
           .then(readJson),
