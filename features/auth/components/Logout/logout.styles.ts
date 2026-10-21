@@ -76,6 +76,11 @@ export const LogoutButton = styled.button`
   font-weight: 600;
   cursor: pointer;
 
+  &:disabled {
+    cursor: wait;
+    opacity: 0.6;
+  }
+
   &:hover {
     color: #b91c1c;
   }

@@ -103,11 +103,13 @@ export async function POST(request: Request) {
       },
     );
 
+    const useSecureCookie = new URL(request.url).protocol === "https:";
+
     response.cookies.set({
       name: "access_token",
       value: accessToken,
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: useSecureCookie,
       sameSite: "lax",
       path: "/",
       maxAge: 60 * 60 * 24,

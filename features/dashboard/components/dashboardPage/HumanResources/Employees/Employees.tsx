@@ -14,10 +14,13 @@ import {
   SquarePen,
   Trash2,
   X,
+  KeyRound,
 } from "lucide-react";
 
 import * as S from "../../Categorys/styles/styles";
 import * as T from "../../Categorys/components/TaskToolbar/TaskToolbar.styles";
+import { useAuthRole } from "@/features/auth/components/auth-role-provider";
+import * as E from "./employees.styles";
 
 const PAGE_SIZE = 10;
 
@@ -118,6 +121,12 @@ export default function Employees() {
   const [editing, setEditing] = useState<Employee>();
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const { role: userRole, error: accountError } = useAuthRole();
+  const [credentialNotice, setCredentialNotice] = useState<{
+    employeeCode: string;
+    password: string;
+    action: "created" | "reset";
+  } | null>(null);
 
   const loadEmployees = useCallback(async (signal?: AbortSignal) => {
     const query = new URLSearchParams();
@@ -191,6 +200,7 @@ export default function Employees() {
     setFilters(nextFilters);
     setPage(1);
     setSelectedId(null);
+    setCredentialNotice(null);
   };
 
   const refreshEmployees = async (successMessage: string) => {
@@ -228,7 +238,21 @@ export default function Employees() {
           body: JSON.stringify(values),
         },
       );
-      toEmployee(await readJson(response));
+      const data = await readJson(response);
+      toEmployee(data);
+      if (
+        !editing &&
+        isRecord(data) &&
+        typeof data.initialPassword === "string"
+      ) {
+        setCredentialNotice({
+          employeeCode: values.employee_code,
+          password: data.initialPassword,
+          action: "created",
+        });
+      } else {
+        setCredentialNotice(null);
+      }
     } catch (error) {
       setSaveError(
         error instanceof Error ? error.message : "Không thể lưu nhân viên.",
@@ -273,6 +297,53 @@ export default function Employees() {
     await refreshEmployees("Đã xóa nhân viên");
   };
 
+  const handleResetPassword = async () => {
+    if (
+      userRole !== "admin" || !selectedEmployee || saving
+    ) {
+      return;
+    }
+    if (
+      !window.confirm(
+        `Đặt lại mật khẩu của "${selectedEmployee.employee_code}" thành mã nhân viên này?`,
+      )
+    ) {
+      return;
+    }
+
+    setSaving(true);
+    setListError("");
+    setCredentialNotice(null);
+    try {
+      const response = await fetch(
+        `/api/dashboard/human-resources/employees/${selectedEmployee.id}/reset-password`,
+        { method: "POST" },
+      );
+      const data = await readJson(response);
+      if (
+        !isRecord(data) ||
+        typeof data.temporaryPassword !== "string"
+      ) {
+        throw new Error("Dữ liệu tài khoản sau khi reset không hợp lệ.");
+      }
+      setCredentialNotice({
+        employeeCode: selectedEmployee.employee_code,
+        password: data.temporaryPassword,
+        action: "reset",
+      });
+    } catch (error) {
+      setListError(
+        error instanceof Error
+          ? error.message
+          : "Không thể reset mật khẩu tài khoản.",
+      );
+      setSaving(false);
+      return;
+    }
+
+    await refreshEmployees("Đã reset mật khẩu");
+  };
+
   const closeModal = () => {
     if (saving) return;
     setModalOpen(false);
@@ -296,27 +367,39 @@ export default function Employees() {
               <CirclePlus size={16} aria-hidden="true" />
               Thêm
             </T.Button>
-            <T.EditButton
-              type="button"
-              disabled={!selectedEmployee || loading || saving}
-              onClick={() => {
-                if (!selectedEmployee) return;
-                setEditing(selectedEmployee);
-                setSaveError("");
-                setModalOpen(true);
-              }}
-            >
-              <SquarePen size={16} aria-hidden="true" />
-              Sửa
-            </T.EditButton>
-            <T.DeleteButton
-              type="button"
-              disabled={!selectedEmployee || loading || saving}
-              onClick={() => void handleDelete()}
-            >
-              <Trash2 size={16} aria-hidden="true" />
-              Xóa
-            </T.DeleteButton>
+            {userRole === "admin" && (
+              <>
+                <T.Button
+                  type="button"
+                  disabled={!selectedEmployee || loading || saving}
+                  onClick={() => void handleResetPassword()}
+                >
+                  <KeyRound size={16} aria-hidden="true" />
+                  Reset mật khẩu
+                </T.Button>
+                <T.EditButton
+                  type="button"
+                  disabled={!selectedEmployee || loading || saving}
+                  onClick={() => {
+                    if (!selectedEmployee) return;
+                    setEditing(selectedEmployee);
+                    setSaveError("");
+                    setModalOpen(true);
+                  }}
+                >
+                  <SquarePen size={16} aria-hidden="true" />
+                  Sửa
+                </T.EditButton>
+                <T.DeleteButton
+                  type="button"
+                  disabled={!selectedEmployee || loading || saving}
+                  onClick={() => void handleDelete()}
+                >
+                  <Trash2 size={16} aria-hidden="true" />
+                  Xóa
+                </T.DeleteButton>
+              </>
+            )}
           </T.Actions>
 
           <T.Filters
@@ -381,14 +464,36 @@ export default function Employees() {
         {listError && (
           <S.ErrorMessage role="alert">{listError}</S.ErrorMessage>
         )}
+        {accountError && (
+          <S.ErrorMessage role="alert">{accountError}</S.ErrorMessage>
+        )}
+        {credentialNotice && (
+          <S.ErrorMessage
+            role="status"
+            style={{
+              background: "#eff6ff",
+              color: "#1e40af",
+              borderColor: "#bfdbfe",
+            }}
+          >
+            {credentialNotice.action === "created"
+              ? "Mật khẩu khởi tạo"
+              : "Mật khẩu mới"}{" "}
+            cho mã nhân viên{" "}
+            <strong>{credentialNotice.employeeCode}</strong>:{" "}
+            <strong>{credentialNotice.password}</strong>. Chỉ hiển thị lúc này;
+            hãy gửi cho nhân viên và yêu cầu đổi sớm.
+          </S.ErrorMessage>
+        )}
       </S.ToolbarSection>
 
       <S.TableSection>
-        <S.TableScroll>
-          <S.Table style={{ minWidth: 1120 }}>
+        <S.TableScroll className="employee-desktop-table">
+          <S.Table style={{ minWidth: userRole === "admin" ? 1280 : 1140 }}>
             <colgroup>
               <col style={{ width: 55 }} />
               <col style={{ width: 130 }} />
+              {userRole === "admin" && <col style={{ width: 150 }} />}
               <col style={{ width: 190 }} />
               <col style={{ width: 200 }} />
               <col style={{ width: 130 }} />
@@ -400,6 +505,9 @@ export default function Employees() {
               <tr>
                 <th scope="col">#</th>
                 <th scope="col">Mã nhân viên</th>
+                {userRole === "admin" && (
+                  <th scope="col">Mật khẩu</th>
+                )}
                 <th scope="col">Họ và tên</th>
                 <th scope="col">Email</th>
                 <th scope="col">Điện thoại</th>
@@ -414,18 +522,31 @@ export default function Employees() {
                   <S.TableRow
                     key={employee.id}
                     $selected={selectedId === employee.id}
-                    onClick={() => setSelectedId(employee.id)}
+                    onClick={() => {
+                      setSelectedId(employee.id);
+                      setCredentialNotice(null);
+                    }}
                   >
                     <td>{(page - 1) * PAGE_SIZE + index + 1}</td>
                     <td>
                       <S.SelectJobButton
                         type="button"
                         aria-pressed={selectedId === employee.id}
-                        onClick={() => setSelectedId(employee.id)}
+                        onClick={() => {
+                          setSelectedId(employee.id);
+                          setCredentialNotice(null);
+                        }}
                       >
                         {employee.employee_code}
                       </S.SelectJobButton>
                     </td>
+                    {userRole === "admin" && (
+                      <td>
+                        <code title="Mật khẩu khởi tạo/reset bằng mã nhân viên">
+                          {employee.employee_code}
+                        </code>
+                      </td>
+                    )}
                     <td title={employee.full_name}>{employee.full_name}</td>
                     <td title={employee.email ?? ""}>{employee.email || "—"}</td>
                     <td>{employee.phone || "—"}</td>
@@ -444,7 +565,7 @@ export default function Employees() {
                 ))}
               {(loading || visibleEmployees.length === 0) && (
                 <tr>
-                  <S.EmptyCell colSpan={8}>
+                  <S.EmptyCell colSpan={userRole === "admin" ? 9 : 8}>
                     {loading
                       ? "Đang tải nhân viên..."
                       : listError
@@ -456,6 +577,63 @@ export default function Employees() {
             </tbody>
           </S.Table>
         </S.TableScroll>
+        <E.MobileEmployeeList aria-label="Danh sách nhân viên">
+          {loading ? (
+            <E.EmptyState>Đang tải nhân viên...</E.EmptyState>
+          ) : visibleEmployees.length === 0 ? (
+            <E.EmptyState>
+              {listError
+                ? "Không tải được danh sách."
+                : "Không có nhân viên phù hợp."}
+            </E.EmptyState>
+          ) : (
+            visibleEmployees.map((employee, index) => (
+              <E.EmployeeCard
+                key={employee.id}
+                type="button"
+                $selected={selectedId === employee.id}
+                aria-pressed={selectedId === employee.id}
+                onClick={() => {
+                  setSelectedId(employee.id);
+                  setCredentialNotice(null);
+                }}
+              >
+                <E.CardHeader>
+                  <E.CardCode>{employee.employee_code}</E.CardCode>
+                  <S.StatusBadge $active={employee.is_active}>
+                    {employee.is_active ? "Đang làm việc" : "Đã nghỉ"}
+                  </S.StatusBadge>
+                  <E.CardIndex>#{(page - 1) * PAGE_SIZE + index + 1}</E.CardIndex>
+                </E.CardHeader>
+                <E.CardName>{employee.full_name}</E.CardName>
+                <E.CardDetails>
+                  {userRole === "admin" && (
+                    <E.CardField>
+                      <E.CardLabel>Mật khẩu</E.CardLabel>
+                      <E.CardValue>{employee.employee_code}</E.CardValue>
+                    </E.CardField>
+                  )}
+                  <E.CardField>
+                    <E.CardLabel>Email</E.CardLabel>
+                    <E.CardValue>{employee.email || "—"}</E.CardValue>
+                  </E.CardField>
+                  <E.CardField>
+                    <E.CardLabel>Điện thoại</E.CardLabel>
+                    <E.CardValue>{employee.phone || "—"}</E.CardValue>
+                  </E.CardField>
+                  <E.CardField>
+                    <E.CardLabel>Phòng ban</E.CardLabel>
+                    <E.CardValue>{employee.department || "—"}</E.CardValue>
+                  </E.CardField>
+                  <E.CardField>
+                    <E.CardLabel>Chức vụ</E.CardLabel>
+                    <E.CardValue>{employee.position || "—"}</E.CardValue>
+                  </E.CardField>
+                </E.CardDetails>
+              </E.EmployeeCard>
+            ))
+          )}
+        </E.MobileEmployeeList>
 
         <S.TableFooter>
           <S.Total>

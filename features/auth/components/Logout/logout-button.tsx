@@ -59,6 +59,7 @@ function getRandomColor(name?: string) {
 export default function LogoutButtonPage({ name, email }: AvatarMenuProps) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   const initials = getInitials(name);
@@ -82,12 +83,24 @@ export default function LogoutButtonPage({ name, email }: AvatarMenuProps) {
   }, []);
 
   const handleLogout = async () => {
-    await fetch("/api/auth/logout", {
-      method: "POST",
-    });
+    setIsLoggingOut(true);
 
-    router.replace("/login");
-    router.refresh();
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error(`Logout failed with status ${response.status}`);
+      }
+
+      router.replace("/login");
+      router.refresh();
+    } catch (error) {
+      console.error("Logout error:", error);
+      window.alert("Không thể đăng xuất. Vui lòng thử lại.");
+      setIsLoggingOut(false);
+    }
   };
 
   return (
@@ -107,8 +120,12 @@ export default function LogoutButtonPage({ name, email }: AvatarMenuProps) {
         </UserInfo>
         
         <ContainerButton>
-          <LogoutButton type="button" onClick={handleLogout}>
-            Đăng xuất
+          <LogoutButton
+            type="button"
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+          >
+            {isLoggingOut ? "Đang đăng xuất..." : "Đăng xuất"}
           </LogoutButton>
         </ContainerButton>
       </Menu>

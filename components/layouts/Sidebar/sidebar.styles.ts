@@ -42,6 +42,19 @@ export const SidebarWrapper = styled.aside<SidebarWrapperProps>`
     width 0.3s ease,
     border-width 0.3s ease,
     visibility 0s ${({ $isOpen }) => ($isOpen ? "0s" : "0.3s")};
+
+  @media (max-width: 768px) {
+    position: fixed;
+    top: 64px;
+    bottom: 0;
+    left: 0;
+    z-index: 20;
+    width: ${({ $isOpen }) => ($isOpen ? "min(280px, 86vw)" : "0")};
+    height: auto;
+    border-radius: 0 8px 8px 0;
+    box-shadow: ${({ $isOpen }) =>
+      $isOpen ? "8px 0 24px rgba(15, 23, 42, 0.16)" : "none"};
+  }
 `;
 
 // ===== Logo công ty =====
@@ -59,6 +72,10 @@ export const CompanyLogoSection = styled.div`
   border-radius: 6px 6px 0 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   z-index: 1;
+
+  @media (max-width: 768px) {
+    height: 160px;
+  }
 
   img {
     width: 100%;

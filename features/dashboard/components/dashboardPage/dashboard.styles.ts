@@ -3,8 +3,13 @@ import styled from "styled-components";
 export const DashboardContainer = styled.div`
   display: flex;
   width: 100%;
-  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
   overflow: hidden;
+
+  @supports not (height: 100dvh) {
+    height: 100vh;
+  }
 `;
 
 export const Sidebar = styled.aside<{ $isOpen: boolean }>`
@@ -37,4 +42,8 @@ export const Content = styled.section`
   display: flex;
   align-items: stretch;
   justify-content: stretch;
+
+  @media (max-width: 640px) {
+    overflow: auto;
+  }
 `;

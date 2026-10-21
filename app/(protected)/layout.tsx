@@ -1,9 +1,12 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
+import styled from "styled-components";
 
 import HeaderPage from "@/components/layouts/Header/header";
 import Sidebar from "@/components/layouts/Sidebar/sidebar";
+import { AuthRoleProvider } from "@/features/auth/components/auth-role-provider";
 
 import {
   DashboardContainer,
@@ -15,7 +18,31 @@ type DashboardProps = {
   children: ReactNode;
 };
 
+const SidebarBackdrop = styled.button`
+  display: none;
+
+  @media (max-width: 768px) {
+    position: fixed;
+    inset: 64px 0 0;
+    z-index: 10;
+    display: block;
+    width: 100%;
+    padding: 0;
+    background: rgba(15, 23, 42, 0.4);
+    border: 0;
+  }
+`;
+
 export default function Dashboard({ children }: DashboardProps) {
+  const pathname = usePathname();
+  return (
+    <AuthRoleProvider>
+      <DashboardFrame key={pathname}>{children}</DashboardFrame>
+    </AuthRoleProvider>
+  );
+}
+
+function DashboardFrame({ children }: DashboardProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const toggleSidebar = () => {
@@ -25,6 +52,13 @@ export default function Dashboard({ children }: DashboardProps) {
   return (
     <DashboardContainer>
       <Sidebar isOpen={isSidebarOpen} />
+      {isSidebarOpen && (
+        <SidebarBackdrop
+          type="button"
+          aria-label="Đóng menu"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
 
       <MainArea>
         <HeaderPage

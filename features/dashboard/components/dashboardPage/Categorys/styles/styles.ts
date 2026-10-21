@@ -49,6 +49,12 @@ export const TableScroll = styled.div`
   flex: 1;
   min-height: 0;
   overflow: auto;
+
+  @media (max-width: 640px) {
+    &.employee-desktop-table {
+      display: none;
+    }
+  }
 `;
 
 export const Table = styled.table`
@@ -183,6 +189,12 @@ export const TableFooter = styled.div`
 
   @media (max-width: 480px) {
     flex-wrap: wrap;
+    justify-content: center;
+
+    nav {
+      width: 100%;
+      justify-content: space-between;
+    }
   }
 `;
 

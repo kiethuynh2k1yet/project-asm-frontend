@@ -51,6 +51,9 @@ export async function GET() {
       user: {
         name: data.username,
         email: data.email,
+        role: data.role,
+        employeeCode: data.employeeCode,
+        fullName: data.fullName,
       },
     });
   } catch (error) {

@@ -8,10 +8,11 @@ export type LoginResponse = {
   accessToken?: string;
   refreshToken?: string;
   user?: {
-    id: string;
+    id: number;
     username?: string;
     email?: string;
     fullName?: string;
-    role?: string;
+    role?: "admin" | "employee";
+    employeeCode?: string | null;
   };
 };

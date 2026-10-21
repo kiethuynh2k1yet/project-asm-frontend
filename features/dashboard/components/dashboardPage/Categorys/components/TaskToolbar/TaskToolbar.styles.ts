@@ -32,6 +32,15 @@ export const Actions = styled.div`
   align-items: center;
   flex-shrink: 0;
   gap: 8px;
+
+  @media (max-width: 480px) {
+    flex-wrap: wrap;
+
+    > button {
+      flex: 1 1 calc(50% - 8px);
+      padding: 0 10px;
+    }
+  }
 `;
 
 export const Button = styled.button`

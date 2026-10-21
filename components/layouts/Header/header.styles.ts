@@ -4,6 +4,8 @@ import Link from "next/link";
 export const HeaderWrapper = styled.header`
   width: 100%;
   height: 64px;
+  min-height: 64px;
+  flex-shrink: 0;
   background-color: #1A365D;
   border-bottom: 1px solid #e5e7eb;
   border-radius: 0 0 8px 8px;
@@ -20,18 +22,31 @@ export const HeaderContainer = styled.div`
   align-items: center;
   justify-content: space-between;
   box-sizing: border-box;
+
+  @media (max-width: 640px) {
+    padding: 0 10px;
+  }
 `;
 
 export const HomeInformation = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
+
+  @media (max-width: 480px) {
+    gap: 6px;
+  }
 `;
 
 export const HeaderLeft = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
+
+  @media (max-width: 480px) {
+    gap: 4px;
+    min-width: 0;
+  }
 `;
 
 export const MenuButton = styled.button`
@@ -102,6 +117,10 @@ export const HomeTitle = styled(Link)`
   font-weight: 600;
   text-decoration: none;
 
+  @media (max-width: 480px) {
+    font-size: 16px;
+  }
+
   &:hover {
     color: #dbeafe;
   }
@@ -116,10 +135,18 @@ export const HomeTitle = styled(Link)`
 export const BreadcrumbSeparator = styled.span`
   color: #9ca3af;
   font-size: 18px;
+
+  @media (max-width: 480px) {
+    display: none;
+  }
 `;
 
 export const CurrentPage = styled.span`
   color: #fff;
   font-size: 16px;
   font-weight: 500;
+
+  @media (max-width: 480px) {
+    display: none;
+  }
 `;
