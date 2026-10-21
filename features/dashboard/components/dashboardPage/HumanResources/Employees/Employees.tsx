@@ -33,6 +33,7 @@ type Employee = {
   department: string | null;
   position: string | null;
   is_active: boolean;
+  password_changed_at?: string | null;
 };
 
 type EmployeeFormValues = Omit<Employee, "id">;
@@ -87,6 +88,11 @@ function toEmployee(value: unknown): Employee {
       typeof value.is_active === "boolean" ||
       value.is_active === 0 ||
       value.is_active === 1
+    ) ||
+    !(
+      value.password_changed_at === undefined ||
+      value.password_changed_at === null ||
+      typeof value.password_changed_at === "string"
     )
   ) {
     throw new Error("Dữ liệu nhân viên không hợp lệ.");
@@ -101,6 +107,10 @@ function toEmployee(value: unknown): Employee {
     department: value.department,
     position: value.position,
     is_active: value.is_active === true || value.is_active === 1,
+    password_changed_at:
+      typeof value.password_changed_at === "string"
+        ? value.password_changed_at
+        : null,
   };
 }
 
@@ -506,7 +516,7 @@ export default function Employees() {
                 <th scope="col">#</th>
                 <th scope="col">Mã nhân viên</th>
                 {userRole === "admin" && (
-                  <th scope="col">Mật khẩu</th>
+                  <th scope="col">Cập nhật mật khẩu</th>
                 )}
                 <th scope="col">Họ và tên</th>
                 <th scope="col">Email</th>
@@ -542,9 +552,9 @@ export default function Employees() {
                     </td>
                     {userRole === "admin" && (
                       <td>
-                        <code title="Mật khẩu khởi tạo/reset bằng mã nhân viên">
-                          {employee.employee_code}
-                        </code>
+                        {employee.password_changed_at
+                          ? new Date(employee.password_changed_at).toLocaleString("vi-VN")
+                          : "Chưa có tài khoản"}
                       </td>
                     )}
                     <td title={employee.full_name}>{employee.full_name}</td>
@@ -609,8 +619,12 @@ export default function Employees() {
                 <E.CardDetails>
                   {userRole === "admin" && (
                     <E.CardField>
-                      <E.CardLabel>Mật khẩu</E.CardLabel>
-                      <E.CardValue>{employee.employee_code}</E.CardValue>
+                      <E.CardLabel>Cập nhật mật khẩu</E.CardLabel>
+                      <E.CardValue>
+                        {employee.password_changed_at
+                          ? new Date(employee.password_changed_at).toLocaleString("vi-VN")
+                          : "Chưa có tài khoản"}
+                      </E.CardValue>
                     </E.CardField>
                   )}
                   <E.CardField>
