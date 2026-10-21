@@ -26,21 +26,27 @@ async function readBody(request: Request): Promise<unknown | NextResponse> {
   }
 }
 
-export function collectionRoutes(resource: string) {
+export function collectionRoutes(
+  resource: string,
+  backendPath = `/master-data/${resource}`,
+) {
   return {
     GET(request: Request) {
       const query = new URL(request.url).search;
-      return dashboardProxy(`/master-data/${resource}${query}`, "GET");
+      return dashboardProxy(`${backendPath}${query}`, "GET");
     },
     async POST(request: Request) {
       const body = await readBody(request);
       if (body instanceof NextResponse) return body;
-      return dashboardProxy(`/master-data/${resource}`, "POST", body);
+      return dashboardProxy(backendPath, "POST", body);
     },
   };
 }
 
-export function itemRoutes(resource: string) {
+export function itemRoutes(
+  resource: string,
+  backendPath = `/master-data/${resource}`,
+) {
   const update = async (
     request: Request,
     context: ItemRouteContext,
@@ -58,7 +64,7 @@ export function itemRoutes(resource: string) {
     const body = await readBody(request);
     if (body instanceof NextResponse) return body;
     return dashboardProxy(
-      `/master-data/${resource}/${numericId}`,
+      `${backendPath}/${numericId}`,
       method,
       body,
     );
@@ -81,7 +87,7 @@ export function itemRoutes(resource: string) {
         );
       }
       return dashboardProxy(
-        `/master-data/${resource}/${numericId}`,
+        `${backendPath}/${numericId}`,
         "DELETE",
       );
     },

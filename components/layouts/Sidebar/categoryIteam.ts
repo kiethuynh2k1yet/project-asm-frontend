@@ -48,6 +48,12 @@ export const categoryItems: CategoryItem[] = [
         icon: Layers3,
         href: "/dashboard/Department/room-types",
       },
+      {
+        id: "diagram-organization",
+        label: "Sơ đồ tổ chức",
+        icon: GitBranch,
+        href: "/dashboard/Department/diagram-organization",
+      },
     ],
   },
   {

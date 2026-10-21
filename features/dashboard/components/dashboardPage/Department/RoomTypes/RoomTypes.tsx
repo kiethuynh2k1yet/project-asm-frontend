@@ -15,7 +15,7 @@ import type {
   JobFilters,
   JobStatus,
 } from "../../Categorys/constants/jobStatuses";
-import * as S from "./styles/styles";
+import * as S from "../styles/styles";
 
 const PAGE_SIZE = 10;
 
@@ -113,7 +113,7 @@ export default function RoomTypes() {
     }
     const queryString = query.toString();
     const response = await fetch(
-      `/api/dashboard/master-data/room-types${queryString ? `?${queryString}` : ""}`,
+      `/api/dashboard/department/room-types${queryString ? `?${queryString}` : ""}`,
       { cache: "no-store", signal },
     );
     const data = await readJson(response);
@@ -255,8 +255,8 @@ export default function RoomTypes() {
     try {
       const response = await fetch(
         editing
-          ? `/api/dashboard/master-data/room-types/${editing.id}`
-          : "/api/dashboard/master-data/room-types",
+          ? `/api/dashboard/department/room-types/${editing.id}`
+          : "/api/dashboard/department/room-types",
         {
           method: editing ? "PATCH" : "POST",
           headers: { "Content-Type": "application/json" },
@@ -297,7 +297,7 @@ export default function RoomTypes() {
     setListError("");
     try {
       const response = await fetch(
-        `/api/dashboard/master-data/room-types/${selectedItem.id}`,
+        `/api/dashboard/department/room-types/${selectedItem.id}`,
         { method: "DELETE" },
       );
       toRoomType(await readJson(response));
