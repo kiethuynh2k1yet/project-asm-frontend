@@ -31,12 +31,18 @@ type Employee = {
   email: string | null;
   phone: string | null;
   department: string | null;
+  department_type_id: number | null;
   position: string | null;
   is_active: boolean;
   password_changed_at?: string | null;
 };
 
-type EmployeeFormValues = Omit<Employee, "id">;
+type EmployeeFormValues = Omit<Employee, "id" | "password_changed_at">;
+
+type DepartmentLevel = {
+  id: number;
+  name: string;
+};
 
 type EmployeeFilters = {
   keyword: string;
@@ -83,6 +89,13 @@ function toEmployee(value: unknown): Employee {
     !(value.email === null || typeof value.email === "string") ||
     !(value.phone === null || typeof value.phone === "string") ||
     !(value.department === null || typeof value.department === "string") ||
+    !(
+      value.department_type_id === undefined ||
+      value.department_type_id === null ||
+      (typeof value.department_type_id === "number" &&
+        Number.isInteger(value.department_type_id) &&
+        value.department_type_id > 0)
+    ) ||
     !(value.position === null || typeof value.position === "string") ||
     !(
       typeof value.is_active === "boolean" ||
@@ -105,6 +118,10 @@ function toEmployee(value: unknown): Employee {
     email: value.email,
     phone: value.phone,
     department: value.department,
+    department_type_id:
+      typeof value.department_type_id === "number"
+        ? value.department_type_id
+        : null,
     position: value.position,
     is_active: value.is_active === true || value.is_active === 1,
     password_changed_at:
@@ -114,8 +131,26 @@ function toEmployee(value: unknown): Employee {
   };
 }
 
+function toDepartmentLevel(value: unknown): DepartmentLevel {
+  if (
+    !isRecord(value) ||
+    typeof value.id !== "number" ||
+    typeof value["organization-levels-name"] !== "string"
+  ) {
+    throw new Error("Dữ liệu tên cấp phòng ban không hợp lệ.");
+  }
+
+  return {
+    id: value.id,
+    name: value["organization-levels-name"].trim(),
+  };
+}
+
 export default function Employees() {
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [departmentLevels, setDepartmentLevels] = useState<DepartmentLevel[]>([]);
+  const [departmentLevelsLoading, setDepartmentLevelsLoading] = useState(true);
+  const [departmentLevelsError, setDepartmentLevelsError] = useState("");
   const [loading, setLoading] = useState(true);
   const [listError, setListError] = useState("");
   const [filters, setFilters] = useState<EmployeeFilters>({
@@ -137,6 +172,51 @@ export default function Employees() {
     password: string;
     action: "created" | "reset";
   } | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    let active = true;
+    const timeoutId = window.setTimeout(() => controller.abort(), 15000);
+
+    async function loadDepartmentLevels() {
+      try {
+        const response = await fetch("/api/dashboard/department/room-types", {
+          cache: "no-store",
+          signal: controller.signal,
+        });
+        const data = await readJson(response);
+        if (!Array.isArray(data)) {
+          throw new Error("Danh sách tên cấp phòng ban phải là một mảng.");
+        }
+        const levels = data.map(toDepartmentLevel);
+        if (active) {
+          setDepartmentLevels(
+            levels.filter((level) => level.name),
+          );
+        }
+      } catch (error) {
+        if (active) {
+          setDepartmentLevelsError(
+            controller.signal.aborted
+              ? "Tải danh sách tên cấp phòng ban quá thời gian chờ."
+              : error instanceof Error
+                ? error.message
+                : "Không tải được danh sách tên cấp phòng ban.",
+          );
+        }
+      } finally {
+        window.clearTimeout(timeoutId);
+        if (active) setDepartmentLevelsLoading(false);
+      }
+    }
+
+    void loadDepartmentLevels();
+    return () => {
+      active = false;
+      window.clearTimeout(timeoutId);
+      controller.abort();
+    };
+  }, []);
 
   const loadEmployees = useCallback(async (signal?: AbortSignal) => {
     const query = new URLSearchParams();
@@ -200,6 +280,10 @@ export default function Employees() {
   const selectedEmployee = employees.find(
     (employee) => employee.id === selectedId,
   );
+  const getDepartmentName = (employee: Employee) =>
+    departmentLevels.find(
+      (level) => level.id === employee.department_type_id,
+    )?.name ?? employee.department;
   const totalPages = Math.max(1, Math.ceil(employees.length / PAGE_SIZE));
   const visibleEmployees = employees.slice(
     (page - 1) * PAGE_SIZE,
@@ -560,8 +644,8 @@ export default function Employees() {
                     <td title={employee.full_name}>{employee.full_name}</td>
                     <td title={employee.email ?? ""}>{employee.email || "—"}</td>
                     <td>{employee.phone || "—"}</td>
-                    <td title={employee.department ?? ""}>
-                      {employee.department || "—"}
+                    <td title={getDepartmentName(employee) ?? ""}>
+                      {getDepartmentName(employee) || "—"}
                     </td>
                     <td title={employee.position ?? ""}>
                       {employee.position || "—"}
@@ -637,7 +721,9 @@ export default function Employees() {
                   </E.CardField>
                   <E.CardField>
                     <E.CardLabel>Phòng ban</E.CardLabel>
-                    <E.CardValue>{employee.department || "—"}</E.CardValue>
+                    <E.CardValue>
+                      {getDepartmentName(employee) || "—"}
+                    </E.CardValue>
                   </E.CardField>
                   <E.CardField>
                     <E.CardLabel>Chức vụ</E.CardLabel>
@@ -684,6 +770,9 @@ export default function Employees() {
       {modalOpen && (
         <EmployeeModal
           employee={editing}
+          departmentLevels={departmentLevels}
+          departmentLevelsLoading={departmentLevelsLoading}
+          departmentLevelsError={departmentLevelsError}
           saving={saving}
           saveError={saveError}
           onClose={closeModal}
@@ -696,6 +785,9 @@ export default function Employees() {
 
 type EmployeeModalProps = {
   employee?: Employee;
+  departmentLevels: DepartmentLevel[];
+  departmentLevelsLoading: boolean;
+  departmentLevelsError: string;
   saving: boolean;
   saveError: string;
   onClose: () => void;
@@ -704,6 +796,9 @@ type EmployeeModalProps = {
 
 function EmployeeModal({
   employee,
+  departmentLevels,
+  departmentLevelsLoading,
+  departmentLevelsError,
   saving,
   saveError,
   onClose,
@@ -715,10 +810,15 @@ function EmployeeModal({
   const [fullName, setFullName] = useState(employee?.full_name ?? "");
   const [email, setEmail] = useState(employee?.email ?? "");
   const [phone, setPhone] = useState(employee?.phone ?? "");
-  const [department, setDepartment] = useState(employee?.department ?? "");
+  const [department, setDepartment] = useState<string | null>(null);
   const [position, setPosition] = useState(employee?.position ?? "");
   const [isActive, setIsActive] = useState(employee?.is_active ?? true);
   const [error, setError] = useState("");
+  const inferredDepartmentId =
+    employee?.department_type_id ??
+    departmentLevels.find((level) => level.name === employee?.department)?.id;
+  const departmentValue =
+    department ?? (inferredDepartmentId ? String(inferredDepartmentId) : "");
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -742,7 +842,12 @@ function EmployeeModal({
       full_name: fullName.trim(),
       email: email.trim() || null,
       phone: phone.trim() || null,
-      department: department.trim() || null,
+      department_type_id:
+        departmentValue === "" ? null : Number(departmentValue),
+      department:
+        departmentLevels.find((level) => level.id === Number(departmentValue))
+          ?.name ??
+        (employee?.department_type_id === null ? employee.department : null),
       position: position.trim() || null,
       is_active: isActive,
     });
@@ -827,13 +932,28 @@ function EmployeeModal({
             <S.ModalStyles.Label htmlFor={`${id}-department`}>
               Phòng ban
             </S.ModalStyles.Label>
-            <S.ModalStyles.Input
+            <S.ModalStyles.Select
               id={`${id}-department`}
-              value={department}
-              maxLength={100}
-              disabled={saving}
+              value={departmentValue}
+              disabled={saving || departmentLevelsLoading || Boolean(departmentLevelsError)}
               onChange={(event) => setDepartment(event.target.value)}
-            />
+            >
+              <option value="">
+                {departmentLevelsLoading
+                  ? "Đang tải tên cấp phòng ban..."
+                  : "Chọn tên cấp phòng ban"}
+              </option>
+              {departmentLevels.map((level) => (
+                <option key={level.id} value={level.id}>
+                  {level.name}
+                </option>
+              ))}
+            </S.ModalStyles.Select>
+            {departmentLevelsError && (
+              <S.ModalStyles.Error role="alert">
+                {departmentLevelsError}
+              </S.ModalStyles.Error>
+            )}
           </S.ModalStyles.Field>
           <S.ModalStyles.Field>
             <S.ModalStyles.Label htmlFor={`${id}-position`}>
