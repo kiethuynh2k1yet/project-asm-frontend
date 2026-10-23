@@ -11,7 +11,75 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { Page, styles } from "./PositionPlanning.styles";
+import {
+  ActionGroup,
+  Attachment,
+  AttachmentGrid,
+  AttachmentInfo,
+  ChildDescription,
+  ChildHeading,
+  ChildPanel,
+  ChildRows,
+  ChildTitle,
+  DangerButton,
+  DeviceRow,
+  EmptyCell,
+  EmptyInline,
+  Eyebrow,
+  Field,
+  FileThumb,
+  FilterCard,
+  FooterActions,
+  FormGrid,
+  HiddenFile,
+  IconButton,
+  ImageThumb,
+  InnerTabs,
+  LicenseRow,
+  ListCard,
+  Modal,
+  ModalAlert,
+  ModalBackdrop,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  NavButton,
+  Notice,
+  Page,
+  PageHeading,
+  PageTitle,
+  Pagination,
+  PaginationButton,
+  PaginationControls,
+  PendingFileRow,
+  PendingFiles,
+  PlanRow,
+  PlanTable,
+  PrimaryButton,
+  RemoveRow,
+  SearchControl,
+  SearchField,
+  SectionNav,
+  SecondaryButton,
+  SpecSummary,
+  StatusBadge,
+  Subtitle,
+  TabButton,
+  TableScroll,
+  Toolbar,
+  Total,
+  TreeChoice,
+  TreeCode,
+  TreeDismiss,
+  TreePopup,
+  TreeRow,
+  TreeSelect,
+  TreeSelectButton,
+  TreeSpacer,
+  TreeToggle,
+  UploadNote,
+} from "./PositionPlanning.styles";
 
 const API = "/api/dashboard/ITASM/position-plans";
 const PAGE_SIZE = 20;
@@ -405,11 +473,10 @@ function DepartmentSelect({
       const isExpanded = expanded.has(department.code);
       return (
         <div key={department.id}>
-          <div className={styles.treeRow} style={{ paddingLeft: 8 + depth * 16 }}>
+          <TreeRow style={{ paddingLeft: 8 + depth * 16 }}>
             {children.length > 0 ? (
-              <button
+              <TreeToggle
                 type="button"
-                className={styles.treeToggle}
                 aria-label={isExpanded ? "Thu gọn" : "Mở rộng"}
                 onClick={() =>
                   setExpanded((current) => {
@@ -421,64 +488,62 @@ function DepartmentSelect({
                 }
               >
                 {isExpanded ? "⌄" : "›"}
-              </button>
+              </TreeToggle>
             ) : (
-              <span className={styles.treeSpacer} />
+              <TreeSpacer />
             )}
-            <button
+            <TreeChoice
               type="button"
               data-department-id={department.id}
-              className={`${styles.treeChoice} ${value === department.code ? styles.treeSelected : ""}`}
+              $selected={value === department.code}
               onClick={() => {
                 onChange(department.code);
                 setOpen(false);
               }}
             >
-              <span className={styles.treeCode}>[{department.code}]</span>
+              <TreeCode>[{department.code}]</TreeCode>
               {department.name}
-            </button>
-          </div>
+            </TreeChoice>
+          </TreeRow>
           {isExpanded && renderNodes(department.code, depth + 1, nextAncestry)}
         </div>
       );
     });
 
   return (
-    <div className={styles.treeSelect}>
-      <button
+    <TreeSelect>
+      <TreeSelectButton
         type="button"
-        className={styles.select}
         disabled={disabled}
         aria-expanded={open}
         onClick={() => setOpen((current) => !current)}
       >
         <span>{selected ? `[${selected.code}] ${selected.name}` : label}</span>
         <span aria-hidden="true">⌄</span>
-      </button>
+      </TreeSelectButton>
       {open && (
         <>
-          <button
+          <TreeDismiss
             type="button"
-            className={styles.treeDismiss}
             aria-label="Đóng danh sách đơn vị"
             onClick={() => setOpen(false)}
           />
-          <div className={styles.treePopup}>
-            <button
+          <TreePopup>
+            <TreeChoice
               type="button"
-              className={`${styles.treeChoice} ${!value ? styles.treeSelected : ""}`}
+              $selected={!value}
               onClick={() => {
                 onChange("");
                 setOpen(false);
               }}
             >
               {label}
-            </button>
+            </TreeChoice>
             {renderNodes(null, 0, new Set())}
-          </div>
+          </TreePopup>
         </>
       )}
-    </div>
+    </TreeSelect>
   );
 }
 
@@ -869,29 +934,29 @@ export default function PositionPlanning() {
     });
 
   return (
-    <Page className={styles.page}>
-      <header className={styles.heading}>
+    <Page>
+      <PageHeading>
         <div>
-          <p className={styles.eyebrow}>Quản lý tổ chức</p>
-          <h1>Hoạch định vị trí</h1>
-          <p className={styles.subtitle}>Quản lý vị trí công việc, thiết bị và license theo đơn vị.</p>
+          <Eyebrow>Quản lý tổ chức</Eyebrow>
+          <PageTitle>Hoạch định vị trí</PageTitle>
+          <Subtitle>Quản lý vị trí công việc, thiết bị và license theo đơn vị.</Subtitle>
         </div>
-        <button className={styles.primaryButton} type="button" onClick={startCreate}>
+        <PrimaryButton type="button" onClick={startCreate}>
           <Plus size={17} /> Mới
-        </button>
-      </header>
+        </PrimaryButton>
+      </PageHeading>
 
       {(notice || pageError) && (
-        <div className={`${styles.notice} ${pageError ? styles.errorNotice : notice.includes("Tệp chưa tải lên") ? styles.warningNotice : ""}`} role="status">
+        <Notice data-variant={pageError ? "error" : notice.includes("Tệp chưa tải lên") ? "warning" : undefined} role="status">
           <span>{pageError || notice}</span>
           <button type="button" aria-label="Đóng thông báo" onClick={() => { setNotice(""); setPageError(""); }}>
             <X size={16} />
           </button>
-        </div>
+        </Notice>
       )}
 
-      <section className={styles.filterCard} aria-label="Bộ lọc hoạch định vị trí">
-        <label className={styles.field}>
+      <FilterCard aria-label="Bộ lọc hoạch định vị trí">
+        <Field>
           <span>Công việc</span>
           <select
             value={filters.work}
@@ -901,8 +966,8 @@ export default function PositionPlanning() {
             <option value="">Tất cả</option>
             {options.works.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
           </select>
-        </label>
-        <label className={styles.field}>
+        </Field>
+        <Field>
           <span>Cấp bậc</span>
           <select
             value={filters.rank}
@@ -912,16 +977,16 @@ export default function PositionPlanning() {
             <option value="">Tất cả</option>
             {options.ranks.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
           </select>
-        </label>
-        <label className={styles.field}>
+        </Field>
+        <Field>
           <span>Đơn vị</span>
           <DepartmentSelect
             departments={options.departments}
             value={filters.department}
             onChange={(department) => { setFilters((current) => ({ ...current, department })); setPage(1); setSelectedId(null); }}
           />
-        </label>
-        <label className={styles.field}>
+        </Field>
+        <Field>
           <span>Trạng thái</span>
           <select
             value={filters.status}
@@ -931,48 +996,47 @@ export default function PositionPlanning() {
             <option value="">Tất cả</option>
             {options.statuses.map((item) => <option key={item.id} value={item.id}>{item.status_name}</option>)}
           </select>
-        </label>
-        <form
-          className={`${styles.field} ${styles.searchField}`}
+        </Field>
+        <SearchField
           onSubmit={(event) => { event.preventDefault(); setKeyword(searchText.trim()); setPage(1); setSelectedId(null); }}
         >
           <span>Tìm kiếm</span>
-          <div className={styles.searchControl}>
+          <SearchControl>
             <input value={searchText} onChange={(event) => setSearchText(event.target.value)} placeholder="Công việc, cấp bậc, đơn vị..." />
             <button type="submit" aria-label="Tìm kiếm"><Search size={17} /><span>Tìm</span></button>
-          </div>
-        </form>
-      </section>
+          </SearchControl>
+        </SearchField>
+      </FilterCard>
 
-      <section className={styles.listCard}>
-        <div className={styles.toolbar}>
-          <div className={styles.actionGroup}>
-            <button className={styles.secondaryButton} type="button" onClick={() => {
+      <ListCard>
+        <Toolbar>
+          <ActionGroup>
+            <SecondaryButton type="button" onClick={() => {
               if (selectedId) void openPlan(selectedId, "edit");
               else setNotice("Vui lòng chọn một dòng cần chỉnh sửa");
             }}>
               <Pencil size={16} /> Sửa
-            </button>
-            <button className={styles.dangerButton} type="button" title={!selectedId ? "Chọn 1 dòng để xóa" : undefined} disabled={!selectedId} onClick={() => void removePlan()}>
+            </SecondaryButton>
+            <DangerButton type="button" title={!selectedId ? "Chọn 1 dòng để xóa" : undefined} disabled={!selectedId} onClick={() => void removePlan()}>
               <Trash2 size={16} /> Xóa
-            </button>
-          </div>
-          <span className={styles.total}>Tổng: {total} dòng</span>
-        </div>
-        <div className={styles.tableScroll}>
-          <table className={styles.table}>
+            </DangerButton>
+          </ActionGroup>
+          <Total>Tổng: {total} dòng</Total>
+        </Toolbar>
+        <TableScroll>
+          <PlanTable>
             <thead>
               <tr><th>#</th><th>Công việc</th><th>Cấp bậc</th><th>Đơn vị</th><th>Trạng thái</th><th>Ngày tạo</th></tr>
             </thead>
             <tbody>
               {listLoading ? (
-                <tr><td colSpan={6} className={styles.empty}>Đang tải dữ liệu...</td></tr>
+                <tr><EmptyCell colSpan={6}>Đang tải dữ liệu...</EmptyCell></tr>
               ) : rows.length === 0 ? (
-                <tr><td colSpan={6} className={styles.empty}>Không có dữ liệu</td></tr>
+                <tr><EmptyCell colSpan={6}>Không có dữ liệu</EmptyCell></tr>
               ) : rows.map((row, index) => (
-                <tr
+                <PlanRow
                   key={row.id}
-                  className={selectedId === row.id ? styles.selectedRow : ""}
+                  $selected={selectedId === row.id}
                   onClick={() => setSelectedId(row.id)}
                   onDoubleClick={() => void openPlan(row.id, "view")}
                   tabIndex={0}
@@ -982,72 +1046,72 @@ export default function PositionPlanning() {
                   <td>{row.work_name ?? "—"}</td>
                   <td>{row.rank_name ?? "—"}</td>
                   <td>{row.department_name ?? row.organization_code}</td>
-                  <td><span className={`${styles.status} ${row.status_id === 6 ? styles.active : styles.inactive}`}>{row.status_name ?? (row.status_id === 6 ? "Còn sử dụng" : "Không sử dụng")}</span></td>
+                  <td><StatusBadge $active={row.status_id === 6}>{row.status_name ?? (row.status_id === 6 ? "Còn sử dụng" : "Không sử dụng")}</StatusBadge></td>
                   <td>{formatDate(row.created_at)}</td>
-                </tr>
+                </PlanRow>
               ))}
             </tbody>
-          </table>
-        </div>
-        <footer className={styles.pagination}>
+          </PlanTable>
+        </TableScroll>
+        <Pagination>
           <span>Tổng: {total} dòng</span>
-          <div>
-            <button type="button" disabled={page <= 1 || listLoading} onClick={() => setPage((current) => Math.max(1, current - 1))}>Trước</button>
+          <PaginationControls>
+            <PaginationButton type="button" disabled={page <= 1 || listLoading} onClick={() => setPage((current) => Math.max(1, current - 1))}>Trước</PaginationButton>
             <span>Trang {page}/{maxPage}</span>
-            <button type="button" disabled={page >= maxPage || listLoading} onClick={() => setPage((current) => Math.min(maxPage, current + 1))}>Sau</button>
-          </div>
-        </footer>
-      </section>
+            <PaginationButton type="button" disabled={page >= maxPage || listLoading} onClick={() => setPage((current) => Math.min(maxPage, current + 1))}>Sau</PaginationButton>
+          </PaginationControls>
+        </Pagination>
+      </ListCard>
 
       {mode && (
-        <div className={styles.modalBackdrop} role="presentation">
-          <section className={styles.modal} role="dialog" aria-modal="true" aria-labelledby="position-plan-title">
-            <header className={styles.modalHeader}>
+        <ModalBackdrop role="presentation">
+          <Modal role="dialog" aria-modal="true" aria-labelledby="position-plan-title">
+            <ModalHeader>
               <div>
-                <p className={styles.eyebrow}>Quản lý tổ chức</p>
+                <Eyebrow>Quản lý tổ chức</Eyebrow>
                 <h2 id="position-plan-title">
                   {mode === "create" ? "Thêm hoạch định vị trí" : mode === "edit" ? "Chỉnh sửa hoạch định vị trí" : "Chi tiết hoạch định vị trí"}
                 </h2>
               </div>
-              <button className={styles.iconButton} type="button" aria-label="Đóng" onClick={() => setMode(null)}><X size={20} /></button>
-            </header>
+              <IconButton type="button" aria-label="Đóng" onClick={() => setMode(null)}><X size={20} /></IconButton>
+            </ModalHeader>
             {(pageError || notice) && (
-              <div className={`${styles.modalAlert} ${pageError ? styles.modalError : ""}`} role="status">
+              <ModalAlert data-error={pageError ? "true" : undefined} role="status">
                 <span>{pageError || notice}</span>
                 <button type="button" aria-label="Đóng thông báo" onClick={() => { setPageError(""); setNotice(""); }}>
                   <X size={15} />
                 </button>
-              </div>
+              </ModalAlert>
             )}
-            <div className={styles.modalBody}>
-              <nav className={styles.sectionNav} aria-label="Thông tin hoạch định">
+            <ModalBody>
+              <SectionNav aria-label="Thông tin hoạch định">
                 {([
                   ["general", "Thông tin chung"],
                   ["job", "Mô tả công việc"],
                   ["recruitment", "Mô tả tuyển dụng"],
                   ["requirements", "Yêu cầu MMTB / phần mềm"],
                 ] as Array<[Section, string]>).map(([key, title]) => (
-                  <button key={key} type="button" className={section === key ? styles.navActive : ""} onClick={() => setSection(key)}>{title}</button>
+                  <NavButton key={key} type="button" $active={section === key} onClick={() => setSection(key)}>{title}</NavButton>
                 ))}
-              </nav>
-              <div className={styles.modalContent}>
+              </SectionNav>
+              <ModalContent>
                 {section === "general" && (
-                  <div className={styles.formGrid}>
-                    <label className={styles.field}>
+                  <FormGrid>
+                    <Field>
                       <span>Công việc <b>*</b></span>
                       <select disabled={!editable || optionsLoading} value={draft.work_id} onChange={(event) => setDraft((current) => ({ ...current, work_id: event.target.value ? Number(event.target.value) : "" }))}>
                         <option value="">-- Chọn công việc --</option>
                         {options.works.map((item) => <option key={item.id} value={item.id}>{item.code} - {item.name}</option>)}
                       </select>
-                    </label>
-                    <label className={styles.field}>
+                    </Field>
+                    <Field>
                       <span>Cấp bậc <b>*</b></span>
                       <select disabled={!editable || optionsLoading} value={draft.level_id} onChange={(event) => setDraft((current) => ({ ...current, level_id: event.target.value ? Number(event.target.value) : "" }))}>
                         <option value="">-- Chọn cấp bậc --</option>
                         {options.ranks.map((item) => <option key={item.id} value={item.id}>{item.code ? `${item.code} - ` : ""}{item.name}</option>)}
                       </select>
-                    </label>
-                    <label className={styles.field}>
+                    </Field>
+                    <Field>
                       <span>Đơn vị <b>*</b></span>
                       <DepartmentSelect
                         departments={options.departments}
@@ -1056,93 +1120,92 @@ export default function PositionPlanning() {
                         label="-- Chọn đơn vị --"
                         onChange={(organization_code) => setDraft((current) => ({ ...current, organization_code }))}
                       />
-                    </label>
-                    <label className={styles.field}>
+                    </Field>
+                    <Field>
                       <span>Trạng thái</span>
                       <select disabled={!editable} value={draft.status_id} onChange={(event) => setDraft((current) => ({ ...current, status_id: Number(event.target.value) }))}>
                         {options.statuses.map((item) => <option key={item.id} value={item.id}>{item.status_name}</option>)}
                         {options.statuses.length === 0 && <><option value={6}>Còn sử dụng</option><option value={5}>Không sử dụng</option></>}
                       </select>
-                    </label>
-                  </div>
+                    </Field>
+                  </FormGrid>
                 )}
                 {section === "job" && (
-                  <label className={styles.field}>
+                  <Field>
                     <span>Mô tả công việc</span>
                     <textarea rows={12} value={draft.job_description} disabled={!editable} onChange={(event) => setDraft((current) => ({ ...current, job_description: event.target.value }))} placeholder="Nhập mô tả công việc..." />
-                  </label>
+                  </Field>
                 )}
                 {section === "recruitment" && (
-                  <label className={styles.field}>
+                  <Field>
                     <span>Mô tả tuyển dụng</span>
                     <textarea rows={12} value={draft.recruitment_description} disabled={!editable} onChange={(event) => setDraft((current) => ({ ...current, recruitment_description: event.target.value }))} placeholder="Nhập mô tả tuyển dụng..." />
-                  </label>
+                  </Field>
                 )}
                 {section === "requirements" && (
                   <div>
-                    <div className={styles.innerTabs}>
+                    <InnerTabs>
                       {([
                         ["devices", "Thiết bị"],
                         ["licenses", "License phần mềm"],
                         ["files", "Tệp đính kèm"],
                         ["images", "Khác / Hình ảnh"],
                       ] as Array<[RequirementTab, string]>).map(([key, title]) => (
-                        <button key={key} type="button" className={requirementTab === key ? styles.tabActive : ""} onClick={() => setRequirementTab(key)}>{title}</button>
+                        <TabButton key={key} type="button" $active={requirementTab === key} onClick={() => setRequirementTab(key)}>{title}</TabButton>
                       ))}
-                    </div>
+                    </InnerTabs>
                     {requirementTab === "devices" && (
-                      <div className={styles.childPanel}>
-                        <div className={styles.childHeading}>
-                          <div><h3>Thiết bị theo thông số chuẩn</h3><p>Định mức thiết bị áp dụng cho một nhân viên.</p></div>
-                          {editable && <button type="button" className={styles.secondaryButton} onClick={addDevice}><Plus size={15} /> Thêm dòng</button>}
-                        </div>
-                        {draft.devices.length === 0 ? <p className={styles.emptyInline}>Chưa có thiết bị.</p> : (
-                          <div className={styles.childRows}>
+                      <ChildPanel>
+                        <ChildHeading>
+                          <div><ChildTitle>Thiết bị theo thông số chuẩn</ChildTitle><ChildDescription>Định mức thiết bị áp dụng cho một nhân viên.</ChildDescription></div>
+                          {editable && <SecondaryButton type="button" onClick={addDevice}><Plus size={15} /> Thêm dòng</SecondaryButton>}
+                        </ChildHeading>
+                        {draft.devices.length === 0 ? <EmptyInline>Chưa có thiết bị.</EmptyInline> : (
+                          <ChildRows>
                             {draft.devices.map((device, index) => {
                               const specification = device.standard_specification_id ? specById.get(device.standard_specification_id) : undefined;
                               return (
-                                <div className={styles.deviceRow} key={device.id ?? `device-${index}`}>
-                                  <label className={styles.field}><span>Chủng loại</span><select disabled={!editable} value={device.asset_category_id} onChange={(event) => setDraft((current) => ({ ...current, devices: current.devices.map((row, rowIndex) => rowIndex === index ? { ...row, asset_category_id: Number(event.target.value) } : row) }))}>{options.categories.map((item) => <option key={item.id} value={item.id}>{item.code ? `${item.code} - ` : ""}{item.name}</option>)}</select></label>
-                                  <label className={styles.field}><span>Số lượng / người</span><input disabled={!editable} type="number" min={1} step={1} value={device.quantity} onChange={(event) => setDraft((current) => ({ ...current, devices: current.devices.map((row, rowIndex) => rowIndex === index ? { ...row, quantity: Number(event.target.value) } : row) }))} /></label>
-                                  <label className={styles.field}><span>Thông số chuẩn</span><select disabled={!editable} value={device.standard_specification_id ?? ""} onChange={(event) => setDraft((current) => ({ ...current, devices: current.devices.map((row, rowIndex) => rowIndex === index ? { ...row, standard_specification_id: event.target.value ? Number(event.target.value) : null } : row) }))}><option value="">Không yêu cầu</option>{options.specifications.map((item) => <option key={item.id} value={item.id}>{item.code} - {item.name}</option>)}</select></label>
-                                  {specification && <div className={styles.specSummary}>CPU: {specification.cpu_chip || "—"} · RAM: {specification.ram || "—"} · SSD: {specification.ssd || "—"} · GPU: {specification.gpu || "—"} · Màn hình: {specification.monitor || "—"}</div>}
-                                  {editable && <button type="button" className={styles.removeRow} aria-label="Xóa dòng thiết bị" onClick={() => setDraft((current) => ({ ...current, devices: current.devices.filter((_, rowIndex) => rowIndex !== index) }))}><Trash2 size={16} /></button>}
-                                </div>
+                                <DeviceRow key={device.id ?? `device-${index}`}>
+                                  <Field><span>Chủng loại</span><select disabled={!editable} value={device.asset_category_id} onChange={(event) => setDraft((current) => ({ ...current, devices: current.devices.map((row, rowIndex) => rowIndex === index ? { ...row, asset_category_id: Number(event.target.value) } : row) }))}>{options.categories.map((item) => <option key={item.id} value={item.id}>{item.code ? `${item.code} - ` : ""}{item.name}</option>)}</select></Field>
+                                  <Field><span>Số lượng / người</span><input disabled={!editable} type="number" min={1} step={1} value={device.quantity} onChange={(event) => setDraft((current) => ({ ...current, devices: current.devices.map((row, rowIndex) => rowIndex === index ? { ...row, quantity: Number(event.target.value) } : row) }))} /></Field>
+                                  <Field><span>Thông số chuẩn</span><select disabled={!editable} value={device.standard_specification_id ?? ""} onChange={(event) => setDraft((current) => ({ ...current, devices: current.devices.map((row, rowIndex) => rowIndex === index ? { ...row, standard_specification_id: event.target.value ? Number(event.target.value) : null } : row) }))}><option value="">Không yêu cầu</option>{options.specifications.map((item) => <option key={item.id} value={item.id}>{item.code} - {item.name}</option>)}</select></Field>
+                                  {specification && <SpecSummary>CPU: {specification.cpu_chip || "—"} · RAM: {specification.ram || "—"} · SSD: {specification.ssd || "—"} · GPU: {specification.gpu || "—"} · Màn hình: {specification.monitor || "—"}</SpecSummary>}
+                                  {editable && <RemoveRow type="button" aria-label="Xóa dòng thiết bị" onClick={() => setDraft((current) => ({ ...current, devices: current.devices.filter((_, rowIndex) => rowIndex !== index) }))}><Trash2 size={16} /></RemoveRow>}
+                                </DeviceRow>
                               );
                             })}
-                          </div>
+                          </ChildRows>
                         )}
-                      </div>
+                      </ChildPanel>
                     )}
                     {requirementTab === "licenses" && (
-                      <div className={styles.childPanel}>
-                        <div className={styles.childHeading}>
-                          <div><h3>License phần mềm</h3><p>Mỗi dòng là một định mức license trên một người.</p></div>
-                          {editable && <button type="button" className={styles.secondaryButton} onClick={addSoftwareLicense}><Plus size={15} /> Thêm dòng</button>}
-                        </div>
-                        {draft.software_licenses.length === 0 ? <p className={styles.emptyInline}>Chưa có license phần mềm.</p> : (
-                          <div className={styles.childRows}>
+                      <ChildPanel>
+                        <ChildHeading>
+                          <div><ChildTitle>License phần mềm</ChildTitle><ChildDescription>Mỗi dòng là một định mức license trên một người.</ChildDescription></div>
+                          {editable && <SecondaryButton type="button" onClick={addSoftwareLicense}><Plus size={15} /> Thêm dòng</SecondaryButton>}
+                        </ChildHeading>
+                        {draft.software_licenses.length === 0 ? <EmptyInline>Chưa có license phần mềm.</EmptyInline> : (
+                          <ChildRows>
                             {draft.software_licenses.map((line, index) => (
-                              <div className={styles.licenseRow} key={line.id ?? `license-${index}`}>
-                                <label className={styles.field}><span>Phần mềm</span><select disabled={!editable} value={line.software_asset_id} onChange={(event) => { const software_asset_id = Number(event.target.value); const firstLicense = licensesForSoftware(software_asset_id)[0]?.id ?? 0; setDraft((current) => ({ ...current, software_licenses: current.software_licenses.map((row, rowIndex) => rowIndex === index ? { ...row, software_asset_id, asset_license_id: firstLicense } : row) })); }}>{options.software.map((item) => <option key={item.id} value={item.id}>{item.code ? `${item.code} - ` : ""}{item.name}</option>)}</select></label>
-                                <label className={styles.field}><span>License</span><select disabled={!editable} value={line.asset_license_id} onChange={(event) => setDraft((current) => ({ ...current, software_licenses: current.software_licenses.map((row, rowIndex) => rowIndex === index ? { ...row, asset_license_id: Number(event.target.value) } : row) }))}>{licensesForSoftware(line.software_asset_id).map((item) => <option key={item.id} value={item.id}>{item.license_code} - {item.license_name}</option>)}</select></label>
-                                <label className={styles.field}><span>Số lượng / người</span><input disabled={!editable} type="number" min={1} step={1} value={line.quantity} onChange={(event) => setDraft((current) => ({ ...current, software_licenses: current.software_licenses.map((row, rowIndex) => rowIndex === index ? { ...row, quantity: Number(event.target.value) } : row) }))} /></label>
-                                {editable && <button type="button" className={styles.removeRow} aria-label="Xóa dòng license" onClick={() => setDraft((current) => ({ ...current, software_licenses: current.software_licenses.filter((_, rowIndex) => rowIndex !== index) }))}><Trash2 size={16} /></button>}
-                              </div>
+                              <LicenseRow key={line.id ?? `license-${index}`}>
+                                <Field><span>Phần mềm</span><select disabled={!editable} value={line.software_asset_id} onChange={(event) => { const software_asset_id = Number(event.target.value); const firstLicense = licensesForSoftware(software_asset_id)[0]?.id ?? 0; setDraft((current) => ({ ...current, software_licenses: current.software_licenses.map((row, rowIndex) => rowIndex === index ? { ...row, software_asset_id, asset_license_id: firstLicense } : row) })); }}>{options.software.map((item) => <option key={item.id} value={item.id}>{item.code ? `${item.code} - ` : ""}{item.name}</option>)}</select></Field>
+                                <Field><span>License</span><select disabled={!editable} value={line.asset_license_id} onChange={(event) => setDraft((current) => ({ ...current, software_licenses: current.software_licenses.map((row, rowIndex) => rowIndex === index ? { ...row, asset_license_id: Number(event.target.value) } : row) }))}>{licensesForSoftware(line.software_asset_id).map((item) => <option key={item.id} value={item.id}>{item.license_code} - {item.license_name}</option>)}</select></Field>
+                                <Field><span>Số lượng / người</span><input disabled={!editable} type="number" min={1} step={1} value={line.quantity} onChange={(event) => setDraft((current) => ({ ...current, software_licenses: current.software_licenses.map((row, rowIndex) => rowIndex === index ? { ...row, quantity: Number(event.target.value) } : row) }))} /></Field>
+                                {editable && <RemoveRow type="button" aria-label="Xóa dòng license" onClick={() => setDraft((current) => ({ ...current, software_licenses: current.software_licenses.filter((_, rowIndex) => rowIndex !== index) }))}><Trash2 size={16} /></RemoveRow>}
+                              </LicenseRow>
                             ))}
-                          </div>
+                          </ChildRows>
                         )}
-                      </div>
+                      </ChildPanel>
                     )}
                     {(requirementTab === "files" || requirementTab === "images") && (
-                      <div className={styles.childPanel}>
-                        <div className={styles.childHeading}>
-                          <div><h3>{requirementTab === "files" ? "Tệp đính kèm" : "Hình ảnh / Khác"}</h3><p>Tối đa 20 MB mỗi tệp.</p></div>
-                          {editable && <label className={styles.secondaryButton}>
+                      <ChildPanel>
+                        <ChildHeading>
+                          <div><ChildTitle>{requirementTab === "files" ? "Tệp đính kèm" : "Hình ảnh / Khác"}</ChildTitle><ChildDescription>Tối đa 20 MB mỗi tệp.</ChildDescription></div>
+                          {editable && <SecondaryButton as="label">
                             {requirementTab === "files" ? <FilePlus2 size={15} /> : <ImagePlus size={15} />}
                             Chọn tệp
-                            <input
-                              className={styles.hiddenFile}
+                            <HiddenFile
                               type="file"
                               accept={requirementTab === "images" ? "image/*" : undefined}
                               multiple
@@ -1165,41 +1228,41 @@ export default function PositionPlanning() {
                                 event.target.value = "";
                               }}
                             />
-                          </label>}
-                        </div>
-                        {requirementTab === "files" && editable && <div className={styles.uploadNote}><input value={uploadNote} onChange={(event) => setUploadNote(event.target.value)} placeholder="Ghi chú cho lần tải lên" /></div>}
+                          </SecondaryButton>}
+                        </ChildHeading>
+                        {requirementTab === "files" && editable && <UploadNote><input value={uploadNote} onChange={(event) => setUploadNote(event.target.value)} placeholder="Ghi chú cho lần tải lên" /></UploadNote>}
                         {mode === "create" && pendingFiles.length > 0 && (
-                          <ul className={styles.pendingFiles}>{pendingFiles.map((pendingFile, index) => <li key={`${pendingFile.file.name}-${index}`}>{pendingFile.file.name} <span>{formatSize(String(pendingFile.file.size))}</span><button type="button" aria-label="Bỏ tệp" onClick={() => setPendingFiles((current) => current.filter((_, itemIndex) => itemIndex !== index))}><X size={14} /></button></li>)}</ul>
+                          <PendingFiles>{pendingFiles.map((pendingFile, index) => <PendingFileRow key={`${pendingFile.file.name}-${index}`}>{pendingFile.file.name} <span>{formatSize(String(pendingFile.file.size))}</span><button type="button" aria-label="Bỏ tệp" onClick={() => setPendingFiles((current) => current.filter((_, itemIndex) => itemIndex !== index))}><X size={14} /></button></PendingFileRow>)}</PendingFiles>
                         )}
                         {draft.attachments.filter((item) => item.attachment_type === (requirementTab === "files" ? "FILE" : "IMAGE")).length === 0 && pendingFiles.length === 0 ? (
-                          <p className={styles.emptyInline}>Chưa có tệp đính kèm.</p>
+                          <EmptyInline>Chưa có tệp đính kèm.</EmptyInline>
                         ) : (
-                          <div className={styles.attachmentGrid}>
+                          <AttachmentGrid>
                             {draft.attachments.filter((item) => item.attachment_type === (requirementTab === "files" ? "FILE" : "IMAGE")).map((item) => (
-                              <article className={styles.attachment} key={item.id}>
-                                {item.attachment_type === "IMAGE" ? <a href={attachmentUrl(item.id)} target="_blank" rel="noreferrer" className={styles.imageThumb}><Image src={attachmentUrl(item.id)} alt={item.original_name} width={48} height={48} unoptimized /></a> : <a href={attachmentUrl(item.id)} target="_blank" rel="noreferrer" className={styles.fileThumb}><FilePlus2 size={24} /></a>}
-                                <div className={styles.attachmentInfo}><a href={attachmentUrl(item.id)} target="_blank" rel="noreferrer">{item.original_name}</a><small>{formatSize(item.file_size)}{item.note ? ` · ${item.note}` : ""}</small></div>
-                                {editable && <button type="button" className={styles.removeRow} aria-label="Xóa tệp" onClick={() => void removeAttachment(item)}><Trash2 size={15} /></button>}
-                              </article>
+                              <Attachment key={item.id}>
+                                {item.attachment_type === "IMAGE" ? <ImageThumb href={attachmentUrl(item.id)} target="_blank" rel="noreferrer"><Image src={attachmentUrl(item.id)} alt={item.original_name} width={48} height={48} unoptimized /></ImageThumb> : <FileThumb href={attachmentUrl(item.id)} target="_blank" rel="noreferrer"><FilePlus2 size={24} /></FileThumb>}
+                                <AttachmentInfo><a href={attachmentUrl(item.id)} target="_blank" rel="noreferrer">{item.original_name}</a><small>{formatSize(item.file_size)}{item.note ? ` · ${item.note}` : ""}</small></AttachmentInfo>
+                                {editable && <RemoveRow type="button" aria-label="Xóa tệp" onClick={() => void removeAttachment(item)}><Trash2 size={15} /></RemoveRow>}
+                              </Attachment>
                             ))}
-                          </div>
+                          </AttachmentGrid>
                         )}
-                      </div>
+                      </ChildPanel>
                     )}
                   </div>
                 )}
-              </div>
-            </div>
-            <footer className={styles.modalFooter}>
+              </ModalContent>
+            </ModalBody>
+            <ModalFooter>
               <span>{mode === "view" ? "Chế độ xem chi tiết" : "Các trường có dấu * là bắt buộc"}</span>
-              <div>
-                <button className={styles.secondaryButton} type="button" onClick={() => setMode(null)}>{mode === "view" ? "Đóng" : "Hủy"}</button>
-                {mode === "view" && <button className={styles.primaryButton} type="button" onClick={() => setMode("edit")}>Chỉnh sửa</button>}
-                {editable && <button className={styles.primaryButton} type="button" disabled={saving || optionsLoading} onClick={() => void savePlan()}>{saving ? "Đang lưu..." : mode === "create" ? "Thêm" : "Cập nhật"}</button>}
-              </div>
-            </footer>
-          </section>
-        </div>
+              <FooterActions>
+                <SecondaryButton type="button" onClick={() => setMode(null)}>{mode === "view" ? "Đóng" : "Hủy"}</SecondaryButton>
+                {mode === "view" && <PrimaryButton type="button" onClick={() => setMode("edit")}>Chỉnh sửa</PrimaryButton>}
+                {editable && <PrimaryButton type="button" disabled={saving || optionsLoading} onClick={() => void savePlan()}>{saving ? "Đang lưu..." : mode === "create" ? "Thêm" : "Cập nhật"}</PrimaryButton>}
+              </FooterActions>
+            </ModalFooter>
+          </Modal>
+        </ModalBackdrop>
       )}
     </Page>
   );
