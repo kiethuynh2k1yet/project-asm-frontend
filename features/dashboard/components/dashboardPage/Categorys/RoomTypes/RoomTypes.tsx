@@ -10,12 +10,13 @@ import {
 } from "react";
 import { X } from "lucide-react";
 
-import TaskToolbar from "../../Categorys/components/TaskToolbar/TaskToolbar";
+import TaskToolbar from "../components/TaskToolbar/TaskToolbar";
 import type {
   JobFilters,
   JobStatus,
-} from "../../Categorys/constants/jobStatuses";
+} from "../constants/jobStatuses";
 import * as S from "../styles/styles";
+import { ModalStyles as M } from "../styles/styles";
 
 const PAGE_SIZE = 10;
 
@@ -113,7 +114,7 @@ export default function RoomTypes() {
     }
     const queryString = query.toString();
     const response = await fetch(
-      `/api/dashboard/department/room-types${queryString ? `?${queryString}` : ""}`,
+      `/api/dashboard/master-data/room-types${queryString ? `?${queryString}` : ""}`,
       { cache: "no-store", signal },
     );
     const data = await readJson(response);
@@ -255,8 +256,8 @@ export default function RoomTypes() {
     try {
       const response = await fetch(
         editing
-          ? `/api/dashboard/department/room-types/${editing.id}`
-          : "/api/dashboard/department/room-types",
+          ? `/api/dashboard/master-data/room-types/${editing.id}`
+          : "/api/dashboard/master-data/room-types",
         {
           method: editing ? "PATCH" : "POST",
           headers: { "Content-Type": "application/json" },
@@ -297,7 +298,7 @@ export default function RoomTypes() {
     setListError("");
     try {
       const response = await fetch(
-        `/api/dashboard/department/room-types/${selectedItem.id}`,
+        `/api/dashboard/master-data/room-types/${selectedItem.id}`,
         { method: "DELETE" },
       );
       toRoomType(await readJson(response));
@@ -512,61 +513,61 @@ function RoomTypeModal({
   };
 
   return (
-    <S.Modal.Dialog ref={dialogRef} aria-labelledby={`${id}-title`} onCancel={onClose}>
-      <S.Modal.Header>
-        <S.Modal.Title id={`${id}-title`}>
+    <M.Dialog ref={dialogRef} aria-labelledby={`${id}-title`} onCancel={onClose}>
+      <M.Header>
+        <M.Title id={`${id}-title`}>
           {item ? "Sửa loại phòng ban" : "Thêm loại phòng ban"}
-        </S.Modal.Title>
-        <S.Modal.CloseButton
+        </M.Title>
+        <M.CloseButton
           type="button"
           aria-label="Đóng"
           onClick={onClose}
           disabled={saving}
         >
           <X size={18} aria-hidden="true" />
-        </S.Modal.CloseButton>
-      </S.Modal.Header>
-      <S.Modal.Form onSubmit={handleSubmit}>
-        <S.Modal.Body>
-          <S.Modal.Field>
-            <S.Modal.Label htmlFor={`${id}-code`}>
-              Mã cấp phòng ban <S.Modal.Required>*</S.Modal.Required>
-            </S.Modal.Label>
-            <S.Modal.Input
+        </M.CloseButton>
+      </M.Header>
+      <M.Form onSubmit={handleSubmit}>
+        <M.Body>
+          <M.Field>
+            <M.Label htmlFor={`${id}-code`}>
+              Mã cấp phòng ban <M.Required>*</M.Required>
+            </M.Label>
+            <M.Input
               id={`${id}-code`}
               value={code}
               maxLength={50}
               required
               onChange={(event) => setCode(event.target.value)}
             />
-          </S.Modal.Field>
-          <S.Modal.Field>
-            <S.Modal.Label htmlFor={`${id}-name`}>
-              Tên cấp phòng ban <S.Modal.Required>*</S.Modal.Required>
-            </S.Modal.Label>
-            <S.Modal.Input
+          </M.Field>
+          <M.Field>
+            <M.Label htmlFor={`${id}-name`}>
+              Tên cấp phòng ban <M.Required>*</M.Required>
+            </M.Label>
+            <M.Input
               id={`${id}-name`}
               value={name}
               maxLength={255}
               required
               onChange={(event) => setName(event.target.value)}
             />
-          </S.Modal.Field>
-          <S.Modal.Field>
-            <S.Modal.Label htmlFor={`${id}-description`}>Mô tả</S.Modal.Label>
-            <S.Modal.Textarea
+          </M.Field>
+          <M.Field>
+            <M.Label htmlFor={`${id}-description`}>Mô tả</M.Label>
+            <M.Textarea
               id={`${id}-description`}
               value={description}
               maxLength={500}
               rows={3}
               onChange={(event) => setDescription(event.target.value)}
             />
-          </S.Modal.Field>
-          <S.Modal.Field>
-            <S.Modal.Label htmlFor={`${id}-sort-order`}>
-              Thứ tự cấp <S.Modal.Required>*</S.Modal.Required>
-            </S.Modal.Label>
-            <S.Modal.Select
+          </M.Field>
+          <M.Field>
+            <M.Label htmlFor={`${id}-sort-order`}>
+              Thứ tự cấp <M.Required>*</M.Required>
+            </M.Label>
+            <M.Select
               id={`${id}-sort-order`}
               value={sortOrder}
               required
@@ -578,22 +579,22 @@ function RoomTypeModal({
               {[1, 2, 3, 4].map((level) => (
                 <option key={level} value={level}>{level}</option>
               ))}
-            </S.Modal.Select>
-          </S.Modal.Field>
-          <S.Modal.CheckField>
+            </M.Select>
+          </M.Field>
+          <M.CheckField>
             <input
               id={`${id}-final-level`}
               type="checkbox"
               checked={isFinalLevel}
               onChange={(event) => setIsFinalLevel(event.target.checked)}
             />
-            <S.Modal.Label htmlFor={`${id}-final-level`}>Cấp cuối cùng</S.Modal.Label>
-          </S.Modal.CheckField>
-          <S.Modal.Field>
-            <S.Modal.Label htmlFor={`${id}-status`}>
-              Trạng thái <S.Modal.Required>*</S.Modal.Required>
-            </S.Modal.Label>
-            <S.Modal.Select
+            <M.Label htmlFor={`${id}-final-level`}>Cấp cuối cùng</M.Label>
+          </M.CheckField>
+          <M.Field>
+            <M.Label htmlFor={`${id}-status`}>
+              Trạng thái <M.Required>*</M.Required>
+            </M.Label>
+            <M.Select
               id={`${id}-status`}
               value={resolvedStatusId}
               disabled={statusLoading || statuses.length === 0}
@@ -605,23 +606,23 @@ function RoomTypeModal({
               {statuses.map((status) => (
                 <option key={status.id} value={status.id}>{status.status_name}</option>
               ))}
-            </S.Modal.Select>
-          </S.Modal.Field>
-          {error && <S.Modal.Error role="alert">{error}</S.Modal.Error>}
-          {saveError && <S.Modal.Error role="alert">{saveError}</S.Modal.Error>}
-        </S.Modal.Body>
-        <S.Modal.Footer>
-          <S.Modal.CancelButton type="button" disabled={saving} onClick={onClose}>
+            </M.Select>
+          </M.Field>
+          {error && <M.Error role="alert">{error}</M.Error>}
+          {saveError && <M.Error role="alert">{saveError}</M.Error>}
+        </M.Body>
+        <M.Footer>
+          <M.CancelButton type="button" disabled={saving} onClick={onClose}>
             Hủy
-          </S.Modal.CancelButton>
-          <S.Modal.SaveButton
+          </M.CancelButton>
+          <M.SaveButton
             type="submit"
             disabled={saving || statusLoading || statuses.length === 0}
           >
             {saving ? "Đang lưu..." : "Lưu"}
-          </S.Modal.SaveButton>
-        </S.Modal.Footer>
-      </S.Modal.Form>
-    </S.Modal.Dialog>
+          </M.SaveButton>
+        </M.Footer>
+      </M.Form>
+    </M.Dialog>
   );
 }

@@ -44,14 +44,38 @@ export default function Dashboard({ children }: DashboardProps) {
 
 function DashboardFrame({ children }: DashboardProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [openSidebarGroup, setOpenSidebarGroup] = useState<string | null>(null);
 
   const toggleSidebar = () => {
     setIsSidebarOpen((prev) => !prev);
   };
 
+  const handleSidebarGroupClick = (groupId: string) => {
+    if (!isSidebarOpen) {
+      setOpenSidebarGroup(groupId);
+      setIsSidebarOpen(true);
+      return;
+    }
+
+    setOpenSidebarGroup((current) =>
+      current === groupId ? null : groupId,
+    );
+  };
+
+  const handleSidebarNavigate = () => {
+    if (window.matchMedia("(max-width: 768px)").matches) {
+      setIsSidebarOpen(false);
+    }
+  };
+
   return (
     <DashboardContainer>
-      <Sidebar isOpen={isSidebarOpen} />
+      <Sidebar
+        isOpen={isSidebarOpen}
+        openGroupId={openSidebarGroup}
+        onGroupClick={handleSidebarGroupClick}
+        onNavigate={handleSidebarNavigate}
+      />
       {isSidebarOpen && (
         <SidebarBackdrop
           type="button"

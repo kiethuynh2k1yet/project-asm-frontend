@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 
@@ -23,30 +22,27 @@ import {
 
 type SidebarProps = {
   isOpen: boolean;
+  openGroupId: string | null;
+  onGroupClick: (id: string) => void;
+  onNavigate: () => void;
 };
 
-export default function Sidebar({ isOpen }: SidebarProps) {
+export default function Sidebar({
+  isOpen,
+  openGroupId,
+  onGroupClick,
+  onNavigate,
+}: SidebarProps) {
   const pathname = usePathname();
-
-  // Danh mục mặc định đóng.
-  const [openGroups, setOpenGroups] = useState<string[]>([]);
-
-  const toggleGroup = (id: string) => {
-    setOpenGroups((prev) =>
-      prev.includes(id)
-        ? prev.filter((groupId) => groupId !== id)
-        : [...prev, id]
-    );
-  };
 
   return (
     <SidebarWrapper $isOpen={isOpen}>
-      <CompanyLogoSection>
+      <CompanyLogoSection $isOpen={isOpen}>
         <Image
           src="/images/generated-image.jpg"
           alt="ASM Company Logo"
           fill
-          sizes="280px"
+          sizes={isOpen ? "280px" : "68px"}
           priority
         />
       </CompanyLogoSection>
@@ -54,16 +50,19 @@ export default function Sidebar({ isOpen }: SidebarProps) {
       <SidebarMenu aria-label="Menu chính">
         {categoryItems.map((item) => {
           const Icon = item.icon;
-          const isGroupOpen = openGroups.includes(item.id);
+          const isGroupOpen = openGroupId === item.id;
           const submenuId = `submenu-${item.id}`;
 
           return (
             <div key={item.id}>
               <MenuGroupButton
                 type="button"
-                onClick={() => toggleGroup(item.id)}
-                aria-expanded={isGroupOpen}
+                onClick={() => onGroupClick(item.id)}
+                aria-label={!isOpen ? item.label : undefined}
+                title={!isOpen ? item.label : undefined}
+                aria-expanded={isOpen && isGroupOpen}
                 aria-controls={submenuId}
+                $isOpen={isOpen}
               >
                 <MenuGroupLabel>
                   {item.id === "categories" && isGroupOpen ? (
@@ -72,17 +71,19 @@ export default function Sidebar({ isOpen }: SidebarProps) {
                     <Icon size={20} aria-hidden="true" />
                   )}
 
-                  <span>{item.label}</span>
+                  {isOpen && <span>{item.label}</span>}
                 </MenuGroupLabel>
 
-                <MenuChevron $isOpen={isGroupOpen}>
-                  <ChevronRight size={18} aria-hidden="true" />
-                </MenuChevron>
+                {isOpen && (
+                  <MenuChevron $isOpen={isGroupOpen}>
+                    <ChevronRight size={18} aria-hidden="true" />
+                  </MenuChevron>
+                )}
               </MenuGroupButton>
 
               <SubMenu
                 id={submenuId}
-                hidden={!isGroupOpen}
+                hidden={!isOpen || !isGroupOpen}
               >
                 <SubMenuList>
                   {item.children?.map((child) => {
@@ -101,6 +102,7 @@ export default function Sidebar({ isOpen }: SidebarProps) {
                             href={child.href}
                             $isActive={isActive}
                             aria-current={isActive ? "page" : undefined}
+                            onClick={onNavigate}
                           >
                             <ChildIcon
                               size={19}

@@ -33,6 +33,7 @@ type Employee = {
   department: string | null;
   department_type_id: number | null;
   position: string | null;
+  position_plan_id: number | null;
   is_active: boolean;
   password_changed_at?: string | null;
 };
@@ -42,6 +43,14 @@ type EmployeeFormValues = Omit<Employee, "id" | "password_changed_at">;
 type DepartmentLevel = {
   id: number;
   name: string;
+};
+
+type PositionPlanOption = {
+  id: number;
+  work_name: string | null;
+  rank_name: string | null;
+  department_name: string | null;
+  status_id: number;
 };
 
 type EmployeeFilters = {
@@ -98,6 +107,13 @@ function toEmployee(value: unknown): Employee {
     ) ||
     !(value.position === null || typeof value.position === "string") ||
     !(
+      value.position_plan_id === undefined ||
+      value.position_plan_id === null ||
+      (typeof value.position_plan_id === "number" &&
+        Number.isInteger(value.position_plan_id) &&
+        value.position_plan_id > 0)
+    ) ||
+    !(
       typeof value.is_active === "boolean" ||
       value.is_active === 0 ||
       value.is_active === 1
@@ -123,6 +139,8 @@ function toEmployee(value: unknown): Employee {
         ? value.department_type_id
         : null,
     position: value.position,
+    position_plan_id:
+      typeof value.position_plan_id === "number" ? value.position_plan_id : null,
     is_active: value.is_active === true || value.is_active === 1,
     password_changed_at:
       typeof value.password_changed_at === "string"
@@ -143,6 +161,24 @@ function toDepartmentLevel(value: unknown): DepartmentLevel {
   return {
     id: value.id,
     name: value["organization-levels-name"].trim(),
+  };
+}
+
+function toPositionPlanOption(value: unknown): PositionPlanOption {
+  if (
+    !isRecord(value) ||
+    !Number.isInteger(Number(value.id)) ||
+    !Number.isInteger(Number(value.status_id))
+  ) {
+    throw new Error("Dữ liệu hoạch định vị trí không hợp lệ.");
+  }
+  return {
+    id: Number(value.id),
+    work_name: typeof value.work_name === "string" ? value.work_name : null,
+    rank_name: typeof value.rank_name === "string" ? value.rank_name : null,
+    department_name:
+      typeof value.department_name === "string" ? value.department_name : null,
+    status_id: Number(value.status_id),
   };
 }
 
@@ -180,7 +216,7 @@ export default function Employees() {
 
     async function loadDepartmentLevels() {
       try {
-        const response = await fetch("/api/dashboard/department/room-types", {
+        const response = await fetch("/api/dashboard/master-data/room-types", {
           cache: "no-store",
           signal: controller.signal,
         });
@@ -812,6 +848,12 @@ function EmployeeModal({
   const [phone, setPhone] = useState(employee?.phone ?? "");
   const [department, setDepartment] = useState<string | null>(null);
   const [position, setPosition] = useState(employee?.position ?? "");
+  const [positionPlanId, setPositionPlanId] = useState(
+    employee?.position_plan_id ? String(employee.position_plan_id) : "",
+  );
+  const [positionPlans, setPositionPlans] = useState<PositionPlanOption[]>([]);
+  const [positionPlansLoading, setPositionPlansLoading] = useState(true);
+  const [positionPlansError, setPositionPlansError] = useState("");
   const [isActive, setIsActive] = useState(employee?.is_active ?? true);
   const [error, setError] = useState("");
   const inferredDepartmentId =
@@ -824,6 +866,38 @@ function EmployeeModal({
     const dialog = dialogRef.current;
     if (dialog && !dialog.open) dialog.showModal();
     return () => dialog?.close();
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    async function loadPositionPlans() {
+      try {
+        const response = await fetch(
+          "/api/dashboard/human-resources/employees/position-plans",
+          { cache: "no-store" },
+        );
+        const data = await readJson(response);
+        if (!Array.isArray(data)) {
+          throw new Error("Danh sách hoạch định vị trí phải là một mảng.");
+        }
+        const plans = data.map(toPositionPlanOption);
+        if (active) setPositionPlans(plans);
+      } catch (error) {
+        if (active) {
+          setPositionPlansError(
+            error instanceof Error
+              ? error.message
+              : "Không tải được danh sách hoạch định vị trí.",
+          );
+        }
+      } finally {
+        if (active) setPositionPlansLoading(false);
+      }
+    }
+    void loadPositionPlans();
+    return () => {
+      active = false;
+    };
   }, []);
 
   const handleSubmit: NonNullable<
@@ -849,6 +923,7 @@ function EmployeeModal({
           ?.name ??
         (employee?.department_type_id === null ? employee.department : null),
       position: position.trim() || null,
+      position_plan_id: positionPlanId ? Number(positionPlanId) : null,
       is_active: isActive,
     });
   };
@@ -966,6 +1041,42 @@ function EmployeeModal({
               disabled={saving}
               onChange={(event) => setPosition(event.target.value)}
             />
+          </S.ModalStyles.Field>
+          <S.ModalStyles.Field>
+            <S.ModalStyles.Label htmlFor={`${id}-position-plan`}>
+              Hoạch định vị trí
+            </S.ModalStyles.Label>
+            <S.ModalStyles.Select
+              id={`${id}-position-plan`}
+              value={positionPlanId}
+              disabled={saving || positionPlansLoading || Boolean(positionPlansError)}
+              onChange={(event) => setPositionPlanId(event.target.value)}
+            >
+              <option value="">
+                {positionPlansLoading
+                  ? "Đang tải hoạch định vị trí..."
+                  : "Không gán hoạch định vị trí"}
+              </option>
+              {positionPlans.map((plan) => (
+                <option
+                  key={plan.id}
+                  value={plan.id}
+                  disabled={plan.status_id !== 6 && plan.id !== employee?.position_plan_id}
+                >
+                  {[
+                    plan.work_name,
+                    plan.rank_name,
+                    plan.department_name,
+                  ].filter(Boolean).join(" - ") || `Vị trí #${plan.id}`}
+                  {plan.status_id !== 6 ? " (Không sử dụng)" : ""}
+                </option>
+              ))}
+            </S.ModalStyles.Select>
+            {positionPlansError && (
+              <S.ModalStyles.Error role="alert">
+                {positionPlansError}
+              </S.ModalStyles.Error>
+            )}
           </S.ModalStyles.Field>
           <S.ModalStyles.CheckField>
             <input

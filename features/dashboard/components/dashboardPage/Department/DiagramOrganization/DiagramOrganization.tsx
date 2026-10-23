@@ -302,7 +302,7 @@ export default function DiagramOrganization() {
           .then(readJson),
         fetch("/api/dashboard/statuses", { cache: "no-store" })
           .then(readJson),
-        fetch("/api/dashboard/department/room-types", { cache: "no-store" })
+        fetch("/api/dashboard/master-data/room-types", { cache: "no-store" })
           .then(readJson),
       ]);
       if (!active) return;

@@ -1,6 +1,9 @@
 import { collectionRoutes } from "../../master-data/_lib/routeHandlers";
 
-const routes = collectionRoutes("room-types", "/ITASM/room-types");
+const routes = collectionRoutes(
+  "position-plans",
+  "/ITASM/position-plans",
+);
 
 export const runtime = "nodejs";
 export const GET = routes.GET;

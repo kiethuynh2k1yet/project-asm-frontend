@@ -1,6 +1,6 @@
-import { itemRoutes } from "../../../master-data/_lib/routeHandlers";
+import { itemRoutes } from "../../_lib/routeHandlers";
 
-const routes = itemRoutes("room-types", "/ITASM/room-types");
+const routes = itemRoutes("room-types");
 
 export const runtime = "nodejs";
 export const PUT = routes.PUT;

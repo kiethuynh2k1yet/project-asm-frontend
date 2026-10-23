@@ -57,16 +57,16 @@ export const categoryItems: CategoryItem[] = [
     icon: Building2,
     children: [
       {
-        id: "room-types",
-        label: "Loại phòng ban",
-        icon: Layers3,
-        href: "/dashboard/Department/room-types",
-      },
-      {
         id: "diagram-organization",
         label: "Sơ đồ tổ chức",
         icon: GitBranch,
         href: "/dashboard/Department/diagram-organization",
+      },
+      {
+        id: "position-planning",
+        label: "Hoạch định vị trí",
+        icon: BriefcaseBusiness,
+        href: "/dashboard/Department/position-planning" as Route,
       },
     ],
   },
@@ -75,6 +75,12 @@ export const categoryItems: CategoryItem[] = [
     label: "Danh mục",
     icon: FolderClosed,
     children: [
+      {
+        id: "room-types",
+        label: "Loại phòng ban",
+        icon: Layers3,
+        href: "/dashboard/Category/room-types",
+      },
       {
         id: "works",
         label: "Công việc",
