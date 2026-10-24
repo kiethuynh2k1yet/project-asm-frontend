@@ -1,5 +1,5 @@
 
-import RoomTypes from "@/features/dashboard/components/dashboardPage/Categorys/RoomTypes/RoomTypes";
+import RoomTypes from "@/features/dashboard/components/Categorys/RoomTypes/RoomTypes";
 
 export default function RoomTypesPage() {
   return <RoomTypes />;

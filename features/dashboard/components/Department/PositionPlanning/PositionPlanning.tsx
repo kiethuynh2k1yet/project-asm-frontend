@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import Image from "next/image";
+import AttachmentUploadPanel from "./components/AttachmentUploadPanel";
+import DeviceRequirements from "./components/DeviceRequirements";
+import SoftwareLicenseRequirements from "./components/SoftwareLicenseRequirements";
 import {
-  FilePlus2,
-  ImagePlus,
   Pencil,
   Plus,
   Search,
@@ -13,29 +13,16 @@ import {
 } from "lucide-react";
 import {
   ActionGroup,
-  Attachment,
-  AttachmentGrid,
-  AttachmentInfo,
-  ChildDescription,
-  ChildHeading,
-  ChildPanel,
-  ChildRows,
-  ChildTitle,
   DangerButton,
-  DeviceRow,
   EmptyCell,
   EmptyInline,
   Eyebrow,
   Field,
-  FileThumb,
   FilterCard,
   FooterActions,
   FormGrid,
-  HiddenFile,
   IconButton,
-  ImageThumb,
   InnerTabs,
-  LicenseRow,
   ListCard,
   Modal,
   ModalAlert,
@@ -52,8 +39,6 @@ import {
   Pagination,
   PaginationButton,
   PaginationControls,
-  PendingFileRow,
-  PendingFiles,
   PlanRow,
   PlanTable,
   PrimaryButton,
@@ -64,7 +49,6 @@ import {
   SelectControl,
   SectionNav,
   SecondaryButton,
-  SpecSummary,
   StatusBadge,
   Subtitle,
   TabButton,
@@ -80,7 +64,6 @@ import {
   TreeSelectButton,
   TreeSpacer,
   TreeToggle,
-  UploadNote,
 } from "./PositionPlanning.styles";
 
 const API = "/api/dashboard/ITASM/position-plans";
@@ -145,6 +128,8 @@ type Attachment = {
   file_path: string;
   file_size: string | null;
   note: string | null;
+  mime_type?: string | null;
+  created_at?: string | null;
 };
 type PlanRow = {
   id: number;
@@ -331,6 +316,8 @@ function toAttachment(value: Record<string, unknown>): Attachment | null {
     file_path: String(value.file_path ?? ""),
     file_size: value.file_size == null ? null : String(value.file_size),
     note: typeof value.note === "string" ? value.note : null,
+    mime_type: typeof value.mime_type === "string" ? value.mime_type : null,
+    created_at: typeof value.created_at === "string" ? value.created_at : null,
   };
 }
 
@@ -573,7 +560,6 @@ export default function PositionPlanning() {
   const [draft, setDraft] = useState<Draft>(emptyDraft);
   const [activePlanId, setActivePlanId] = useState<number | null>(null);
   const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
-  const [uploadNote, setUploadNote] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -844,12 +830,12 @@ export default function PositionPlanning() {
     }
   };
 
-  const uploadAttachment = async (file: File, type: "FILE" | "IMAGE") => {
-    if (!activePlanId) return;
+  const uploadAttachment = async (file: File, type: "FILE" | "IMAGE", note: string): Promise<boolean> => {
+    if (!activePlanId) return false;
     const formData = new FormData();
     formData.set("file", file);
     formData.set("attachment_type", type);
-    formData.set("note", uploadNote);
+    formData.set("note", note);
     try {
       const data = await readJson(
         await fetch(`${API}/${activePlanId}/attachments`, {
@@ -865,15 +851,18 @@ export default function PositionPlanning() {
         file_path: String(data.file_path ?? ""),
         file_size: data.file_size == null ? String(file.size) : String(data.file_size),
         note: typeof data.note === "string" ? data.note : null,
+        mime_type: typeof data.mime_type === "string" ? data.mime_type : file.type,
+        created_at: typeof data.created_at === "string" ? data.created_at : new Date().toISOString(),
       };
       setDraft((current) => ({
         ...current,
         attachments: [...current.attachments, nextAttachment],
       }));
-      setUploadNote("");
       setNotice("Tải tệp lên thành công.");
+      return true;
     } catch (error) {
       setPageError(error instanceof Error ? error.message : "Không thể tải tệp lên.");
+      return false;
     }
   };
 
@@ -909,7 +898,7 @@ export default function PositionPlanning() {
       devices: [
         ...current.devices,
         {
-          asset_category_id: options.categories[0]?.id ?? 0,
+          asset_category_id: 0,
           quantity: 1,
           standard_specification_id: null,
           status_id: 6,
@@ -1166,7 +1155,7 @@ export default function PositionPlanning() {
                   <div>
                     <InnerTabs>
                       {([
-                        ["devices", "Thiết bị"],
+                        ["devices", "Thiết bị theo thông số chuẩn"],
                         ["licenses", "License phần mềm"],
                         ["files", "Tệp đính kèm"],
                         ["images", "Khác / Hình ảnh"],
@@ -1175,99 +1164,67 @@ export default function PositionPlanning() {
                       ))}
                     </InnerTabs>
                     {requirementTab === "devices" && (
-                      <ChildPanel>
-                        <ChildHeading>
-                          <div><ChildTitle>Thiết bị theo thông số chuẩn</ChildTitle><ChildDescription>Định mức thiết bị áp dụng cho một nhân viên.</ChildDescription></div>
-                          {editable && <SecondaryButton type="button" onClick={addDevice}><Plus size={15} /> Thêm dòng</SecondaryButton>}
-                        </ChildHeading>
-                        {draft.devices.length === 0 ? <EmptyInline>Chưa có thiết bị.</EmptyInline> : (
-                          <ChildRows>
-                            {draft.devices.map((device, index) => {
-                              const specification = device.standard_specification_id ? specById.get(device.standard_specification_id) : undefined;
-                              return (
-                                <DeviceRow key={device.id ?? `device-${index}`}>
-                                  <Field><span>Chủng loại</span><select disabled={!editable} value={device.asset_category_id} onChange={(event) => setDraft((current) => ({ ...current, devices: current.devices.map((row, rowIndex) => rowIndex === index ? { ...row, asset_category_id: Number(event.target.value) } : row) }))}>{options.categories.map((item) => <option key={item.id} value={item.id}>{item.code ? `${item.code} - ` : ""}{item.name}</option>)}</select></Field>
-                                  <Field><span>Số lượng / người</span><input disabled={!editable} type="number" min={1} step={1} value={device.quantity} onChange={(event) => setDraft((current) => ({ ...current, devices: current.devices.map((row, rowIndex) => rowIndex === index ? { ...row, quantity: Number(event.target.value) } : row) }))} /></Field>
-                                  <Field><span>Thông số chuẩn</span><select disabled={!editable} value={device.standard_specification_id ?? ""} onChange={(event) => setDraft((current) => ({ ...current, devices: current.devices.map((row, rowIndex) => rowIndex === index ? { ...row, standard_specification_id: event.target.value ? Number(event.target.value) : null } : row) }))}><option value="">Không yêu cầu</option>{options.specifications.map((item) => <option key={item.id} value={item.id}>{item.code} - {item.name}</option>)}</select></Field>
-                                  {specification && <SpecSummary>CPU: {specification.cpu_chip || "—"} · RAM: {specification.ram || "—"} · SSD: {specification.ssd || "—"} · GPU: {specification.gpu || "—"} · Màn hình: {specification.monitor || "—"}</SpecSummary>}
-                                  {editable && <RemoveRow type="button" aria-label="Xóa dòng thiết bị" onClick={() => setDraft((current) => ({ ...current, devices: current.devices.filter((_, rowIndex) => rowIndex !== index) }))}><Trash2 size={16} /></RemoveRow>}
-                                </DeviceRow>
-                              );
-                            })}
-                          </ChildRows>
-                        )}
-                      </ChildPanel>
+                      <DeviceRequirements
+                        devices={draft.devices}
+                        categories={options.categories}
+                        specifications={options.specifications}
+                        editable={editable}
+                        onAdd={addDevice}
+                        onUpdate={(index, changes) => setDraft((current) => ({
+                          ...current,
+                          devices: current.devices.map((device, rowIndex) => rowIndex === index ? { ...device, ...changes } : device),
+                        }))}
+                        onRemove={(index) => setDraft((current) => ({
+                          ...current,
+                          devices: current.devices.filter((_, rowIndex) => rowIndex !== index),
+                        }))}
+                      />
                     )}
                     {requirementTab === "licenses" && (
-                      <ChildPanel>
-                        <ChildHeading>
-                          <div><ChildTitle>License phần mềm</ChildTitle><ChildDescription>Mỗi dòng là một định mức license trên một người.</ChildDescription></div>
-                          {editable && <SecondaryButton type="button" onClick={addSoftwareLicense}><Plus size={15} /> Thêm dòng</SecondaryButton>}
-                        </ChildHeading>
-                        {draft.software_licenses.length === 0 ? <EmptyInline>Chưa có license phần mềm.</EmptyInline> : (
-                          <ChildRows>
-                            {draft.software_licenses.map((line, index) => (
-                              <LicenseRow key={line.id ?? `license-${index}`}>
-                                <Field><span>Phần mềm</span><select disabled={!editable} value={line.software_asset_id} onChange={(event) => { const software_asset_id = Number(event.target.value); const firstLicense = licensesForSoftware(software_asset_id)[0]?.id ?? 0; setDraft((current) => ({ ...current, software_licenses: current.software_licenses.map((row, rowIndex) => rowIndex === index ? { ...row, software_asset_id, asset_license_id: firstLicense } : row) })); }}>{options.software.map((item) => <option key={item.id} value={item.id}>{item.code ? `${item.code} - ` : ""}{item.name}</option>)}</select></Field>
-                                <Field><span>License</span><select disabled={!editable} value={line.asset_license_id} onChange={(event) => setDraft((current) => ({ ...current, software_licenses: current.software_licenses.map((row, rowIndex) => rowIndex === index ? { ...row, asset_license_id: Number(event.target.value) } : row) }))}>{licensesForSoftware(line.software_asset_id).map((item) => <option key={item.id} value={item.id}>{item.license_code} - {item.license_name}</option>)}</select></Field>
-                                <Field><span>Số lượng / người</span><input disabled={!editable} type="number" min={1} step={1} value={line.quantity} onChange={(event) => setDraft((current) => ({ ...current, software_licenses: current.software_licenses.map((row, rowIndex) => rowIndex === index ? { ...row, quantity: Number(event.target.value) } : row) }))} /></Field>
-                                {editable && <RemoveRow type="button" aria-label="Xóa dòng license" onClick={() => setDraft((current) => ({ ...current, software_licenses: current.software_licenses.filter((_, rowIndex) => rowIndex !== index) }))}><Trash2 size={16} /></RemoveRow>}
-                              </LicenseRow>
-                            ))}
-                          </ChildRows>
-                        )}
-                      </ChildPanel>
+                      <SoftwareLicenseRequirements
+                        rows={draft.software_licenses}
+                        software={options.software}
+                        editable={editable}
+                        onAdd={addSoftwareLicense}
+                        licensesForSoftware={licensesForSoftware}
+                        onUpdate={(index, changes) => setDraft((current) => ({
+                          ...current,
+                          software_licenses: current.software_licenses.map((row, rowIndex) => rowIndex === index ? { ...row, ...changes } : row),
+                        }))}
+                        onRemove={(index) => setDraft((current) => ({
+                          ...current,
+                          software_licenses: current.software_licenses.filter((_, rowIndex) => rowIndex !== index),
+                        }))}
+                      />
                     )}
                     {(requirementTab === "files" || requirementTab === "images") && (
-                      <ChildPanel>
-                        <ChildHeading>
-                          <div><ChildTitle>{requirementTab === "files" ? "Tệp đính kèm" : "Hình ảnh / Khác"}</ChildTitle><ChildDescription>Tối đa 20 MB mỗi tệp.</ChildDescription></div>
-                          {editable && <SecondaryButton as="label">
-                            {requirementTab === "files" ? <FilePlus2 size={15} /> : <ImagePlus size={15} />}
-                            Chọn tệp
-                            <HiddenFile
-                              type="file"
-                              accept={requirementTab === "images" ? "image/*" : undefined}
-                              multiple
-                              onChange={(event) => {
-                                const files = Array.from(event.target.files ?? []);
-                                const validFiles = files.filter((file) => file.size <= 20 * 1024 * 1024 && (requirementTab !== "images" || file.type.startsWith("image/")));
-                                if (validFiles.length !== files.length) setPageError("Tệp tối đa 20 MB; tab Hình ảnh chỉ nhận ảnh.");
-                                if (mode === "create") {
-                                  setPendingFiles((current) => [
-                                    ...current,
-                                    ...validFiles.map((file) => ({
-                                      file,
-                                      attachmentType: requirementTab === "images" ? "IMAGE" as const : "FILE" as const,
-                                      note: uploadNote,
-                                    })),
-                                  ]);
-                                  setUploadNote("");
-                                }
-                                else validFiles.forEach((file) => void uploadAttachment(file, requirementTab === "images" ? "IMAGE" : "FILE"));
-                                event.target.value = "";
-                              }}
-                            />
-                          </SecondaryButton>}
-                        </ChildHeading>
-                        {requirementTab === "files" && editable && <UploadNote><input value={uploadNote} onChange={(event) => setUploadNote(event.target.value)} placeholder="Ghi chú cho lần tải lên" /></UploadNote>}
-                        {mode === "create" && pendingFiles.length > 0 && (
-                          <PendingFiles>{pendingFiles.map((pendingFile, index) => <PendingFileRow key={`${pendingFile.file.name}-${index}`}>{pendingFile.file.name} <span>{formatSize(String(pendingFile.file.size))}</span><button type="button" aria-label="Bỏ tệp" onClick={() => setPendingFiles((current) => current.filter((_, itemIndex) => itemIndex !== index))}><X size={14} /></button></PendingFileRow>)}</PendingFiles>
-                        )}
-                        {draft.attachments.filter((item) => item.attachment_type === (requirementTab === "files" ? "FILE" : "IMAGE")).length === 0 && pendingFiles.length === 0 ? (
-                          <EmptyInline>Chưa có tệp đính kèm.</EmptyInline>
-                        ) : (
-                          <AttachmentGrid>
-                            {draft.attachments.filter((item) => item.attachment_type === (requirementTab === "files" ? "FILE" : "IMAGE")).map((item) => (
-                              <Attachment key={item.id}>
-                                {item.attachment_type === "IMAGE" ? <ImageThumb href={attachmentUrl(item.id)} target="_blank" rel="noreferrer"><Image src={attachmentUrl(item.id)} alt={item.original_name} width={48} height={48} unoptimized /></ImageThumb> : <FileThumb href={attachmentUrl(item.id)} target="_blank" rel="noreferrer"><FilePlus2 size={24} /></FileThumb>}
-                                <AttachmentInfo><a href={attachmentUrl(item.id)} target="_blank" rel="noreferrer">{item.original_name}</a><small>{formatSize(item.file_size)}{item.note ? ` · ${item.note}` : ""}</small></AttachmentInfo>
-                                {editable && <RemoveRow type="button" aria-label="Xóa tệp" onClick={() => void removeAttachment(item)}><Trash2 size={15} /></RemoveRow>}
-                              </Attachment>
-                            ))}
-                          </AttachmentGrid>
-                        )}
-                      </ChildPanel>
+                      <AttachmentUploadPanel
+                        type={requirementTab === "images" ? "IMAGE" : "FILE"}
+                        editable={editable}
+                        isCreate={mode === "create"}
+                        attachments={draft.attachments.filter((item) => item.attachment_type === (requirementTab === "files" ? "FILE" : "IMAGE"))}
+                        pendingFiles={pendingFiles}
+                        formatSize={formatSize}
+                        formatDate={formatDate}
+                        onRemove={(attachment) => void removeAttachment(attachment)}
+                        onRemovePending={(index) => setPendingFiles((current) => current.filter((_, itemIndex) => itemIndex !== index))}
+                        onUpload={async (files, note) => {
+                          const type: "FILE" | "IMAGE" = requirementTab === "images" ? "IMAGE" : "FILE";
+                          const validFiles = files.filter((file) => file.size <= 20 * 1024 * 1024 && (type !== "IMAGE" || file.type.startsWith("image/")));
+                          if (validFiles.length !== files.length) setPageError("Mỗi tệp tối đa 20 MB; mục Hình ảnh chỉ nhận tệp ảnh.");
+                          if (!validFiles.length) return false;
+                          if (mode === "create") {
+                            setPendingFiles((current) => [...current, ...validFiles.map((file) => ({ file, attachmentType: type, note }))]);
+                          } else {
+                            let allUploaded = true;
+                            for (const file of validFiles) {
+                              if (!(await uploadAttachment(file, type, note))) allUploaded = false;
+                            }
+                            return allUploaded;
+                          }
+                          return true;
+                        }}
+                      />
                     )}
                   </div>
                 )}

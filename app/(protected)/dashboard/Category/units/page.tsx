@@ -1,4 +1,4 @@
-import Units from "@/features/dashboard/components/dashboardPage/Categorys/Units/Units";
+import Units from "@/features/dashboard/components/Categorys/Units/Units";
 
 export default function UnitsPage() {
   return <Units />;

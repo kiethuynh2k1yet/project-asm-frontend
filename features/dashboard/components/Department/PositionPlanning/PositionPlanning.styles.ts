@@ -972,6 +972,63 @@ export const DeviceRow = styled.div`
   }
 `;
 
+export const DeviceTableScroll = styled.div`
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+`;
+
+export const DeviceTable = styled.table`
+  width: 100%;
+  min-width: 1080px;
+  border-collapse: collapse;
+  background: #fff;
+
+  th, td {
+    padding: 9px 10px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: left;
+    vertical-align: middle;
+    font-size: 13px;
+  }
+
+  th {
+    background: #f8fafc;
+    color: #475569;
+    font-weight: 650;
+    white-space: nowrap;
+  }
+
+  tbody tr:last-child td { border-bottom: 0; }
+  td input, td select {
+    width: 100%;
+    min-width: 95px;
+    min-height: 36px;
+    padding: 7px 8px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background: #fff;
+    color: #172033;
+    font: inherit;
+    font-size: 13px;
+  }
+  td input[type="number"] { width: 90px; min-width: 90px; }
+  td button {
+    display: inline-flex;
+    width: 32px;
+    height: 34px;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #b91c1c;
+    cursor: pointer;
+  }
+  td button:hover { background: #fef2f2; }
+`;
+
 export const LicenseRow = styled.div`
   position: relative;
   display: grid;
@@ -1015,6 +1072,129 @@ export const UploadNote = styled.div`
     ${FormControl}
     min-height: 34px;
     max-width: 380px;
+  }
+`;
+
+export const UploadPanel = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  > p, > small { margin: 0; color: #64748b; font-size: 13px; }
+`;
+
+export const UploadFields = styled.div`
+  display: grid;
+  grid-template-columns: minmax(240px, 1.6fr) minmax(180px, 0.8fr) auto;
+  align-items: end;
+  gap: 10px;
+
+  @media (max-width: 700px) { grid-template-columns: 1fr; }
+`;
+
+export const UploadField = styled.div`
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+  color: #475569;
+  font-size: 12px;
+
+  > span b { color: #dc2626; }
+  > input {
+    width: 100%;
+    min-height: 38px;
+    padding: 8px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background: #fff;
+    color: #172033;
+    font: inherit;
+    font-size: 13px;
+  }
+`;
+
+export const FilePicker = styled.div`
+  display: flex;
+  min-width: 0;
+  min-height: 38px;
+  align-items: center;
+  gap: 10px;
+  padding: 3px 5px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+`;
+
+export const FilePickerButton = styled.button`
+  display: inline-flex;
+  min-height: 30px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 9px;
+  border: 1px solid #1769d2;
+  border-radius: 5px;
+  background: #1769d2;
+  color: #fff;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+`;
+
+export const FilePickerName = styled.span`
+  overflow: hidden;
+  color: #64748b;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+`;
+
+export const UploadSubmit = styled.button`
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 13px;
+  border: 1px solid #1769d2;
+  border-radius: 6px;
+  background: #1769d2;
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  &:disabled { cursor: not-allowed; opacity: 0.5; }
+`;
+
+export const AttachmentTableScroll = styled.div`
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 7px;
+`;
+
+export const AttachmentTable = styled.table`
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  background: #fff;
+  th, td { padding: 8px 10px; border-bottom: 1px solid #e2e8f0; text-align: left; font-size: 12px; }
+  th { background: #f8fafc; color: #475569; font-weight: 650; white-space: nowrap; }
+  tbody tr:last-child td { border-bottom: 0; }
+  td:first-child { width: 36px; }
+  td button {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border: 1px solid #dc2626;
+    border-radius: 5px;
+    background: #fff;
+    color: #b91c1c;
+    font: inherit;
+    cursor: pointer;
   }
 `;
 

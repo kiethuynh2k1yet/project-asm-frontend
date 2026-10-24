@@ -1,4 +1,4 @@
-import Employees from "@/features/dashboard/components/dashboardPage/HumanResources/Employees/Employees";
+import Employees from "@/features/dashboard/components/HumanResources/Employees/Employees";
 
 export default function EmployeesPage() {
   return <Employees />;
