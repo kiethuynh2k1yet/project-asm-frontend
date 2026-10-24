@@ -41,7 +41,7 @@ type Props = {
   isCreate: boolean;
   attachments: Attachment[];
   pendingFiles: PendingFile[];
-  onUpload: (files: File[], note: string) => Promise<boolean>;
+  onUpload: (files: File[], note: string) => Promise<File[]>;
   onRemove: (attachment: Attachment) => void;
   onRemovePending: (index: number) => void;
   formatSize: (size: string | null) => string;
@@ -73,10 +73,11 @@ export default function AttachmentUploadPanel({
     if (!selectedFiles.length || uploading) return;
     setUploading(true);
     try {
-      if (await onUpload(selectedFiles, note)) {
-        setSelectedFiles([]);
+      const failedFiles = await onUpload(selectedFiles, note);
+      setSelectedFiles(failedFiles);
+      if (fileInput.current) fileInput.current.value = "";
+      if (!failedFiles.length) {
         setNote("");
-        if (fileInput.current) fileInput.current.value = "";
       }
     } finally {
       setUploading(false);

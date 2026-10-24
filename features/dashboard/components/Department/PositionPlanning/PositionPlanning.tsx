@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import AttachmentUploadPanel from "./components/AttachmentUploadPanel";
+import ImageAttachmentsPanel from "./components/ImageAttachmentsPanel";
 import DeviceRequirements from "./components/DeviceRequirements";
 import SoftwareLicenseRequirements from "./components/SoftwareLicenseRequirements";
 import {
@@ -1197,32 +1198,58 @@ export default function PositionPlanning() {
                         }))}
                       />
                     )}
-                    {(requirementTab === "files" || requirementTab === "images") && (
+                    {requirementTab === "files" && (
                       <AttachmentUploadPanel
-                        type={requirementTab === "images" ? "IMAGE" : "FILE"}
+                        type="FILE"
                         editable={editable}
                         isCreate={mode === "create"}
-                        attachments={draft.attachments.filter((item) => item.attachment_type === (requirementTab === "files" ? "FILE" : "IMAGE"))}
+                        attachments={draft.attachments.filter((item) => item.attachment_type === "FILE")}
                         pendingFiles={pendingFiles}
                         formatSize={formatSize}
                         formatDate={formatDate}
                         onRemove={(attachment) => void removeAttachment(attachment)}
                         onRemovePending={(index) => setPendingFiles((current) => current.filter((_, itemIndex) => itemIndex !== index))}
                         onUpload={async (files, note) => {
-                          const type: "FILE" | "IMAGE" = requirementTab === "images" ? "IMAGE" : "FILE";
-                          const validFiles = files.filter((file) => file.size <= 20 * 1024 * 1024 && (type !== "IMAGE" || file.type.startsWith("image/")));
-                          if (validFiles.length !== files.length) setPageError("Mỗi tệp tối đa 20 MB; mục Hình ảnh chỉ nhận tệp ảnh.");
-                          if (!validFiles.length) return false;
+                          const type: "FILE" | "IMAGE" = "FILE";
+                          const validFiles = files.filter((file) => file.size <= 20 * 1024 * 1024);
+                          const failedFiles = files.filter((file) => !validFiles.includes(file));
+                          if (validFiles.length !== files.length) setPageError("Mỗi tệp tối đa 20 MB.");
+                          if (!validFiles.length) return failedFiles;
                           if (mode === "create") {
                             setPendingFiles((current) => [...current, ...validFiles.map((file) => ({ file, attachmentType: type, note }))]);
                           } else {
-                            let allUploaded = true;
                             for (const file of validFiles) {
-                              if (!(await uploadAttachment(file, type, note))) allUploaded = false;
+                              if (!(await uploadAttachment(file, type, note))) failedFiles.push(file);
                             }
-                            return allUploaded;
                           }
-                          return true;
+                          return failedFiles;
+                        }}
+                      />
+                    )}
+                    {requirementTab === "images" && (
+                      <ImageAttachmentsPanel
+                        editable={editable}
+                        isCreate={mode === "create"}
+                        attachments={draft.attachments.filter((item) => item.attachment_type === "IMAGE")}
+                        pendingFiles={pendingFiles}
+                        attachmentUrl={attachmentUrl}
+                        formatSize={formatSize}
+                        onRemove={(attachment) => void removeAttachment(attachment)}
+                        onRemovePending={(index) => setPendingFiles((current) => current.filter((_, itemIndex) => itemIndex !== index))}
+                        onUpload={async (files, note) => {
+                          const type: "FILE" | "IMAGE" = "IMAGE";
+                          const validFiles = files.filter((file) => file.size <= 20 * 1024 * 1024 && file.type.startsWith("image/"));
+                          const failedFiles = files.filter((file) => !validFiles.includes(file));
+                          if (validFiles.length !== files.length) setPageError("Mục Khác chỉ nhận tệp hình ảnh tối đa 20 MB.");
+                          if (!validFiles.length) return failedFiles;
+                          if (mode === "create") {
+                            setPendingFiles((current) => [...current, ...validFiles.map((file) => ({ file, attachmentType: type, note }))]);
+                          } else {
+                            for (const file of validFiles) {
+                              if (!(await uploadAttachment(file, type, note))) failedFiles.push(file);
+                            }
+                          }
+                          return failedFiles;
                         }}
                       />
                     )}

@@ -1180,9 +1180,8 @@ export const AttachmentTable = styled.table`
   min-width: 720px;
   border-collapse: collapse;
   background: #fff;
-  th, td { padding: 8px 10px; border-bottom: 1px solid #e2e8f0; text-align: left; font-size: 12px; }
+  th, td { padding: 8px 10px; border: 1px solid #e2e8f0; text-align: left; font-size: 12px; }
   th { background: #f8fafc; color: #475569; font-weight: 650; white-space: nowrap; }
-  tbody tr:last-child td { border-bottom: 0; }
   td:first-child { width: 36px; }
   td button {
     display: inline-flex;
@@ -1195,6 +1194,101 @@ export const AttachmentTable = styled.table`
     color: #b91c1c;
     font: inherit;
     cursor: pointer;
+  }
+`;
+
+export const AttachmentImageGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+
+  @media (max-width: 850px) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  @media (max-width: 560px) { grid-template-columns: 1fr; }
+`;
+
+export const AttachmentImageCard = styled.article`
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+`;
+
+export const AttachmentImagePreview = styled.div`
+  display: grid;
+  height: 112px;
+  place-items: center;
+  overflow: hidden;
+  background: repeating-linear-gradient(45deg, #e2e8f0 0 8px, #f1f5f9 8px 16px);
+  color: #64748b;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+`;
+
+export const AttachmentImagePreviewEmpty = styled.div`
+  display: grid;
+  min-height: 96px;
+  place-items: center;
+  color: #64748b;
+  font-size: 12px;
+`;
+
+export const AttachmentImageInfo = styled.div`
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px;
+  color: #334155;
+  font-size: 12px;
+
+  strong {
+    overflow: hidden;
+    color: #172033;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 13px;
+  }
+
+  span { color: #64748b; }
+  p { margin: 2px 0 0; overflow-wrap: anywhere; }
+`;
+
+export const AttachmentImageActions = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border-top: 1px solid #e2e8f0;
+
+  a, button {
+    display: inline-flex;
+    min-height: 28px;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 4px 9px;
+    border: 1px solid #1769d2;
+    border-radius: 5px;
+    background: #fff;
+    color: #1769d2;
+    font: inherit;
+    font-size: 12px;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  button {
+    border-color: #dc2626;
+    color: #b91c1c;
   }
 `;
 
