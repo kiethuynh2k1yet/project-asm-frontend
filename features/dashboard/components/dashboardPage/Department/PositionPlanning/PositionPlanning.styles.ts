@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { ChevronDown } from "lucide-react";
 
 export const Page = styled.main`
   display: flex;
@@ -218,7 +219,6 @@ export const Field = styled.label`
     color: #dc2626;
   }
 
-  select,
   input {
     ${FormControl}
   }
@@ -228,6 +228,44 @@ export const Field = styled.label`
     min-height: 180px;
     resize: vertical;
     line-height: 1.5;
+  }
+`;
+
+export const SelectChevron = styled(ChevronDown)`
+  position: absolute;
+  top: 50%;
+  right: 11px;
+  width: 16px;
+  height: 16px;
+  color: #64748b;
+  pointer-events: none;
+  transform: translateY(-50%);
+  transition: transform 160ms ease;
+`;
+
+export const SelectControl = styled.div`
+  position: relative;
+  width: 100%;
+
+  select {
+    ${FormControl}
+    padding-right: 36px;
+    appearance: none;
+    cursor: pointer;
+  }
+
+  select:disabled {
+    cursor: not-allowed;
+  }
+
+  &:has(select:open) ${SelectChevron} {
+    transform: translateY(-50%) rotate(180deg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    ${SelectChevron} {
+      transition: none;
+    }
   }
 `;
 
@@ -307,6 +345,10 @@ export const TreeSelectButton = styled.button`
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  &[aria-expanded="true"] ${SelectChevron} {
+    transform: translateY(-50%) rotate(180deg);
   }
 `;
 

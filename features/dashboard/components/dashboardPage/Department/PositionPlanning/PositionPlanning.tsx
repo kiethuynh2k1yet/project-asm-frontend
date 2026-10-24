@@ -60,6 +60,8 @@ import {
   RemoveRow,
   SearchControl,
   SearchField,
+  SelectChevron,
+  SelectControl,
   SectionNav,
   SecondaryButton,
   SpecSummary,
@@ -519,7 +521,7 @@ function DepartmentSelect({
         onClick={() => setOpen((current) => !current)}
       >
         <span>{selected ? `[${selected.code}] ${selected.name}` : label}</span>
-        <span aria-hidden="true">⌄</span>
+        <SelectChevron aria-hidden="true" />
       </TreeSelectButton>
       {open && (
         <>
@@ -958,25 +960,31 @@ export default function PositionPlanning() {
       <FilterCard aria-label="Bộ lọc hoạch định vị trí">
         <Field>
           <span>Công việc</span>
-          <select
-            value={filters.work}
-            disabled={optionsLoading}
-            onChange={(event) => { setFilters((current) => ({ ...current, work: event.target.value })); setPage(1); setSelectedId(null); }}
-          >
-            <option value="">Tất cả</option>
-            {options.works.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-          </select>
+          <SelectControl>
+            <select
+              value={filters.work}
+              disabled={optionsLoading}
+              onChange={(event) => { setFilters((current) => ({ ...current, work: event.target.value })); setPage(1); setSelectedId(null); }}
+            >
+              <option value="">Tất cả</option>
+              {options.works.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+            </select>
+            <SelectChevron aria-hidden="true" />
+          </SelectControl>
         </Field>
         <Field>
           <span>Cấp bậc</span>
-          <select
-            value={filters.rank}
-            disabled={optionsLoading}
-            onChange={(event) => { setFilters((current) => ({ ...current, rank: event.target.value })); setPage(1); setSelectedId(null); }}
-          >
-            <option value="">Tất cả</option>
-            {options.ranks.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
-          </select>
+          <SelectControl>
+            <select
+              value={filters.rank}
+              disabled={optionsLoading}
+              onChange={(event) => { setFilters((current) => ({ ...current, rank: event.target.value })); setPage(1); setSelectedId(null); }}
+            >
+              <option value="">Tất cả</option>
+              {options.ranks.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+            </select>
+            <SelectChevron aria-hidden="true" />
+          </SelectControl>
         </Field>
         <Field>
           <span>Đơn vị</span>
@@ -988,14 +996,17 @@ export default function PositionPlanning() {
         </Field>
         <Field>
           <span>Trạng thái</span>
-          <select
-            value={filters.status}
-            disabled={optionsLoading}
-            onChange={(event) => { setFilters((current) => ({ ...current, status: event.target.value })); setPage(1); setSelectedId(null); }}
-          >
-            <option value="">Tất cả</option>
-            {options.statuses.map((item) => <option key={item.id} value={item.id}>{item.status_name}</option>)}
-          </select>
+          <SelectControl>
+            <select
+              value={filters.status}
+              disabled={optionsLoading}
+              onChange={(event) => { setFilters((current) => ({ ...current, status: event.target.value })); setPage(1); setSelectedId(null); }}
+            >
+              <option value="">Tất cả</option>
+              {options.statuses.map((item) => <option key={item.id} value={item.id}>{item.status_name}</option>)}
+            </select>
+            <SelectChevron aria-hidden="true" />
+          </SelectControl>
         </Field>
         <SearchField
           onSubmit={(event) => { event.preventDefault(); setKeyword(searchText.trim()); setPage(1); setSelectedId(null); }}
@@ -1099,17 +1110,23 @@ export default function PositionPlanning() {
                   <FormGrid>
                     <Field>
                       <span>Công việc <b>*</b></span>
-                      <select disabled={!editable || optionsLoading} value={draft.work_id} onChange={(event) => setDraft((current) => ({ ...current, work_id: event.target.value ? Number(event.target.value) : "" }))}>
-                        <option value="">-- Chọn công việc --</option>
-                        {options.works.map((item) => <option key={item.id} value={item.id}>{item.code} - {item.name}</option>)}
-                      </select>
+                      <SelectControl>
+                        <select disabled={!editable || optionsLoading} value={draft.work_id} onChange={(event) => setDraft((current) => ({ ...current, work_id: event.target.value ? Number(event.target.value) : "" }))}>
+                          <option value="">-- Chọn công việc --</option>
+                          {options.works.map((item) => <option key={item.id} value={item.id}>{item.code} - {item.name}</option>)}
+                        </select>
+                        <SelectChevron aria-hidden="true" />
+                      </SelectControl>
                     </Field>
                     <Field>
                       <span>Cấp bậc <b>*</b></span>
-                      <select disabled={!editable || optionsLoading} value={draft.level_id} onChange={(event) => setDraft((current) => ({ ...current, level_id: event.target.value ? Number(event.target.value) : "" }))}>
-                        <option value="">-- Chọn cấp bậc --</option>
-                        {options.ranks.map((item) => <option key={item.id} value={item.id}>{item.code ? `${item.code} - ` : ""}{item.name}</option>)}
-                      </select>
+                      <SelectControl>
+                        <select disabled={!editable || optionsLoading} value={draft.level_id} onChange={(event) => setDraft((current) => ({ ...current, level_id: event.target.value ? Number(event.target.value) : "" }))}>
+                          <option value="">-- Chọn cấp bậc --</option>
+                          {options.ranks.map((item) => <option key={item.id} value={item.id}>{item.code ? `${item.code} - ` : ""}{item.name}</option>)}
+                        </select>
+                        <SelectChevron aria-hidden="true" />
+                      </SelectControl>
                     </Field>
                     <Field>
                       <span>Đơn vị <b>*</b></span>
@@ -1123,10 +1140,13 @@ export default function PositionPlanning() {
                     </Field>
                     <Field>
                       <span>Trạng thái</span>
-                      <select disabled={!editable} value={draft.status_id} onChange={(event) => setDraft((current) => ({ ...current, status_id: Number(event.target.value) }))}>
-                        {options.statuses.map((item) => <option key={item.id} value={item.id}>{item.status_name}</option>)}
-                        {options.statuses.length === 0 && <><option value={6}>Còn sử dụng</option><option value={5}>Không sử dụng</option></>}
-                      </select>
+                      <SelectControl>
+                        <select disabled={!editable} value={draft.status_id} onChange={(event) => setDraft((current) => ({ ...current, status_id: Number(event.target.value) }))}>
+                          {options.statuses.map((item) => <option key={item.id} value={item.id}>{item.status_name}</option>)}
+                          {options.statuses.length === 0 && <><option value={6}>Còn sử dụng</option><option value={5}>Không sử dụng</option></>}
+                        </select>
+                        <SelectChevron aria-hidden="true" />
+                      </SelectControl>
                     </Field>
                   </FormGrid>
                 )}
