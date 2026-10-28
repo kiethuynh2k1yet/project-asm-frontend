@@ -11,10 +11,7 @@ import {
 import { X } from "lucide-react";
 
 import TaskToolbar from "../components/TaskToolbar/TaskToolbar";
-import type {
-  JobFilters,
-  JobStatus,
-} from "../constants/jobStatuses";
+import type { JobFilters, JobStatus } from "../constants/jobStatuses";
 import * as S from "../styles/styles";
 import { ModalStyles as M } from "../styles/styles";
 
@@ -51,9 +48,9 @@ async function readJson(response: Response): Promise<unknown> {
       if (typeof data.message === "string") {
         message = data.message;
       } else if (Array.isArray(data.message)) {
-        message = data.message
-          .filter((item) => typeof item === "string")
-          .join(", ") || message;
+        message =
+          data.message.filter((item) => typeof item === "string").join(", ") ||
+          message;
       }
     }
 
@@ -118,8 +115,7 @@ export default function Ranks() {
         !isRecord(item) ||
         !Number.isInteger(Number(item.id)) ||
         Number(item.parent_id) !== 2 ||
-        (item.status_code !== "IN_USE" &&
-          item.status_code !== "NOT_IN_USE") ||
+        (item.status_code !== "IN_USE" && item.status_code !== "NOT_IN_USE") ||
         typeof item.status_name !== "string"
       ) {
         throw new Error("Dữ liệu trạng thái không hợp lệ.");
@@ -179,26 +175,29 @@ export default function Ranks() {
     };
   }, [loadStatuses]);
 
-  const refreshRanks = useCallback(async (signal?: AbortSignal) => {
-    setRanksLoading(true);
-    setRanksError("");
+  const refreshRanks = useCallback(
+    async (signal?: AbortSignal) => {
+      setRanksLoading(true);
+      setRanksError("");
 
-    try {
-      const data = await loadRanks(signal);
-      setRanks(data);
-      setPage(1);
-      setSelectedId(null);
-    } catch (error) {
-      if (signal?.aborted) return;
-      setRanksError(
-        error instanceof Error
-          ? error.message
-          : "Không tải được danh sách cấp bậc.",
-      );
-    } finally {
-      if (!signal?.aborted) setRanksLoading(false);
-    }
-  }, [loadRanks]);
+      try {
+        const data = await loadRanks(signal);
+        setRanks(data);
+        setPage(1);
+        setSelectedId(null);
+      } catch (error) {
+        if (signal?.aborted) return;
+        setRanksError(
+          error instanceof Error
+            ? error.message
+            : "Không tải được danh sách cấp bậc.",
+        );
+      } finally {
+        if (!signal?.aborted) setRanksLoading(false);
+      }
+    },
+    [loadRanks],
+  );
 
   useEffect(() => {
     const controller = new AbortController();
@@ -241,15 +240,16 @@ export default function Ranks() {
     const keyword = filters.keyword.trim().toLocaleLowerCase();
 
     return ranks
-      .filter((rank) =>
-        filters.statusId === "" ||
-        rank.status_id === filters.statusId,
+      .filter(
+        (rank) =>
+          filters.statusId === "" || rank.status_id === filters.statusId,
       )
-      .filter((rank) =>
-        !keyword ||
-        [rank.code, rank.name, rank.note].some((value) =>
-          value.toLocaleLowerCase().includes(keyword),
-        ),
+      .filter(
+        (rank) =>
+          !keyword ||
+          [rank.code, rank.name, rank.note].some((value) =>
+            value.toLocaleLowerCase().includes(keyword),
+          ),
       )
       .sort((left, right) =>
         right.code.localeCompare(left.code, undefined, {
@@ -259,10 +259,7 @@ export default function Ranks() {
       );
   }, [filters.keyword, filters.statusId, ranks]);
 
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredRanks.length / PAGE_SIZE),
-  );
+  const totalPages = Math.max(1, Math.ceil(filteredRanks.length / PAGE_SIZE));
   const visibleRanks = filteredRanks.slice(
     (page - 1) * PAGE_SIZE,
     page * PAGE_SIZE,
@@ -327,7 +324,11 @@ export default function Ranks() {
   const handleDelete = async () => {
     if (!selectedRank || saving) return;
 
-    if (!window.confirm(`Bạn có chắc muốn xóa cấp bậc "${selectedRank.name}" không?`)) {
+    if (
+      !window.confirm(
+        `Bạn có chắc muốn xóa cấp bậc "${selectedRank.name}" không?`,
+      )
+    ) {
       return;
     }
 
@@ -372,8 +373,12 @@ export default function Ranks() {
           }}
         />
 
-        {statusError && <S.ErrorMessage role="alert">{statusError}</S.ErrorMessage>}
-        {ranksError && <S.ErrorMessage role="alert">{ranksError}</S.ErrorMessage>}
+        {statusError && (
+          <S.ErrorMessage role="alert">{statusError}</S.ErrorMessage>
+        )}
+        {ranksError && (
+          <S.ErrorMessage role="alert">{ranksError}</S.ErrorMessage>
+        )}
       </S.ToolbarSection>
 
       <S.TableSection>
@@ -396,29 +401,33 @@ export default function Ranks() {
               </tr>
             </thead>
             <tbody>
-              {!ranksLoading && visibleRanks.map((rank, index) => {
-                const status = statuses.find(
-                  (item) => item.id === rank.status_id,
-                );
+              {!ranksLoading &&
+                visibleRanks.map((rank, index) => {
+                  const status = statuses.find(
+                    (item) => item.id === rank.status_id,
+                  );
 
-                return (
-                  <S.TableRow
-                    key={rank.id}
-                    $selected={selectedId === rank.id}
-                    onClick={() => setSelectedId(rank.id)}
-                  >
-                    <td>{(page - 1) * PAGE_SIZE + index + 1}</td>
-                    <td>{rank.code}</td>
-                    <td title={rank.name}>{rank.name}</td>
-                    <td title={rank.note}>{rank.note}</td>
-                    <td>
-                      <S.StatusBadge $active={status?.status_code === "IN_USE"}>
-                        {status?.status_name ?? `Trạng thái #${rank.status_id}`}
-                      </S.StatusBadge>
-                    </td>
-                  </S.TableRow>
-                );
-              })}
+                  return (
+                    <S.TableRow
+                      key={rank.id}
+                      $selected={selectedId === rank.id}
+                      onClick={() => setSelectedId(rank.id)}
+                    >
+                      <td>{(page - 1) * PAGE_SIZE + index + 1}</td>
+                      <td>{rank.code}</td>
+                      <td title={rank.name}>{rank.name}</td>
+                      <td title={rank.note}>{rank.note}</td>
+                      <td>
+                        <S.StatusBadge
+                          $active={status?.status_code === "IN_USE"}
+                        >
+                          {status?.status_name ??
+                            `Trạng thái #${rank.status_id}`}
+                        </S.StatusBadge>
+                      </td>
+                    </S.TableRow>
+                  );
+                })}
               {(ranksLoading || visibleRanks.length === 0) && (
                 <tr>
                   <S.EmptyCell colSpan={5}>
@@ -435,7 +444,9 @@ export default function Ranks() {
         </S.TableScroll>
 
         <S.TableFooter>
-          <S.Total>Tổng: <span>{filteredRanks.length}</span> dòng</S.Total>
+          <S.Total>
+            Tổng: <span>{filteredRanks.length}</span> dòng
+          </S.Total>
           <S.Pagination aria-label="Phân trang cấp bậc">
             <S.PageButton
               type="button"
@@ -447,7 +458,9 @@ export default function Ranks() {
             >
               Trước
             </S.PageButton>
-            <S.PageInfo>Trang {page}/{totalPages}</S.PageInfo>
+            <S.PageInfo>
+              Trang {page}/{totalPages}
+            </S.PageInfo>
             <S.PageButton
               type="button"
               disabled={page === totalPages || ranksLoading}
@@ -507,9 +520,7 @@ function RankModal({
   const defaultStatus =
     statuses.find((item) => item.status_code === "IN_USE") ?? statuses[0];
   const statusId =
-    selectedStatusId === ""
-      ? (defaultStatus?.id ?? "")
-      : selectedStatusId;
+    selectedStatusId === "" ? (defaultStatus?.id ?? "") : selectedStatusId;
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -571,7 +582,9 @@ function RankModal({
       <M.Form onSubmit={handleSubmit}>
         <M.Body>
           <M.Field>
-            <M.Label htmlFor="rank-code">Mã cấp bậc <M.Required>*</M.Required></M.Label>
+            <M.Label htmlFor="rank-code">
+              Mã cấp bậc <M.Required>*</M.Required>
+            </M.Label>
             <M.Input
               id="rank-code"
               value={code}
@@ -583,7 +596,9 @@ function RankModal({
             />
           </M.Field>
           <M.Field>
-            <M.Label htmlFor="rank-name">Tên cấp bậc <M.Required>*</M.Required></M.Label>
+            <M.Label htmlFor="rank-name">
+              Tên cấp bậc <M.Required>*</M.Required>
+            </M.Label>
             <M.Input
               id="rank-name"
               value={name}
@@ -610,7 +625,9 @@ function RankModal({
               id="rank-status"
               value={statusId}
               disabled={saving || statusLoading || statuses.length === 0}
-              onChange={(event) => setSelectedStatusId(Number(event.target.value))}
+              onChange={(event) =>
+                setSelectedStatusId(Number(event.target.value))
+              }
               required
             >
               {statuses.length === 0 && (

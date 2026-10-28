@@ -25,9 +25,7 @@ import { ModalStyles } from "../styles/styles";
 
 const PAGE_SIZE = 10;
 
-function isRecord(
-  value: unknown,
-): value is Record<string, unknown> {
+function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
@@ -38,9 +36,7 @@ async function readJson(response: Response): Promise<unknown> {
   try {
     data = JSON.parse(text);
   } catch {
-    throw new Error(
-      `API không trả JSON (HTTP ${response.status}).`,
-    );
+    throw new Error(`API không trả JSON (HTTP ${response.status}).`);
   }
 
   if (!response.ok) {
@@ -50,9 +46,9 @@ async function readJson(response: Response): Promise<unknown> {
       if (typeof data.message === "string") {
         message = data.message;
       } else if (Array.isArray(data.message)) {
-        message = data.message
-          .filter((item) => typeof item === "string")
-          .join(", ") || message;
+        message =
+          data.message.filter((item) => typeof item === "string").join(", ") ||
+          message;
       }
     }
 
@@ -67,14 +63,8 @@ function toJob(value: unknown): Job {
     !isRecord(value) ||
     typeof value.id !== "number" ||
     typeof value.status_id !== "number" ||
-    !(
-      value.work_code === null ||
-      typeof value.work_code === "string"
-    ) ||
-    !(
-      value.work_name === null ||
-      typeof value.work_name === "string"
-    )
+    !(value.work_code === null || typeof value.work_code === "string") ||
+    !(value.work_name === null || typeof value.work_name === "string")
   ) {
     throw new Error("Dữ liệu công việc không hợp lệ.");
   }
@@ -103,8 +93,7 @@ export default function Jobs() {
     statusId: "",
   });
 
-  const [selectedId, setSelectedId] =
-    useState<number | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   const [page, setPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -116,10 +105,7 @@ export default function Jobs() {
   // GET trạng thái.
   useEffect(() => {
     const controller = new AbortController();
-    const timeoutId = window.setTimeout(
-      () => controller.abort(),
-      15000,
-    );
+    const timeoutId = window.setTimeout(() => controller.abort(), 15000);
 
     let active = true;
 
@@ -139,41 +125,37 @@ export default function Jobs() {
           throw new Error("Trạng thái phải là một mảng.");
         }
 
-        const normalized: JobStatus[] = data.map(
-          (item: unknown) => {
-            if (!isRecord(item)) {
-              throw new Error("Dữ liệu trạng thái không hợp lệ.");
-            }
+        const normalized: JobStatus[] = data.map((item: unknown) => {
+          if (!isRecord(item)) {
+            throw new Error("Dữ liệu trạng thái không hợp lệ.");
+          }
 
-            const id = Number(item.id);
-            const parentId = Number(item.parent_id);
+          const id = Number(item.id);
+          const parentId = Number(item.parent_id);
 
-            if (
-              item.id === null ||
-              item.id === undefined ||
-              !Number.isInteger(id) ||
-              id < 0 ||
-              id > 255 ||
-              parentId !== 2 ||
-              (
-                item.status_code !== "IN_USE" &&
-                item.status_code !== "NOT_IN_USE"
-              ) ||
-              typeof item.status_name !== "string"
-            ) {
-              throw new Error(
-                "API trạng thái cần trả id, parent_id = 2, status_code và status_name.",
-              );
-            }
+          if (
+            item.id === null ||
+            item.id === undefined ||
+            !Number.isInteger(id) ||
+            id < 0 ||
+            id > 255 ||
+            parentId !== 2 ||
+            (item.status_code !== "IN_USE" &&
+              item.status_code !== "NOT_IN_USE") ||
+            typeof item.status_name !== "string"
+          ) {
+            throw new Error(
+              "API trạng thái cần trả id, parent_id = 2, status_code và status_name.",
+            );
+          }
 
-            return {
-              id,
-              parent_id: parentId,
-              status_code: item.status_code,
-              status_name: item.status_name,
-            };
-          },
-        );
+          return {
+            id,
+            parent_id: parentId,
+            status_code: item.status_code,
+            status_name: item.status_name,
+          };
+        });
 
         if (active) {
           setStatuses(normalized);
@@ -231,17 +213,12 @@ export default function Jobs() {
       const data = await readJson(response);
 
       if (!Array.isArray(data)) {
-        throw new Error(
-          "Danh sách công việc phải là một mảng.",
-        );
+        throw new Error("Danh sách công việc phải là một mảng.");
       }
 
       return data.map(toJob);
     },
-    [
-      filters.keyword,
-      filters.statusId,
-    ],
+    [filters.keyword, filters.statusId],
   );
 
   // GET công việc khi mở trang hoặc đổi bộ lọc.
@@ -249,10 +226,7 @@ export default function Jobs() {
     const controller = new AbortController();
     let active = true;
 
-    const timeoutId = window.setTimeout(
-      () => controller.abort(),
-      15000,
-    );
+    const timeoutId = window.setTimeout(() => controller.abort(), 15000);
 
     async function run() {
       try {
@@ -295,19 +269,11 @@ export default function Jobs() {
     };
   }, [loadWorks]);
 
-  const selectedJob = jobs.find(
-    (job) => job.id === selectedId,
-  );
+  const selectedJob = jobs.find((job) => job.id === selectedId);
 
-  const totalPages = Math.max(
-    1,
-    Math.ceil(jobs.length / PAGE_SIZE),
-  );
+  const totalPages = Math.max(1, Math.ceil(jobs.length / PAGE_SIZE));
 
-  const visibleJobs = jobs.slice(
-    (page - 1) * PAGE_SIZE,
-    page * PAGE_SIZE,
-  );
+  const visibleJobs = jobs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const closeModal = () => {
     if (saving) return;
@@ -347,9 +313,7 @@ export default function Jobs() {
       toJob(data);
     } catch (error) {
       setSaveError(
-        error instanceof Error
-          ? error.message
-          : "Không thể lưu công việc.",
+        error instanceof Error ? error.message : "Không thể lưu công việc.",
       );
 
       setSaving(false);
@@ -372,9 +336,7 @@ export default function Jobs() {
     } catch (error) {
       setWorksError(
         `Đã lưu công việc, nhưng chưa tải lại được danh sách: ${
-          error instanceof Error
-            ? error.message
-            : "Lỗi không xác định."
+          error instanceof Error ? error.message : "Lỗi không xác định."
         }`,
       );
     } finally {
@@ -404,9 +366,7 @@ export default function Jobs() {
       toJob(await readJson(response));
     } catch (error) {
       setWorksError(
-        error instanceof Error
-          ? error.message
-          : "Không thể xóa công việc.",
+        error instanceof Error ? error.message : "Không thể xóa công việc.",
       );
       setSaving(false);
       return;
@@ -423,9 +383,7 @@ export default function Jobs() {
     } catch (error) {
       setWorksError(
         `Đã xóa công việc, nhưng chưa tải lại được danh sách: ${
-          error instanceof Error
-            ? error.message
-            : "Lỗi không xác định."
+          error instanceof Error ? error.message : "Lỗi không xác định."
         }`,
       );
     } finally {
@@ -441,12 +399,8 @@ export default function Jobs() {
           statuses={statuses}
           statusLoading={statusLoading}
           statusError={statusError}
-          editDisabled={
-            !selectedJob || worksLoading || saving
-          }
-          deleteDisabled={
-            !selectedJob || worksLoading || saving
-          }
+          editDisabled={!selectedJob || worksLoading || saving}
+          deleteDisabled={!selectedJob || worksLoading || saving}
           onAdd={() => {
             if (saving) return;
 
@@ -472,15 +426,11 @@ export default function Jobs() {
         />
 
         {statusError && (
-          <S.ErrorMessage role="alert">
-            {statusError}
-          </S.ErrorMessage>
+          <S.ErrorMessage role="alert">{statusError}</S.ErrorMessage>
         )}
 
         {worksError && (
-          <S.ErrorMessage role="alert">
-            {worksError}
-          </S.ErrorMessage>
+          <S.ErrorMessage role="alert">{worksError}</S.ErrorMessage>
         )}
       </S.ToolbarSection>
 
@@ -507,48 +457,32 @@ export default function Jobs() {
               {!worksLoading &&
                 visibleJobs.map((job, index) => {
                   const status = statuses.find(
-                    (item) =>
-                      item.id === job.status_id,
+                    (item) => item.id === job.status_id,
                   );
 
                   return (
                     <S.TableRow
                       key={job.id}
                       $selected={selectedId === job.id}
-                      onClick={() =>
-                        setSelectedId(job.id)
-                      }
+                      onClick={() => setSelectedId(job.id)}
                     >
-                      <td>
-                        {(page - 1) * PAGE_SIZE +
-                          index +
-                          1}
-                      </td>
+                      <td>{(page - 1) * PAGE_SIZE + index + 1}</td>
 
                       <td>
                         <S.SelectJobButton
                           type="button"
-                          aria-pressed={
-                            selectedId === job.id
-                          }
-                          onClick={() =>
-                            setSelectedId(job.id)
-                          }
+                          aria-pressed={selectedId === job.id}
+                          onClick={() => setSelectedId(job.id)}
                         >
                           {job.code}
                         </S.SelectJobButton>
                       </td>
 
-                      <td title={job.name}>
-                        {job.name}
-                      </td>
+                      <td title={job.name}>{job.name}</td>
 
                       <td>
                         <S.StatusBadge
-                          $active={
-                            status?.status_code ===
-                            "IN_USE"
-                          }
+                          $active={status?.status_code === "IN_USE"}
                         >
                           {status?.status_name ??
                             `Trạng thái #${job.status_id}`}
@@ -558,8 +492,7 @@ export default function Jobs() {
                   );
                 })}
 
-              {(worksLoading ||
-                visibleJobs.length === 0) && (
+              {(worksLoading || visibleJobs.length === 0) && (
                 <tr>
                   <S.EmptyCell colSpan={4}>
                     {worksLoading
@@ -597,9 +530,7 @@ export default function Jobs() {
 
             <S.PageButton
               type="button"
-              disabled={
-                page === totalPages || worksLoading
-              }
+              disabled={page === totalPages || worksLoading}
               onClick={() => {
                 setPage((current) => current + 1);
                 setSelectedId(null);
@@ -649,20 +580,16 @@ function WorkModal({
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [code, setCode] = useState(job?.code ?? "");
   const [name, setName] = useState(job?.name ?? "");
-  const [selectedStatusId, setSelectedStatusId] =
-    useState<number | "">(job?.status_id ?? "");
+  const [selectedStatusId, setSelectedStatusId] = useState<number | "">(
+    job?.status_id ?? "",
+  );
   const [error, setError] = useState("");
 
-  const jobStatuses = statuses.filter(
-    (item) => Number(item.parent_id) === 2,
-  );
+  const jobStatuses = statuses.filter((item) => Number(item.parent_id) === 2);
   const defaultStatus =
-    jobStatuses.find((item) => item.status_code === "IN_USE") ??
-    jobStatuses[0];
+    jobStatuses.find((item) => item.status_code === "IN_USE") ?? jobStatuses[0];
   const statusId =
-    selectedStatusId === ""
-      ? (defaultStatus?.id ?? "")
-      : selectedStatusId;
+    selectedStatusId === "" ? (defaultStatus?.id ?? "") : selectedStatusId;
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -672,9 +599,9 @@ function WorkModal({
     return () => dialog?.close();
   }, []);
 
-  const handleSubmit: NonNullable<
-    ComponentProps<"form">["onSubmit"]
-  > = (event) => {
+  const handleSubmit: NonNullable<ComponentProps<"form">["onSubmit"]> = (
+    event,
+  ) => {
     event.preventDefault();
     setError("");
 
@@ -760,7 +687,9 @@ function WorkModal({
               required
               autoFocus
             />
-            <ModalStyles.Hint>Chỉ nhập số nguyên từ 1 đến 1000.</ModalStyles.Hint>
+            <ModalStyles.Hint>
+              Chỉ nhập số nguyên từ 1 đến 1000.
+            </ModalStyles.Hint>
           </ModalStyles.Field>
 
           <ModalStyles.Field>
@@ -782,15 +711,13 @@ function WorkModal({
           </ModalStyles.Field>
 
           <ModalStyles.Field>
-            <ModalStyles.Label htmlFor={`${id}-status`}>Trạng thái</ModalStyles.Label>
+            <ModalStyles.Label htmlFor={`${id}-status`}>
+              Trạng thái
+            </ModalStyles.Label>
             <ModalStyles.Select
               id={`${id}-status`}
               value={statusId}
-              disabled={
-                saving ||
-                statusLoading ||
-                jobStatuses.length === 0
-              }
+              disabled={saving || statusLoading || jobStatuses.length === 0}
               onChange={(event) =>
                 setSelectedStatusId(Number(event.target.value))
               }
@@ -808,7 +735,9 @@ function WorkModal({
           </ModalStyles.Field>
 
           {(error || saveError) && (
-            <ModalStyles.Error role="alert">{error || saveError}</ModalStyles.Error>
+            <ModalStyles.Error role="alert">
+              {error || saveError}
+            </ModalStyles.Error>
           )}
         </ModalStyles.Body>
 
@@ -822,17 +751,9 @@ function WorkModal({
           </ModalStyles.CancelButton>
           <ModalStyles.SaveButton
             type="submit"
-            disabled={
-              saving ||
-              statusLoading ||
-              jobStatuses.length === 0
-            }
+            disabled={saving || statusLoading || jobStatuses.length === 0}
           >
-            {saving
-              ? "Đang lưu..."
-              : job
-                ? "Lưu thay đổi"
-                : "Thêm mới"}
+            {saving ? "Đang lưu..." : job ? "Lưu thay đổi" : "Thêm mới"}
           </ModalStyles.SaveButton>
         </ModalStyles.Footer>
       </ModalStyles.Form>

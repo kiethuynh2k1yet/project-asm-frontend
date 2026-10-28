@@ -7,10 +7,7 @@ type RouteContext = {
   params: Promise<{ id: string; attachmentId: string }>;
 };
 
-export async function DELETE(
-  _request: Request,
-  context: RouteContext,
-) {
+export async function DELETE(_request: Request, context: RouteContext) {
   const { id, attachmentId } = await context.params;
   if (
     !/^[1-9]\d*$/.test(id) ||

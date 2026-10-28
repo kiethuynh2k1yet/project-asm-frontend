@@ -28,21 +28,18 @@ export async function POST(request: Request) {
       );
     }
 
-    const backendResponse = await fetch(
-      `${BACKEND_API_URL}/auth/login`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          login,
-          password,
-        }),
-        cache: "no-store",
+    const backendResponse = await fetch(`${BACKEND_API_URL}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
       },
-    );
+      body: JSON.stringify({
+        login,
+        password,
+      }),
+      cache: "no-store",
+    });
 
     const responseText = await backendResponse.text();
 

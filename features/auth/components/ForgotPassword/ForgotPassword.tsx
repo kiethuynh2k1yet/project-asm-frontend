@@ -29,9 +29,7 @@ export default function ForgotPassword() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const handleSubmit = async (
-    event: React.SubmitEvent<HTMLFormElement>,
-  ) => {
+  const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     setError("");
@@ -64,20 +62,17 @@ export default function ForgotPassword() {
     try {
       setIsLoading(true);
 
-      const response = await fetch(
-        "api/auth/forgot-password",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            login: login.trim(),
-            newPassword,
-            confirmPassword,
-          }),
+      const response = await fetch("api/auth/forgot-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({
+          login: login.trim(),
+          newPassword,
+          confirmPassword,
+        }),
+      });
 
       const data = await response.json();
 
@@ -87,8 +82,7 @@ export default function ForgotPassword() {
           : data.message;
 
         throw new Error(
-          message ??
-            "Đặt lại mật khẩu thất bại. Vui lòng thử lại.",
+          message ?? "Đặt lại mật khẩu thất bại. Vui lòng thử lại.",
         );
       }
 
@@ -114,8 +108,8 @@ export default function ForgotPassword() {
             <Title>Đặt lại mật khẩu thành công</Title>
 
             <Description>
-              Mật khẩu của tài khoản <strong>{login}</strong> đã được
-              cập nhật. Bạn có thể đăng nhập bằng mật khẩu mới.
+              Mật khẩu của tài khoản <strong>{login}</strong> đã được cập nhật.
+              Bạn có thể đăng nhập bằng mật khẩu mới.
             </Description>
 
             <PrimaryButton as={Link} href="/login">
@@ -156,9 +150,7 @@ export default function ForgotPassword() {
 
         <Form onSubmit={handleSubmit} noValidate>
           <FormGroup>
-            <Label htmlFor="login">
-              Username hoặc email đăng nhập
-            </Label>
+            <Label htmlFor="login">Username hoặc email đăng nhập</Label>
 
             <Input
               id="login"
@@ -166,9 +158,7 @@ export default function ForgotPassword() {
               type="text"
               placeholder="Nhập username hoặc email"
               value={login}
-              onChange={(event) =>
-                setLogin(event.target.value)
-              }
+              onChange={(event) => setLogin(event.target.value)}
               autoComplete="username"
               aria-invalid={Boolean(error)}
               disabled={isLoading}
@@ -184,9 +174,7 @@ export default function ForgotPassword() {
               type="password"
               placeholder="Nhập mật khẩu mới"
               value={newPassword}
-              onChange={(event) =>
-                setNewPassword(event.target.value)
-              }
+              onChange={(event) => setNewPassword(event.target.value)}
               autoComplete="new-password"
               aria-invalid={Boolean(error)}
               disabled={isLoading}
@@ -194,9 +182,7 @@ export default function ForgotPassword() {
           </FormGroup>
 
           <FormGroup>
-            <Label htmlFor="confirmPassword">
-              Nhập lại mật khẩu mới
-            </Label>
+            <Label htmlFor="confirmPassword">Nhập lại mật khẩu mới</Label>
 
             <Input
               id="confirmPassword"
@@ -204,25 +190,17 @@ export default function ForgotPassword() {
               type="password"
               placeholder="Nhập lại mật khẩu mới"
               value={confirmPassword}
-              onChange={(event) =>
-                setConfirmPassword(event.target.value)
-              }
+              onChange={(event) => setConfirmPassword(event.target.value)}
               autoComplete="new-password"
               aria-invalid={Boolean(error)}
               disabled={isLoading}
             />
           </FormGroup>
 
-          {error && (
-            <ErrorMessage role="alert">
-              {error}
-            </ErrorMessage>
-          )}
+          {error && <ErrorMessage role="alert">{error}</ErrorMessage>}
 
           <PrimaryButton type="submit" disabled={isLoading}>
-            {isLoading
-              ? "Đang cập nhật..."
-              : "Đặt lại mật khẩu"}
+            {isLoading ? "Đang cập nhật..." : "Đặt lại mật khẩu"}
           </PrimaryButton>
         </Form>
 

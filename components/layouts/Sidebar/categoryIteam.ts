@@ -9,6 +9,7 @@ import {
   Percent,
   Box,
   Boxes,
+  Package,
   Tags,
   Ruler,
   KeyRound,
@@ -128,6 +129,12 @@ export const categoryItems: CategoryItem[] = [
         label: "Chủng loại tài sản",
         icon: Tags,
         href: "/dashboard/Category/asset-categorys",
+      },
+      {
+        id: "list-of-assets",
+        label: "Danh sách tài sản",
+        icon: Package,
+        href: "/dashboard/Category/list-of-assets",
       },
       {
         id: "units",

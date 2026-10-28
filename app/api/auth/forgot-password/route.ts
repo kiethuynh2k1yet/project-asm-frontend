@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const BACKEND_URL =
-  process.env.BACKEND_API_URL;
+const BACKEND_URL = process.env.BACKEND_API_URL;
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const backendUrl =
-      `${BACKEND_URL}/auth/forgot-password`;
+    const backendUrl = `${BACKEND_URL}/auth/forgot-password`;
 
     console.log("Calling NestJS:", backendUrl);
 
@@ -25,8 +23,7 @@ export async function POST(request: NextRequest) {
       cache: "no-store",
     });
 
-    const contentType =
-      response.headers.get("content-type") ?? "";
+    const contentType = response.headers.get("content-type") ?? "";
 
     const responseText = await response.text();
 
@@ -38,10 +35,7 @@ export async function POST(request: NextRequest) {
     try {
       data = responseText ? JSON.parse(responseText) : {};
     } catch {
-      console.error(
-        "NestJS did not return JSON:",
-        responseText.slice(0, 500),
-      );
+      console.error("NestJS did not return JSON:", responseText.slice(0, 500));
 
       return NextResponse.json(
         {

@@ -57,9 +57,7 @@ function DashboardFrame({ children }: DashboardProps) {
       return;
     }
 
-    setOpenSidebarGroup((current) =>
-      current === groupId ? null : groupId,
-    );
+    setOpenSidebarGroup((current) => (current === groupId ? null : groupId));
   };
 
   const handleSidebarNavigate = () => {

@@ -845,7 +845,8 @@ export const TabButton = styled.button<{ $active?: boolean }>`
   flex: 0 0 auto;
   padding: 9px 12px;
   border: 0;
-  border-bottom: 2px solid ${({ $active }) => ($active ? "#1769d2" : "transparent")};
+  border-bottom: 2px solid
+    ${({ $active }) => ($active ? "#1769d2" : "transparent")};
   background: transparent;
   color: ${({ $active }) => ($active ? "#1769d2" : "#64748b")};
   font: inherit;
@@ -934,7 +935,10 @@ export const RemoveRow = styled.button`
 export const DeviceRow = styled.div`
   position: relative;
   display: grid;
-  grid-template-columns: minmax(180px, 1.3fr) minmax(130px, 0.7fr) minmax(190px, 1fr) 34px;
+  grid-template-columns: minmax(180px, 1.3fr) minmax(130px, 0.7fr) minmax(
+      190px,
+      1fr
+    ) 34px;
   align-items: end;
   gap: 10px;
   padding: 13px;
@@ -985,7 +989,8 @@ export const DeviceTable = styled.table`
   border-collapse: collapse;
   background: #fff;
 
-  th, td {
+  th,
+  td {
     padding: 9px 10px;
     border-bottom: 1px solid #e2e8f0;
     text-align: left;
@@ -1000,8 +1005,11 @@ export const DeviceTable = styled.table`
     white-space: nowrap;
   }
 
-  tbody tr:last-child td { border-bottom: 0; }
-  td input, td select {
+  tbody tr:last-child td {
+    border-bottom: 0;
+  }
+  td input,
+  td select {
     width: 100%;
     min-width: 95px;
     min-height: 36px;
@@ -1013,7 +1021,10 @@ export const DeviceTable = styled.table`
     font: inherit;
     font-size: 13px;
   }
-  td input[type="number"] { width: 90px; min-width: 90px; }
+  td input[type="number"] {
+    width: 90px;
+    min-width: 90px;
+  }
   td button {
     display: inline-flex;
     width: 32px;
@@ -1026,13 +1037,18 @@ export const DeviceTable = styled.table`
     color: #b91c1c;
     cursor: pointer;
   }
-  td button:hover { background: #fef2f2; }
+  td button:hover {
+    background: #fef2f2;
+  }
 `;
 
 export const LicenseRow = styled.div`
   position: relative;
   display: grid;
-  grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) minmax(130px, 0.7fr) 34px;
+  grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr) minmax(
+      130px,
+      0.7fr
+    ) 34px;
   align-items: end;
   gap: 10px;
   padding: 13px;
@@ -1080,7 +1096,12 @@ export const UploadPanel = styled.div`
   flex-direction: column;
   gap: 12px;
 
-  > p, > small { margin: 0; color: #64748b; font-size: 13px; }
+  > p,
+  > small {
+    margin: 0;
+    color: #64748b;
+    font-size: 13px;
+  }
 `;
 
 export const UploadFields = styled.div`
@@ -1089,7 +1110,9 @@ export const UploadFields = styled.div`
   align-items: end;
   gap: 10px;
 
-  @media (max-width: 700px) { grid-template-columns: 1fr; }
+  @media (max-width: 700px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 export const UploadField = styled.div`
@@ -1100,7 +1123,9 @@ export const UploadField = styled.div`
   color: #475569;
   font-size: 12px;
 
-  > span b { color: #dc2626; }
+  > span b {
+    color: #dc2626;
+  }
   > input {
     width: 100%;
     min-height: 38px;
@@ -1165,7 +1190,10 @@ export const UploadSubmit = styled.button`
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  &:disabled { cursor: not-allowed; opacity: 0.5; }
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
 `;
 
 export const AttachmentTableScroll = styled.div`
@@ -1180,9 +1208,22 @@ export const AttachmentTable = styled.table`
   min-width: 720px;
   border-collapse: collapse;
   background: #fff;
-  th, td { padding: 8px 10px; border: 1px solid #e2e8f0; text-align: left; font-size: 12px; }
-  th { background: #f8fafc; color: #475569; font-weight: 650; white-space: nowrap; }
-  td:first-child { width: 36px; }
+  th,
+  td {
+    padding: 8px 10px;
+    border: 1px solid #e2e8f0;
+    text-align: left;
+    font-size: 12px;
+  }
+  th {
+    background: #f8fafc;
+    color: #475569;
+    font-weight: 650;
+    white-space: nowrap;
+  }
+  td:first-child {
+    width: 36px;
+  }
   td button {
     display: inline-flex;
     align-items: center;
@@ -1202,8 +1243,12 @@ export const AttachmentImageGrid = styled.div`
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 
-  @media (max-width: 850px) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  @media (max-width: 560px) { grid-template-columns: 1fr; }
+  @media (max-width: 850px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  @media (max-width: 560px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 export const AttachmentImageCard = styled.article`
@@ -1257,8 +1302,13 @@ export const AttachmentImageInfo = styled.div`
     font-size: 13px;
   }
 
-  span { color: #64748b; }
-  p { margin: 2px 0 0; overflow-wrap: anywhere; }
+  span {
+    color: #64748b;
+  }
+  p {
+    margin: 2px 0 0;
+    overflow-wrap: anywhere;
+  }
 `;
 
 export const AttachmentImageActions = styled.div`
@@ -1269,7 +1319,8 @@ export const AttachmentImageActions = styled.div`
   padding: 8px 10px;
   border-top: 1px solid #e2e8f0;
 
-  a, button {
+  a,
+  button {
     display: inline-flex;
     min-height: 28px;
     align-items: center;
@@ -1368,7 +1419,9 @@ export const ImageThumb = styled.a`
   }
 `;
 
-export const FileThumb = styled.a`${AttachmentThumb}`;
+export const FileThumb = styled.a`
+  ${AttachmentThumb}
+`;
 
 export const AttachmentInfo = styled.div`
   display: flex;

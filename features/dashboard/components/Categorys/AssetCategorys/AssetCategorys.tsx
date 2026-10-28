@@ -33,7 +33,9 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isOptionalInteger(value: unknown): value is number | null {
-  return value === null || (typeof value === "number" && Number.isInteger(value));
+  return (
+    value === null || (typeof value === "number" && Number.isInteger(value))
+  );
 }
 
 async function readJson(response: Response): Promise<unknown> {
@@ -59,8 +61,10 @@ function toAssetType(value: unknown): AssetType {
     !isRecord(value) ||
     typeof value.id !== "number" ||
     !Number.isInteger(value.id) ||
-    !(value["asset-types_name"] === null ||
-      typeof value["asset-types_name"] === "string")
+    !(
+      value["asset-types_name"] === null ||
+      typeof value["asset-types_name"] === "string"
+    )
   ) {
     throw new Error("Dữ liệu loại tài sản không hợp lệ.");
   }
@@ -72,8 +76,10 @@ function toAssetGroup(value: unknown): AssetGroup {
     !isRecord(value) ||
     typeof value.id !== "number" ||
     !Number.isInteger(value.id) ||
-    !(value["asset-group_name"] === null ||
-      typeof value["asset-group_name"] === "string") ||
+    !(
+      value["asset-group_name"] === null ||
+      typeof value["asset-group_name"] === "string"
+    ) ||
     !isOptionalInteger(value["asset-type"])
   ) {
     throw new Error("Dữ liệu nhóm tài sản không hợp lệ.");
@@ -92,10 +98,14 @@ function toAssetCategory(value: unknown): AssetCategory {
     !Number.isInteger(value.id) ||
     typeof value.status_id !== "number" ||
     !Number.isInteger(value.status_id) ||
-    !(value["asset-category_code"] === null ||
-      typeof value["asset-category_code"] === "string") ||
-    !(value["asset-category_name"] === null ||
-      typeof value["asset-category_name"] === "string") ||
+    !(
+      value["asset-category_code"] === null ||
+      typeof value["asset-category_code"] === "string"
+    ) ||
+    !(
+      value["asset-category_name"] === null ||
+      typeof value["asset-category_name"] === "string"
+    ) ||
     !isOptionalInteger(value["asset-type"]) ||
     !isOptionalInteger(value["asset-group"])
   ) {
@@ -134,10 +144,12 @@ export default function AssetCategorys() {
   const [saveError, setSaveError] = useState("");
 
   const loadRows = useCallback(async (signal?: AbortSignal) => {
-    const data = await readJson(await fetch(
-      "/api/dashboard/master-data/asset-categorys",
-      { cache: "no-store", signal },
-    ));
+    const data = await readJson(
+      await fetch("/api/dashboard/master-data/asset-categorys", {
+        cache: "no-store",
+        signal,
+      }),
+    );
     if (!Array.isArray(data)) {
       throw new Error("Danh sách chủng loại tài sản phải là một mảng.");
     }
@@ -185,10 +197,12 @@ export default function AssetCategorys() {
 
     void (async () => {
       try {
-        const data = await readJson(await fetch(
-          "/api/dashboard/master-data/asset-types",
-          { cache: "no-store", signal: controller.signal },
-        ));
+        const data = await readJson(
+          await fetch("/api/dashboard/master-data/asset-types", {
+            cache: "no-store",
+            signal: controller.signal,
+          }),
+        );
         if (!Array.isArray(data)) {
           throw new Error("Danh sách loại tài sản phải là một mảng.");
         }
@@ -207,10 +221,12 @@ export default function AssetCategorys() {
 
     void (async () => {
       try {
-        const data = await readJson(await fetch(
-          "/api/dashboard/master-data/asset-groups",
-          { cache: "no-store", signal: controller.signal },
-        ));
+        const data = await readJson(
+          await fetch("/api/dashboard/master-data/asset-groups", {
+            cache: "no-store",
+            signal: controller.signal,
+          }),
+        );
         if (!Array.isArray(data)) {
           throw new Error("Danh sách nhóm tài sản phải là một mảng.");
         }
@@ -231,10 +247,12 @@ export default function AssetCategorys() {
 
     void (async () => {
       try {
-        const data = await readJson(await fetch("/api/dashboard/statuses", {
-          cache: "no-store",
-          signal: controller.signal,
-        }));
+        const data = await readJson(
+          await fetch("/api/dashboard/statuses", {
+            cache: "no-store",
+            signal: controller.signal,
+          }),
+        );
         if (!Array.isArray(data)) {
           throw new Error("Danh sách trạng thái phải là một mảng.");
         }
@@ -344,16 +362,24 @@ export default function AssetCategorys() {
 
   const handleDelete = async () => {
     if (!selected || saving) return;
-    if (!window.confirm(`Bạn có chắc muốn xóa chủng loại "${selected.name}" không?`)) {
+    if (
+      !window.confirm(
+        `Bạn có chắc muốn xóa chủng loại "${selected.name}" không?`,
+      )
+    ) {
       return;
     }
     setSaving(true);
     setError("");
     try {
-      toAssetCategory(await readJson(await fetch(
-        `/api/dashboard/master-data/asset-categorys/${selected.id}`,
-        { method: "DELETE" },
-      )));
+      toAssetCategory(
+        await readJson(
+          await fetch(
+            `/api/dashboard/master-data/asset-categorys/${selected.id}`,
+            { method: "DELETE" },
+          ),
+        ),
+      );
       await refreshRows();
     } catch (cause) {
       setError(
@@ -543,9 +569,7 @@ function AssetCategoryModal({
   const [assetGroupId, setAssetGroupId] = useState<number | "">(
     item?.assetGroupId ?? "",
   );
-  const [statusId, setStatusId] = useState<number | "">(
-    item?.status_id ?? "",
-  );
+  const [statusId, setStatusId] = useState<number | "">(item?.status_id ?? "");
   const [error, setError] = useState("");
   const activeStatuses = statuses.filter((status) => status.parent_id === 2);
   const defaultStatus =
@@ -553,8 +577,9 @@ function AssetCategoryModal({
     activeStatuses[0];
   const resolvedStatusId =
     statusId === "" ? (defaultStatus?.id ?? "") : statusId;
-  const compatibleGroups = assetGroups.filter(
-    (group) => group.assetTypeId === assetTypeId,
+  const selectedGroup = assetGroups.find((group) => group.id === assetGroupId);
+  const compatibleTypes = assetTypes.filter(
+    (type) => type.id === selectedGroup?.assetTypeId,
   );
 
   useEffect(() => {
@@ -584,19 +609,22 @@ function AssetCategoryModal({
       setError("Vui lòng chờ tải trạng thái.");
       return;
     }
-    if (assetTypeId !== "" && !assetTypes.some((type) => type.id === assetTypeId)) {
+    if (
+      assetTypeId !== "" &&
+      !assetTypes.some((type) => type.id === assetTypeId)
+    ) {
       setError("Loại tài sản đã chọn không hợp lệ.");
       return;
     }
     if (
       assetGroupId !== "" &&
-      !compatibleGroups.some((group) => group.id === assetGroupId)
+      (!selectedGroup || selectedGroup.assetTypeId !== assetTypeId)
     ) {
-      setError("Nhóm tài sản không thuộc loại tài sản đã chọn.");
+      setError("Loại tài sản không thuộc nhóm tài sản đã chọn.");
       return;
     }
-    if (assetGroupId !== "" && assetTypeId === "") {
-      setError("Chọn loại tài sản trước khi chọn nhóm tài sản.");
+    if (assetTypeId !== "" && assetGroupId === "") {
+      setError("Chọn nhóm tài sản trước khi chọn loại tài sản.");
       return;
     }
 
@@ -657,67 +685,60 @@ function AssetCategoryModal({
             />
           </M.Field>
           <M.Field>
-            <M.Label htmlFor="asset-category-type">Loại tài sản</M.Label>
+            <M.Label htmlFor="asset-category-group">Nhóm tài sản</M.Label>
             <M.Select
-              id="asset-category-type"
-              value={assetTypeId}
+              id="asset-category-group"
+              value={assetGroupId}
               disabled={saving || lookupsLoading}
               onChange={(event) => {
-                const nextTypeId = event.target.value
+                const nextGroupId = event.target.value
                   ? Number(event.target.value)
                   : "";
-                setAssetTypeId(nextTypeId);
-                if (
-                  assetGroupId !== "" &&
-                  !assetGroups.some(
-                    (group) =>
-                      group.id === assetGroupId &&
-                      group.assetTypeId === nextTypeId,
-                  )
-                ) {
-                  setAssetGroupId("");
-                }
+                setAssetGroupId(nextGroupId);
+                setAssetTypeId("");
               }}
             >
               <option value="">
-                {lookupsLoading ? "Đang tải loại tài sản..." : "Chọn loại tài sản"}
+                {lookupsLoading
+                  ? "Đang tải nhóm tài sản..."
+                  : "Chọn nhóm tài sản"}
               </option>
-              {assetTypes.map((type) => (
-                <option key={type.id} value={type.id}>
-                  {type.name}
+              {assetGroups.map((group) => (
+                <option key={group.id} value={group.id}>
+                  {group.name}
                 </option>
               ))}
             </M.Select>
           </M.Field>
           <M.Field>
-            <M.Label htmlFor="asset-category-group">Nhóm tài sản</M.Label>
+            <M.Label htmlFor="asset-category-type">Loại tài sản</M.Label>
             <M.Select
-              id="asset-category-group"
-              value={assetGroupId}
+              id="asset-category-type"
+              value={assetTypeId}
               disabled={
                 saving ||
                 lookupsLoading ||
-                assetTypeId === "" ||
-                compatibleGroups.length === 0
+                assetGroupId === "" ||
+                compatibleTypes.length === 0
               }
               onChange={(event) =>
-                setAssetGroupId(
+                setAssetTypeId(
                   event.target.value ? Number(event.target.value) : "",
                 )
               }
             >
               <option value="">
                 {lookupsLoading
-                  ? "Đang tải nhóm tài sản..."
-                  : assetTypeId === ""
-                    ? "Chọn loại tài sản trước"
-                    : compatibleGroups.length === 0
-                      ? "Không có nhóm tài sản phù hợp"
-                      : "Chọn nhóm tài sản"}
+                  ? "Đang tải loại tài sản..."
+                  : assetGroupId === ""
+                    ? "Chọn nhóm tài sản trước"
+                    : compatibleTypes.length === 0
+                      ? "Nhóm này chưa có loại tài sản"
+                      : "Chọn loại tài sản"}
               </option>
-              {compatibleGroups.map((group) => (
-                <option key={group.id} value={group.id}>
-                  {group.name}
+              {compatibleTypes.map((type) => (
+                <option key={type.id} value={type.id}>
+                  {type.name}
                 </option>
               ))}
             </M.Select>
@@ -730,7 +751,9 @@ function AssetCategoryModal({
               id="asset-category-status"
               value={resolvedStatusId}
               onChange={(event) =>
-                setStatusId(event.target.value ? Number(event.target.value) : "")
+                setStatusId(
+                  event.target.value ? Number(event.target.value) : "",
+                )
               }
               disabled={saving || statusLoading || activeStatuses.length === 0}
             >

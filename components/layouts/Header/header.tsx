@@ -39,28 +39,19 @@ export default function HeaderPage({
   const [user, setUser] = useState<User | null>(null);
 
   // Lấy toàn bộ mục con từ các nhóm cấp 1.
-  const childItems = categoryItems.flatMap(
-    (item) => item.children ?? []
-  );
+  const childItems = categoryItems.flatMap((item) => item.children ?? []);
 
   // Ưu tiên đường dẫn khớp chính xác.
   // Nếu đang ở trang chi tiết, lấy mục có đường dẫn cha dài nhất.
   const currentItem =
     childItems.find((item) => item.href === pathname) ??
     childItems
-      .filter(
-        (item) =>
-          item.href &&
-          pathname.startsWith(`${item.href}/`)
-      )
-      .sort(
-        (a, b) =>
-          (b.href?.length ?? 0) - (a.href?.length ?? 0)
-      )[0];
+      .filter((item) => item.href && pathname.startsWith(`${item.href}/`))
+      .sort((a, b) => (b.href?.length ?? 0) - (a.href?.length ?? 0))[0];
 
   // Tìm nhóm cấp 1 chứa mục con hiện tại.
   const parentItem = categoryItems.find((group) =>
-    group.children?.some((child) => child.id === currentItem?.id)
+    group.children?.some((child) => child.id === currentItem?.id),
   );
 
   // Ví dụ: Danh mục / Công việc
@@ -99,9 +90,7 @@ export default function HeaderPage({
           <MenuButton
             type="button"
             onClick={onToggleSidebar}
-            aria-label={
-              isSidebarOpen ? "Đóng sidebar" : "Mở sidebar"
-            }
+            aria-label={isSidebarOpen ? "Đóng sidebar" : "Mở sidebar"}
             aria-expanded={isSidebarOpen}
           >
             <MenuIcon $isOpen={isSidebarOpen} />

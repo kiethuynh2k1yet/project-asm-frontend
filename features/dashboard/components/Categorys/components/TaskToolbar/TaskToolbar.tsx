@@ -1,18 +1,9 @@
 "use client";
 
 import { useId, useState } from "react";
-import {
-  CirclePlus,
-  Search,
-  SquarePen,
-  Trash2,
-  X,
-} from "lucide-react";
+import { CirclePlus, Search, SquarePen, Trash2, X } from "lucide-react";
 
-import type {
-  JobFilters,
-  JobStatus,
-} from "../../constants/jobStatuses";
+import type { JobFilters, JobStatus } from "../../constants/jobStatuses";
 import { useAuthRole } from "@/features/auth/components/auth-role-provider";
 
 import * as PageStyles from "../../styles/styles";
@@ -47,12 +38,9 @@ export default function TaskToolbar({
   const { role, error: roleError } = useAuthRole();
 
   const [keyword, setKeyword] = useState("");
-  const [statusId, setStatusId] =
-    useState<JobFilters["statusId"]>("");
+  const [statusId, setStatusId] = useState<JobFilters["statusId"]>("");
 
-  const jobStatuses = statuses.filter(
-    (item) => Number(item.parent_id) === 2,
-  );
+  const jobStatuses = statuses.filter((item) => Number(item.parent_id) === 2);
 
   const hasStatuses = jobStatuses.length > 0;
   const isLoading = statusLoading && !hasStatuses;
@@ -65,10 +53,7 @@ export default function TaskToolbar({
         ? "Đang tải..."
         : "Không có trạng thái";
 
-  const applyFilters = (
-    nextStatusId = statusId,
-    nextKeyword = keyword,
-  ) => {
+  const applyFilters = (nextStatusId = statusId, nextKeyword = keyword) => {
     onSearch?.({
       keyword: nextKeyword.trim(),
       statusId: nextStatusId,
@@ -90,11 +75,7 @@ export default function TaskToolbar({
             Thêm
           </S.Button>
 
-          <S.EditButton
-            type="button"
-            onClick={onEdit}
-            disabled={editDisabled}
-          >
+          <S.EditButton type="button" onClick={onEdit} disabled={editDisabled}>
             <SquarePen size={16} aria-hidden="true" />
             Sửa
           </S.EditButton>
@@ -118,9 +99,7 @@ export default function TaskToolbar({
           }}
         >
           <S.SearchField>
-            <S.Label htmlFor={`${id}-search`}>
-              Tìm kiếm
-            </S.Label>
+            <S.Label htmlFor={`${id}-search`}>Tìm kiếm</S.Label>
 
             <S.SearchGroup>
               <S.Input
@@ -157,9 +136,7 @@ export default function TaskToolbar({
           </S.SearchField>
 
           <S.StatusField>
-            <S.Label htmlFor={`${id}-status`}>
-              Trạng thái
-            </S.Label>
+            <S.Label htmlFor={`${id}-status`}>Trạng thái</S.Label>
 
             <S.Select
               id={`${id}-status`}
@@ -169,9 +146,7 @@ export default function TaskToolbar({
               title={statusError || undefined}
               onChange={(event) => {
                 const nextStatusId =
-                  event.target.value === ""
-                    ? ""
-                    : Number(event.target.value);
+                  event.target.value === "" ? "" : Number(event.target.value);
 
                 setStatusId(nextStatusId);
                 applyFilters(nextStatusId);
@@ -180,10 +155,7 @@ export default function TaskToolbar({
               <option value="">{placeholder}</option>
 
               {jobStatuses.map((item) => (
-                <option
-                  key={item.id}
-                  value={item.id}
-                >
+                <option key={item.id} value={item.id}>
                   {item.status_name}
                 </option>
               ))}
@@ -192,7 +164,9 @@ export default function TaskToolbar({
         </S.Filters>
       </S.Toolbar>
       {roleError && (
-        <PageStyles.ErrorMessage role="alert">{roleError}</PageStyles.ErrorMessage>
+        <PageStyles.ErrorMessage role="alert">
+          {roleError}
+        </PageStyles.ErrorMessage>
       )}
     </>
   );

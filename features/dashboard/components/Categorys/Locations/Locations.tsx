@@ -11,10 +11,7 @@ import {
 import { X } from "lucide-react";
 
 import TaskToolbar from "../components/TaskToolbar/TaskToolbar";
-import type {
-  JobFilters,
-  JobStatus,
-} from "../constants/jobStatuses";
+import type { JobFilters, JobStatus } from "../constants/jobStatuses";
 import * as S from "../styles/styles";
 import { ModalStyles as M } from "../styles/styles";
 
@@ -50,9 +47,9 @@ async function readJson(response: Response): Promise<unknown> {
       if (typeof data.message === "string") {
         message = data.message;
       } else if (Array.isArray(data.message)) {
-        message = data.message
-          .filter((item) => typeof item === "string")
-          .join(", ") || message;
+        message =
+          data.message.filter((item) => typeof item === "string").join(", ") ||
+          message;
       }
     }
 
@@ -67,7 +64,9 @@ function toLocation(value: unknown): Location {
     !isRecord(value) ||
     typeof value.id !== "number" ||
     typeof value.status_id !== "number" ||
-    !(value.location_code === null || typeof value.location_code === "string") ||
+    !(
+      value.location_code === null || typeof value.location_code === "string"
+    ) ||
     !(value.location_name === null || typeof value.location_name === "string")
   ) {
     throw new Error("Dữ liệu vị trí không hợp lệ.");
@@ -115,8 +114,7 @@ export default function Locations() {
         !isRecord(item) ||
         !Number.isInteger(Number(item.id)) ||
         Number(item.parent_id) !== 2 ||
-        (item.status_code !== "IN_USE" &&
-          item.status_code !== "NOT_IN_USE") ||
+        (item.status_code !== "IN_USE" && item.status_code !== "NOT_IN_USE") ||
         typeof item.status_name !== "string"
       ) {
         throw new Error("Dữ liệu trạng thái không hợp lệ.");
@@ -233,10 +231,7 @@ export default function Locations() {
   const selectedLocation = locations.find(
     (location) => location.id === selectedId,
   );
-  const totalPages = Math.max(
-    1,
-    Math.ceil(locations.length / PAGE_SIZE),
-  );
+  const totalPages = Math.max(1, Math.ceil(locations.length / PAGE_SIZE));
   const visibleLocations = locations.slice(
     (page - 1) * PAGE_SIZE,
     page * PAGE_SIZE,
@@ -521,9 +516,7 @@ function LocationModal({
   const defaultStatus =
     statuses.find((item) => item.status_code === "IN_USE") ?? statuses[0];
   const statusId =
-    selectedStatusId === ""
-      ? (defaultStatus?.id ?? "")
-      : selectedStatusId;
+    selectedStatusId === "" ? (defaultStatus?.id ?? "") : selectedStatusId;
 
   useEffect(() => {
     const dialog = dialogRef.current;

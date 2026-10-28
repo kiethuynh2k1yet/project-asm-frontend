@@ -11,10 +11,7 @@ import {
 } from "react";
 import { X } from "lucide-react";
 import TaskToolbar from "../components/TaskToolbar/TaskToolbar";
-import type {
-  JobFilters,
-  JobStatus,
-} from "../constants/jobStatuses";
+import type { JobFilters, JobStatus } from "../constants/jobStatuses";
 type MasterDataField = {
   key: string;
   label: string;
@@ -46,9 +43,10 @@ async function readJson(response: Response): Promise<unknown> {
   }
 
   if (!response.ok) {
-    const message = isRecord(data) && typeof data.message === "string"
-      ? data.message
-      : `API báo lỗi HTTP ${response.status}.`;
+    const message =
+      isRecord(data) && typeof data.message === "string"
+        ? data.message
+        : `API báo lỗi HTTP ${response.status}.`;
     throw new Error(message);
   }
   return data;
@@ -130,7 +128,9 @@ export default function Warehouses() {
       setPage(1);
       setSelectedId(null);
     } catch (error) {
-      setDataError(error instanceof Error ? error.message : "Không tải được danh mục.");
+      setDataError(
+        error instanceof Error ? error.message : "Không tải được danh mục.",
+      );
     } finally {
       setLoading(false);
     }
@@ -240,7 +240,10 @@ export default function Warehouses() {
   }, [filters.keyword, filters.statusId, rows]);
 
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
-  const visibleRows = filteredRows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const visibleRows = filteredRows.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE,
+  );
   const selectedRow = rows.find((row) => row.id === selectedId);
 
   const openModal = (row?: MasterDataRow) => {
@@ -271,7 +274,10 @@ export default function Warehouses() {
       activeStatuses.find((item) => item.status_code === "IN_USE") ??
       activeStatuses[0];
     const statusId = formStatusId === "" ? defaultStatus?.id : formStatusId;
-    if (typeof statusId !== "number" || !activeStatuses.some((item) => item.id === statusId)) {
+    if (
+      typeof statusId !== "number" ||
+      !activeStatuses.some((item) => item.id === statusId)
+    ) {
       setSaveError("Vui lòng chọn trạng thái hợp lệ.");
       return;
     }
@@ -304,7 +310,9 @@ export default function Warehouses() {
       setEditingRow(undefined);
       await refreshRows();
     } catch (error) {
-      setSaveError(error instanceof Error ? error.message : "Không thể lưu danh mục.");
+      setSaveError(
+        error instanceof Error ? error.message : "Không thể lưu danh mục.",
+      );
     } finally {
       setSaving(false);
     }
@@ -327,7 +335,9 @@ export default function Warehouses() {
       );
       await refreshRows();
     } catch (error) {
-      setDataError(error instanceof Error ? error.message : "Không thể xóa danh mục.");
+      setDataError(
+        error instanceof Error ? error.message : "Không thể xóa danh mục.",
+      );
     } finally {
       setSaving(false);
     }
@@ -337,7 +347,8 @@ export default function Warehouses() {
   const defaultStatus =
     activeStatuses.find((item) => item.status_code === "IN_USE") ??
     activeStatuses[0];
-  const selectedStatus = formStatusId === "" ? defaultStatus?.id ?? "" : formStatusId;
+  const selectedStatus =
+    formStatusId === "" ? (defaultStatus?.id ?? "") : formStatusId;
 
   return (
     <S.Page>
@@ -358,7 +369,9 @@ export default function Warehouses() {
             setSelectedId(null);
           }}
         />
-        {statusError && <S.ErrorMessage role="alert">{statusError}</S.ErrorMessage>}
+        {statusError && (
+          <S.ErrorMessage role="alert">{statusError}</S.ErrorMessage>
+        )}
         {dataError && <S.ErrorMessage role="alert">{dataError}</S.ErrorMessage>}
       </S.ToolbarSection>
 
@@ -369,7 +382,9 @@ export default function Warehouses() {
               <tr>
                 <th scope="col">#</th>
                 {config.fields.map((field) => (
-                  <th scope="col" key={field.key}>{field.label}</th>
+                  <th scope="col" key={field.key}>
+                    {field.label}
+                  </th>
                 ))}
                 <th scope="col">Trạng thái</th>
               </tr>
@@ -377,7 +392,9 @@ export default function Warehouses() {
             <tbody>
               {!loading &&
                 visibleRows.map((row, index) => {
-                  const status = activeStatuses.find((item) => item.id === row.status_id);
+                  const status = activeStatuses.find(
+                    (item) => item.id === row.status_id,
+                  );
                   return (
                     <S.TableRow
                       key={row.id}
@@ -391,8 +408,11 @@ export default function Warehouses() {
                         </td>
                       ))}
                       <td>
-                        <S.StatusBadge $active={status?.status_code === "IN_USE"}>
-                          {status?.status_name ?? `Trạng thái #${row.status_id}`}
+                        <S.StatusBadge
+                          $active={status?.status_code === "IN_USE"}
+                        >
+                          {status?.status_name ??
+                            `Trạng thái #${row.status_id}`}
                         </S.StatusBadge>
                       </td>
                     </S.TableRow>
@@ -413,7 +433,9 @@ export default function Warehouses() {
           </S.Table>
         </S.TableScroll>
         <S.TableFooter>
-          <S.Total>Tổng: <span>{filteredRows.length}</span> dòng</S.Total>
+          <S.Total>
+            Tổng: <span>{filteredRows.length}</span> dòng
+          </S.Total>
           <S.Pagination aria-label={`Phân trang ${config.title}`}>
             <S.PageButton
               type="button"
@@ -425,7 +447,9 @@ export default function Warehouses() {
             >
               Trước
             </S.PageButton>
-            <S.PageInfo>Trang {page}/{totalPages}</S.PageInfo>
+            <S.PageInfo>
+              Trang {page}/{totalPages}
+            </S.PageInfo>
             <S.PageButton
               type="button"
               disabled={page === totalPages || loading}
@@ -453,7 +477,12 @@ export default function Warehouses() {
             <M.Title id={`${id}-title`}>
               {editingRow ? "Sửa" : "Thêm"} {config.title}
             </M.Title>
-            <M.CloseButton type="button" aria-label="Đóng" disabled={saving} onClick={closeModal}>
+            <M.CloseButton
+              type="button"
+              aria-label="Đóng"
+              disabled={saving}
+              onClick={closeModal}
+            >
               <X size={23} aria-hidden="true" />
             </M.CloseButton>
           </M.Header>
@@ -487,8 +516,12 @@ export default function Warehouses() {
                 <M.Select
                   id={`${id}-status`}
                   value={selectedStatus}
-                  disabled={saving || statusLoading || activeStatuses.length === 0}
-                  onChange={(event) => setFormStatusId(Number(event.target.value))}
+                  disabled={
+                    saving || statusLoading || activeStatuses.length === 0
+                  }
+                  onChange={(event) =>
+                    setFormStatusId(Number(event.target.value))
+                  }
                   required
                 >
                   {activeStatuses.length === 0 && (
@@ -497,19 +530,27 @@ export default function Warehouses() {
                     </option>
                   )}
                   {activeStatuses.map((status) => (
-                    <option key={status.id} value={status.id}>{status.status_name}</option>
+                    <option key={status.id} value={status.id}>
+                      {status.status_name}
+                    </option>
                   ))}
                 </M.Select>
               </M.Field>
               {saveError && <M.Error role="alert">{saveError}</M.Error>}
             </M.Body>
             <M.Footer>
-              <M.CancelButton type="button" disabled={saving} onClick={closeModal}>
+              <M.CancelButton
+                type="button"
+                disabled={saving}
+                onClick={closeModal}
+              >
                 Hủy
               </M.CancelButton>
               <M.SaveButton
                 type="submit"
-                disabled={saving || statusLoading || activeStatuses.length === 0}
+                disabled={
+                  saving || statusLoading || activeStatuses.length === 0
+                }
               >
                 {saving ? "Đang lưu..." : "Lưu"}
               </M.SaveButton>

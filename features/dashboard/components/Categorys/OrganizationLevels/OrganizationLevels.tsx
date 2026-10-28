@@ -52,9 +52,10 @@ async function readJson(response: Response): Promise<unknown> {
   }
 
   if (!response.ok) {
-    const message = isRecord(data) && typeof data.message === "string"
-      ? data.message
-      : `API báo lỗi HTTP ${response.status}.`;
+    const message =
+      isRecord(data) && typeof data.message === "string"
+        ? data.message
+        : `API báo lỗi HTTP ${response.status}.`;
     throw new Error(message);
   }
 
@@ -66,12 +67,18 @@ function toOrganizationLevel(value: unknown): OrganizationLevel {
     !isRecord(value) ||
     typeof value.id !== "number" ||
     typeof value.status_id !== "number" ||
-    !(value["organization-level_code"] === null ||
-      typeof value["organization-level_code"] === "string") ||
-    !(value["organization-level_name"] === null ||
-      typeof value["organization-level_name"] === "string") ||
-    !(value["organization-level_description"] === null ||
-      typeof value["organization-level_description"] === "string") ||
+    !(
+      value["organization-level_code"] === null ||
+      typeof value["organization-level_code"] === "string"
+    ) ||
+    !(
+      value["organization-level_name"] === null ||
+      typeof value["organization-level_name"] === "string"
+    ) ||
+    !(
+      value["organization-level_description"] === null ||
+      typeof value["organization-level_description"] === "string"
+    ) ||
     !isInteger(value["organization-level_number"]) ||
     !isBit(value.is_last_level)
   ) {
@@ -108,10 +115,13 @@ export default function OrganizationLevels() {
   const [saveError, setSaveError] = useState("");
 
   const loadItems = useCallback(async (signal?: AbortSignal) => {
-    const response = await fetch("/api/dashboard/master-data/organization-levels", {
-      cache: "no-store",
-      signal,
-    });
+    const response = await fetch(
+      "/api/dashboard/master-data/organization-levels",
+      {
+        cache: "no-store",
+        signal,
+      },
+    );
     const data = await readJson(response);
     if (!Array.isArray(data)) {
       throw new Error("Danh sách cấp tổ chức phải là một mảng.");
@@ -128,7 +138,9 @@ export default function OrganizationLevels() {
       setSelectedId(null);
     } catch (error) {
       setListError(
-        error instanceof Error ? error.message : "Không tải được danh sách cấp tổ chức.",
+        error instanceof Error
+          ? error.message
+          : "Không tải được danh sách cấp tổ chức.",
       );
     } finally {
       setLoading(false);
@@ -154,7 +166,8 @@ export default function OrganizationLevels() {
             !isRecord(item) ||
             !Number.isInteger(Number(item.id)) ||
             Number(item.parent_id) !== 2 ||
-            (item.status_code !== "IN_USE" && item.status_code !== "NOT_IN_USE") ||
+            (item.status_code !== "IN_USE" &&
+              item.status_code !== "NOT_IN_USE") ||
             typeof item.status_name !== "string"
           ) {
             throw new Error("Dữ liệu trạng thái không hợp lệ.");
@@ -170,7 +183,9 @@ export default function OrganizationLevels() {
       } catch (error) {
         if (active) {
           setStatusError(
-            error instanceof Error ? error.message : "Không tải được trạng thái.",
+            error instanceof Error
+              ? error.message
+              : "Không tải được trạng thái.",
           );
         }
       } finally {
@@ -186,7 +201,9 @@ export default function OrganizationLevels() {
       .catch((error: unknown) => {
         if (active) {
           setListError(
-            error instanceof Error ? error.message : "Không tải được danh sách cấp tổ chức.",
+            error instanceof Error
+              ? error.message
+              : "Không tải được danh sách cấp tổ chức.",
           );
         }
       })
@@ -203,16 +220,27 @@ export default function OrganizationLevels() {
   const filteredItems = useMemo(() => {
     const keyword = filters.keyword.trim().toLocaleLowerCase();
     return items
-      .filter((item) => filters.statusId === "" || item.status_id === filters.statusId)
-      .filter((item) =>
-        !keyword ||
-        [item.code, item.name, item.description, String(item.levelNumber)]
-          .some((value) => value.toLocaleLowerCase().includes(keyword)),
+      .filter(
+        (item) =>
+          filters.statusId === "" || item.status_id === filters.statusId,
+      )
+      .filter(
+        (item) =>
+          !keyword ||
+          [
+            item.code,
+            item.name,
+            item.description,
+            String(item.levelNumber),
+          ].some((value) => value.toLocaleLowerCase().includes(keyword)),
       )
       .sort((left, right) => left.levelNumber - right.levelNumber);
   }, [filters, items]);
   const totalPages = Math.max(1, Math.ceil(filteredItems.length / PAGE_SIZE));
-  const visibleItems = filteredItems.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const visibleItems = filteredItems.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE,
+  );
   const selectedItem = items.find((item) => item.id === selectedId);
 
   const openModal = (item?: OrganizationLevel) => {
@@ -254,7 +282,9 @@ export default function OrganizationLevels() {
       setEditing(undefined);
       await refreshItems();
     } catch (error) {
-      setSaveError(error instanceof Error ? error.message : "Không thể lưu cấp tổ chức.");
+      setSaveError(
+        error instanceof Error ? error.message : "Không thể lưu cấp tổ chức.",
+      );
     } finally {
       setSaving(false);
     }
@@ -262,7 +292,11 @@ export default function OrganizationLevels() {
 
   const handleDelete = async () => {
     if (!selectedItem || saving) return;
-    if (!window.confirm(`Bạn có chắc muốn xóa cấp tổ chức "${selectedItem.name}" không?`)) {
+    if (
+      !window.confirm(
+        `Bạn có chắc muốn xóa cấp tổ chức "${selectedItem.name}" không?`,
+      )
+    ) {
       return;
     }
     setSaving(true);
@@ -275,7 +309,9 @@ export default function OrganizationLevels() {
       toOrganizationLevel(await readJson(response));
       await refreshItems();
     } catch (error) {
-      setListError(error instanceof Error ? error.message : "Không thể xóa cấp tổ chức.");
+      setListError(
+        error instanceof Error ? error.message : "Không thể xóa cấp tổ chức.",
+      );
     } finally {
       setSaving(false);
     }
@@ -300,7 +336,9 @@ export default function OrganizationLevels() {
             setSelectedId(null);
           }}
         />
-        {statusError && <S.ErrorMessage role="alert">{statusError}</S.ErrorMessage>}
+        {statusError && (
+          <S.ErrorMessage role="alert">{statusError}</S.ErrorMessage>
+        )}
         {listError && <S.ErrorMessage role="alert">{listError}</S.ErrorMessage>}
       </S.ToolbarSection>
 
@@ -319,28 +357,34 @@ export default function OrganizationLevels() {
               </tr>
             </thead>
             <tbody>
-              {!loading && visibleItems.map((item, index) => {
-                const status = statuses.find((entry) => entry.id === item.status_id);
-                return (
-                  <S.TableRow
-                    key={item.id}
-                    $selected={selectedId === item.id}
-                    onClick={() => setSelectedId(item.id)}
-                  >
-                    <td>{(page - 1) * PAGE_SIZE + index + 1}</td>
-                    <td>{item.code}</td>
-                    <td title={item.name}>{item.name}</td>
-                    <td title={item.description}>{item.description}</td>
-                    <td>{item.levelNumber}</td>
-                    <td>{item.isLastLevel ? "Có" : "Không"}</td>
-                    <td>
-                      <S.StatusBadge $active={status?.status_code === "IN_USE"}>
-                        {status?.status_name ?? `Trạng thái #${item.status_id}`}
-                      </S.StatusBadge>
-                    </td>
-                  </S.TableRow>
-                );
-              })}
+              {!loading &&
+                visibleItems.map((item, index) => {
+                  const status = statuses.find(
+                    (entry) => entry.id === item.status_id,
+                  );
+                  return (
+                    <S.TableRow
+                      key={item.id}
+                      $selected={selectedId === item.id}
+                      onClick={() => setSelectedId(item.id)}
+                    >
+                      <td>{(page - 1) * PAGE_SIZE + index + 1}</td>
+                      <td>{item.code}</td>
+                      <td title={item.name}>{item.name}</td>
+                      <td title={item.description}>{item.description}</td>
+                      <td>{item.levelNumber}</td>
+                      <td>{item.isLastLevel ? "Có" : "Không"}</td>
+                      <td>
+                        <S.StatusBadge
+                          $active={status?.status_code === "IN_USE"}
+                        >
+                          {status?.status_name ??
+                            `Trạng thái #${item.status_id}`}
+                        </S.StatusBadge>
+                      </td>
+                    </S.TableRow>
+                  );
+                })}
               {(loading || visibleItems.length === 0) && (
                 <tr>
                   <S.EmptyCell colSpan={7}>
@@ -356,7 +400,9 @@ export default function OrganizationLevels() {
           </S.Table>
         </S.TableScroll>
         <S.TableFooter>
-          <S.Total>Tổng: <span>{filteredItems.length}</span> dòng</S.Total>
+          <S.Total>
+            Tổng: <span>{filteredItems.length}</span> dòng
+          </S.Total>
           <S.Pagination aria-label="Phân trang cấp tổ chức">
             <S.PageButton
               type="button"
@@ -368,7 +414,9 @@ export default function OrganizationLevels() {
             >
               Trước
             </S.PageButton>
-            <S.PageInfo>Trang {page}/{totalPages}</S.PageInfo>
+            <S.PageInfo>
+              Trang {page}/{totalPages}
+            </S.PageInfo>
             <S.PageButton
               type="button"
               disabled={page === totalPages || loading}
@@ -420,12 +468,16 @@ function OrganizationLevelModal({
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [name, setName] = useState(item?.name ?? "");
   const [description, setDescription] = useState(item?.description ?? "");
-  const [levelNumber, setLevelNumber] = useState<number | "">(item?.levelNumber ?? "");
+  const [levelNumber, setLevelNumber] = useState<number | "">(
+    item?.levelNumber ?? "",
+  );
   const [isLastLevel, setIsLastLevel] = useState(item?.isLastLevel ?? false);
   const [statusId, setStatusId] = useState<number | "">(item?.status_id ?? "");
   const [error, setError] = useState("");
-  const defaultStatus = statuses.find((entry) => entry.status_code === "IN_USE") ?? statuses[0];
-  const resolvedStatusId = statusId === "" ? (defaultStatus?.id ?? "") : statusId;
+  const defaultStatus =
+    statuses.find((entry) => entry.status_code === "IN_USE") ?? statuses[0];
+  const resolvedStatusId =
+    statusId === "" ? (defaultStatus?.id ?? "") : statusId;
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -437,9 +489,16 @@ function OrganizationLevelModal({
     event.preventDefault();
     setError("");
     if (!name.trim()) return setError("Vui lòng nhập tên cấp tổ chức.");
-    if (name.trim().length > 255) return setError("Tên cấp tổ chức không được vượt quá 255 ký tự.");
-    if (description.trim().length > 255) return setError("Mô tả không được vượt quá 255 ký tự.");
-    if (levelNumber === "" || !Number.isInteger(levelNumber) || levelNumber < 1 || levelNumber > 4) {
+    if (name.trim().length > 255)
+      return setError("Tên cấp tổ chức không được vượt quá 255 ký tự.");
+    if (description.trim().length > 255)
+      return setError("Mô tả không được vượt quá 255 ký tự.");
+    if (
+      levelNumber === "" ||
+      !Number.isInteger(levelNumber) ||
+      levelNumber < 1 ||
+      levelNumber > 4
+    ) {
       return setError("Thứ tự cấp chỉ được nhập từ 1 đến 4.");
     }
     if (statusLoading || typeof resolvedStatusId !== "number") {
@@ -490,7 +549,9 @@ function OrganizationLevelModal({
             <M.Hint>Mã gồm 4 chữ số, được hệ thống tự tạo khi lưu.</M.Hint>
           </M.Field>
           <M.Field>
-            <M.Label htmlFor="organization-level-name">Tên cấp tổ chức <M.Required>*</M.Required></M.Label>
+            <M.Label htmlFor="organization-level-name">
+              Tên cấp tổ chức <M.Required>*</M.Required>
+            </M.Label>
             <M.Input
               id="organization-level-name"
               value={name}
@@ -509,15 +570,23 @@ function OrganizationLevelModal({
             />
           </M.Field>
           <M.Field>
-            <M.Label htmlFor="organization-level-number">Thứ tự cấp <M.Required>*</M.Required></M.Label>
+            <M.Label htmlFor="organization-level-number">
+              Thứ tự cấp <M.Required>*</M.Required>
+            </M.Label>
             <M.Select
               id="organization-level-number"
               value={levelNumber}
-              onChange={(event) => setLevelNumber(event.target.value ? Number(event.target.value) : "")}
+              onChange={(event) =>
+                setLevelNumber(
+                  event.target.value ? Number(event.target.value) : "",
+                )
+              }
             >
               <option value="">Chọn thứ tự cấp</option>
               {[1, 2, 3, 4].map((number) => (
-                <option key={number} value={number}>{number}</option>
+                <option key={number} value={number}>
+                  {number}
+                </option>
               ))}
             </M.Select>
             <M.Hint>Chỉ chọn từ cấp 1 đến cấp 4.</M.Hint>
@@ -532,16 +601,24 @@ function OrganizationLevelModal({
             <M.Label htmlFor="organization-level-last">Cấp cuối cùng</M.Label>
           </M.CheckField>
           <M.Field>
-            <M.Label htmlFor="organization-level-status">Trạng thái <M.Required>*</M.Required></M.Label>
+            <M.Label htmlFor="organization-level-status">
+              Trạng thái <M.Required>*</M.Required>
+            </M.Label>
             <M.Select
               id="organization-level-status"
               value={resolvedStatusId}
-              onChange={(event) => setStatusId(event.target.value ? Number(event.target.value) : "")}
+              onChange={(event) =>
+                setStatusId(
+                  event.target.value ? Number(event.target.value) : "",
+                )
+              }
               disabled={statusLoading || statuses.length === 0}
             >
               <option value="">Chọn trạng thái</option>
               {statuses.map((status) => (
-                <option key={status.id} value={status.id}>{status.status_name}</option>
+                <option key={status.id} value={status.id}>
+                  {status.status_name}
+                </option>
               ))}
             </M.Select>
           </M.Field>

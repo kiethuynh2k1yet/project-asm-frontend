@@ -89,8 +89,16 @@ export const VisualPanel = styled.aside`
   padding: 56px;
   color: #ffffff;
   background:
-    radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.22), transparent 25%),
-    radial-gradient(circle at 80% 75%, rgba(129, 140, 248, 0.65), transparent 30%),
+    radial-gradient(
+      circle at 15% 15%,
+      rgba(255, 255, 255, 0.22),
+      transparent 25%
+    ),
+    radial-gradient(
+      circle at 80% 75%,
+      rgba(129, 140, 248, 0.65),
+      transparent 30%
+    ),
     linear-gradient(135deg, #312e81 0%, #4338ca 48%, #2563eb 100%);
 
   &::before {

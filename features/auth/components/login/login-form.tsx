@@ -198,7 +198,9 @@ export default function LoginForm() {
             </LoginButton>
           </LoginFormWrapper>
 
-          <RegisterText>Hãy liên hệ quản trị viên để có thể đăng nhập</RegisterText>
+          <RegisterText>
+            Hãy liên hệ quản trị viên để có thể đăng nhập
+          </RegisterText>
         </FormPanel>
       </LoginLayout>
     </PageWrapper>

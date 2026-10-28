@@ -193,8 +193,7 @@ export const MenuChevron = styled.span<MenuChevronProps>`
   justify-content: center;
   flex-shrink: 0;
 
-  transform: ${({ $isOpen }) =>
-    $isOpen ? "rotate(90deg)" : "rotate(0deg)"};
+  transform: ${({ $isOpen }) => ($isOpen ? "rotate(90deg)" : "rotate(0deg)")};
 
   transition: transform 0.25s ease;
 
@@ -247,8 +246,7 @@ const subMenuItemStyles = css<SubMenuItemProps>`
   background-color: ${({ $isActive }) =>
     $isActive ? "#eff6ff" : "transparent"};
 
-  color: ${({ $isActive }) =>
-    $isActive ? "#2563eb" : "#30383d"};
+  color: ${({ $isActive }) => ($isActive ? "#2563eb" : "#30383d")};
 
   font-size: 15px;
   font-weight: ${({ $isActive }) => ($isActive ? 500 : 400)};
@@ -266,8 +264,7 @@ const subMenuItemStyles = css<SubMenuItemProps>`
   }
 
   &:hover {
-    background-color: ${({ $isActive }) =>
-      $isActive ? "#dbeafe" : "#f3f4f6"};
+    background-color: ${({ $isActive }) => ($isActive ? "#dbeafe" : "#f3f4f6")};
 
     color: #2563eb;
   }

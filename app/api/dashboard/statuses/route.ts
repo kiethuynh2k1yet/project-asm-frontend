@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 
 const BACKEND_API_URL = process.env.BACKEND_API_URL;
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     if (!BACKEND_API_URL) {
       return NextResponse.json(
@@ -26,8 +26,17 @@ export async function GET() {
       );
     }
 
-   const backendUrl =
-  `${BACKEND_API_URL.replace(/\/+$/, "")}/statuses?parent_id=2`;
+    const requestedParentId = new URL(request.url).searchParams.get(
+      "parent_id",
+    );
+    const parentId = requestedParentId === null ? 2 : Number(requestedParentId);
+    if (!Number.isInteger(parentId) || parentId < 0) {
+      return NextResponse.json(
+        { message: "parent_id không hợp lệ." },
+        { status: 400 },
+      );
+    }
+    const backendUrl = `${BACKEND_API_URL.replace(/\/+$/, "")}/statuses?parent_id=${parentId}`;
 
     const backendResponse = await fetch(backendUrl, {
       method: "GET",
@@ -47,31 +56,25 @@ export async function GET() {
     try {
       data = responseText ? JSON.parse(responseText) : null;
     } catch {
-      console.error(
-        "JOB STATUSES: Backend trả dữ liệu không phải JSON.",
-        {
-          url: backendUrl,
-          status: backendResponse.status,
-        },
-      );
+      console.error("JOB STATUSES: Backend trả dữ liệu không phải JSON.", {
+        url: backendUrl,
+        status: backendResponse.status,
+      });
     }
 
     if (!backendResponse.ok) {
       let message = "Không thể lấy danh sách trạng thái công việc.";
 
-      if (
-        typeof data === "object" &&
-        data !== null &&
-        "message" in data
-      ) {
+      if (typeof data === "object" && data !== null && "message" in data) {
         const backendMessage = data.message;
 
         if (typeof backendMessage === "string") {
           message = backendMessage;
         } else if (Array.isArray(backendMessage)) {
-          message = backendMessage
-            .filter((item) => typeof item === "string")
-            .join(", ") || message;
+          message =
+            backendMessage
+              .filter((item) => typeof item === "string")
+              .join(", ") || message;
         }
       }
 
@@ -80,10 +83,7 @@ export async function GET() {
         status: backendResponse.status,
       });
 
-      return NextResponse.json(
-        { message },
-        { status: backendResponse.status },
-      );
+      return NextResponse.json({ message }, { status: backendResponse.status });
     }
 
     // Hỗ trợ response:
@@ -91,9 +91,7 @@ export async function GET() {
     // 2. { data: [...] }
     const statuses = Array.isArray(data)
       ? data
-      : typeof data === "object" &&
-          data !== null &&
-          "data" in data
+      : typeof data === "object" && data !== null && "data" in data
         ? data.data
         : null;
 
@@ -106,40 +104,39 @@ export async function GET() {
       );
     }
 
-    const normalizedStatuses = statuses
-      .map((item: unknown) => {
-        if (
-          typeof item !== "object" ||
-          item === null ||
-          !("id" in item) ||
-          !("parent_id" in item) ||
-          !("status_code" in item) ||
-          !("status_name" in item)
-        ) {
-          return null;
-        }
+    const normalizedStatuses = statuses.map((item: unknown) => {
+      if (
+        typeof item !== "object" ||
+        item === null ||
+        !("id" in item) ||
+        !("parent_id" in item) ||
+        !("status_code" in item) ||
+        !("status_name" in item)
+      ) {
+        return null;
+      }
 
-        const id = Number(item.id);
-        const parentId = Number(item.parent_id);
+      const id = Number(item.id);
+      const rowParentId = Number(item.parent_id);
 
-        if (
-          !Number.isInteger(id) ||
-          id < 0 ||
-          id > 255 ||
-          parentId !== 2 ||
-          typeof item.status_code !== "string" ||
-          typeof item.status_name !== "string"
-        ) {
-          return null;
-        }
+      if (
+        !Number.isInteger(id) ||
+        id < 0 ||
+        id > 255 ||
+        rowParentId !== parentId ||
+        typeof item.status_code !== "string" ||
+        typeof item.status_name !== "string"
+      ) {
+        return null;
+      }
 
-        return {
-          id,
-          parent_id: parentId,
-          status_code: item.status_code,
-          status_name: item.status_name,
-        };
-      });
+      return {
+        id,
+        parent_id: rowParentId,
+        status_code: item.status_code,
+        status_name: item.status_name,
+      };
+    });
 
     if (normalizedStatuses.some((item) => item === null)) {
       return NextResponse.json(
@@ -161,8 +158,7 @@ export async function GET() {
 
     return NextResponse.json(
       {
-        message:
-          "Không thể xử lý yêu cầu lấy danh sách trạng thái công việc.",
+        message: "Không thể xử lý yêu cầu lấy danh sách trạng thái công việc.",
       },
       { status: 500 },
     );

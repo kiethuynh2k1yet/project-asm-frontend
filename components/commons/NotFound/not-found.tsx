@@ -20,8 +20,8 @@ const NotFound = () => {
         <S.Title>Không tìm thấy trang</S.Title>
 
         <S.Description>
-          Có thể đường dẫn bạn truy cập không tồn tại, đã bị thay đổi hoặc
-          hiện không còn khả dụng.
+          Có thể đường dẫn bạn truy cập không tồn tại, đã bị thay đổi hoặc hiện
+          không còn khả dụng.
         </S.Description>
 
         <S.Actions>

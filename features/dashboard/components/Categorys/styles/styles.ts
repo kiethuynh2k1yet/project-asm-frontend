@@ -110,18 +110,15 @@ export const Table = styled.table`
   td:last-child {
     border-right: none;
   }
-
 `;
 
 export const TableRow = styled.tr<{ $selected: boolean }>`
-  background: ${({ $selected }) =>
-    $selected ? "#dbeafe" : "#ffffff"};
+  background: ${({ $selected }) => ($selected ? "#dbeafe" : "#ffffff")};
 
   cursor: pointer;
 
   &:hover {
-    background: ${({ $selected }) =>
-      $selected ? "#dbeafe" : "#f8fafc"};
+    background: ${({ $selected }) => ($selected ? "#dbeafe" : "#f8fafc")};
   }
 `;
 
@@ -153,11 +150,9 @@ export const StatusBadge = styled.span<{ $active: boolean }>`
   padding: 4px 10px;
   border-radius: 20px;
 
-  background: ${({ $active }) =>
-    $active ? "#dcfce7" : "#f1f5f9"};
+  background: ${({ $active }) => ($active ? "#dcfce7" : "#f1f5f9")};
 
-  color: ${({ $active }) =>
-    $active ? "#166534" : "#475569"};
+  color: ${({ $active }) => ($active ? "#166534" : "#475569")};
 
   font-size: 11px;
   font-weight: 600;

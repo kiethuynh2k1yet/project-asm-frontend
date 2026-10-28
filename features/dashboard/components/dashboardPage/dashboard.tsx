@@ -1,7 +1,3 @@
-
-
-export default function Dashboardcomponent(){
-  return (
-    <>hello world</>
-  );
+export default function Dashboardcomponent() {
+  return <>hello world</>;
 }

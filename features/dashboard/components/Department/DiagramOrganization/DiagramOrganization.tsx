@@ -7,7 +7,14 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { ChevronDown, ChevronRight, FilePlus2, Save, SquarePen, X } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  FilePlus2,
+  Save,
+  SquarePen,
+  X,
+} from "lucide-react";
 
 import type { JobStatus } from "../../Categorys/constants/jobStatuses";
 import * as S from "./diagram-organization.styles";
@@ -84,10 +91,21 @@ function toDepartment(value: unknown): Department {
     typeof value.status_id !== "number" ||
     typeof value["department-code"] !== "string" ||
     typeof value["department-name"] !== "string" ||
-    !(value["english-name"] === null || typeof value["english-name"] === "string") ||
-    !(value.department_type === null || typeof value.department_type === "number") ||
-    !(value["manager-id"] === null || typeof value["manager-id"] === "number") ||
-    !(value["parent-department"] === null || typeof value["parent-department"] === "string")
+    !(
+      value["english-name"] === null ||
+      typeof value["english-name"] === "string"
+    ) ||
+    !(
+      value.department_type === null ||
+      typeof value.department_type === "number"
+    ) ||
+    !(
+      value["manager-id"] === null || typeof value["manager-id"] === "number"
+    ) ||
+    !(
+      value["parent-department"] === null ||
+      typeof value["parent-department"] === "string"
+    )
   ) {
     throw new Error("Dữ liệu sơ đồ tổ chức không hợp lệ.");
   }
@@ -176,7 +194,9 @@ function buildTree(items: Department[]): TreeNode[] {
   }
 
   const sortNodes = (list: TreeNode[]) => {
-    list.sort((left, right) => left.department.code.localeCompare(right.department.code));
+    list.sort((left, right) =>
+      left.department.code.localeCompare(right.department.code),
+    );
     list.forEach((node) => sortNodes(node.children));
   };
   sortNodes(roots);
@@ -224,8 +244,12 @@ export default function DiagramOrganization() {
   const [saveError, setSaveError] = useState("");
 
   const selected = departments.find((item) => item.id === selectedId);
-  const activeStatus = statuses.find((status) => status.status_code === "IN_USE");
-  const inactiveStatus = statuses.find((status) => status.status_code === "NOT_IN_USE");
+  const activeStatus = statuses.find(
+    (status) => status.status_code === "IN_USE",
+  );
+  const inactiveStatus = statuses.find(
+    (status) => status.status_code === "NOT_IN_USE",
+  );
 
   const loadDepartments = useCallback(async (includeDissolved: boolean) => {
     const query = includeDissolved ? "?include_dissolved=true" : "";
@@ -297,21 +321,32 @@ export default function DiagramOrganization() {
   useEffect(() => {
     let active = true;
     const loadLookups = async () => {
-      const [employeeResult, statusResult, departmentTypeResult] = await Promise.allSettled([
-        fetch("/api/dashboard/human-resources/employees", { cache: "no-store" })
-          .then(readJson),
-        fetch("/api/dashboard/statuses", { cache: "no-store" })
-          .then(readJson),
-        fetch("/api/dashboard/master-data/room-types", { cache: "no-store" })
-          .then(readJson),
-      ]);
+      const [employeeResult, statusResult, departmentTypeResult] =
+        await Promise.allSettled([
+          fetch("/api/dashboard/human-resources/employees", {
+            cache: "no-store",
+          }).then(readJson),
+          fetch("/api/dashboard/statuses", { cache: "no-store" }).then(
+            readJson,
+          ),
+          fetch("/api/dashboard/master-data/room-types", {
+            cache: "no-store",
+          }).then(readJson),
+        ]);
       if (!active) return;
 
-      if (employeeResult.status === "fulfilled" && Array.isArray(employeeResult.value)) {
+      if (
+        employeeResult.status === "fulfilled" &&
+        Array.isArray(employeeResult.value)
+      ) {
         try {
           setEmployees(employeeResult.value.map(toEmployee));
         } catch (error) {
-          setEmployeeError(error instanceof Error ? error.message : "Không tải được nhân viên.");
+          setEmployeeError(
+            error instanceof Error
+              ? error.message
+              : "Không tải được nhân viên.",
+          );
         }
       } else {
         setEmployeeError(
@@ -323,7 +358,10 @@ export default function DiagramOrganization() {
         );
       }
 
-      if (statusResult.status === "fulfilled" && Array.isArray(statusResult.value)) {
+      if (
+        statusResult.status === "fulfilled" &&
+        Array.isArray(statusResult.value)
+      ) {
         const parsed = statusResult.value.filter(
           (item): item is JobStatus =>
             isRecord(item) &&
@@ -333,8 +371,10 @@ export default function DiagramOrganization() {
             Number(item.parent_id) === 2,
         );
         setStatuses(parsed);
-        if (!parsed.some((status) => status.status_code === "IN_USE") ||
-            !parsed.some((status) => status.status_code === "NOT_IN_USE")) {
+        if (
+          !parsed.some((status) => status.status_code === "IN_USE") ||
+          !parsed.some((status) => status.status_code === "NOT_IN_USE")
+        ) {
           setStatusError("Thiếu trạng thái Sử dụng hoặc Không sử dụng.");
         }
       } else {
@@ -441,13 +481,19 @@ export default function DiagramOrganization() {
       setSaveError("Vui lòng nhập mã và tên phòng ban.");
       return;
     }
-    if (draft.code.trim().length > 50 || draft.name.trim().length > 255 ||
-        draft.englishName.trim().length > 255) {
+    if (
+      draft.code.trim().length > 50 ||
+      draft.name.trim().length > 255 ||
+      draft.englishName.trim().length > 255
+    ) {
       setSaveError("Mã hoặc tên phòng ban vượt quá độ dài cho phép.");
       return;
     }
-    if (draft.parentCode && (draft.parentCode === draft.code.trim() ||
-        descendants.has(draft.parentCode))) {
+    if (
+      draft.parentCode &&
+      (draft.parentCode === draft.code.trim() ||
+        descendants.has(draft.parentCode))
+    ) {
       setSaveError("Phòng ban cha không hợp lệ hoặc tạo vòng lặp.");
       return;
     }
@@ -456,9 +502,7 @@ export default function DiagramOrganization() {
       return;
     }
 
-    const dissolvedDate = dissolve
-      ? draft.dissolvedDate || localToday()
-      : "";
+    const dissolvedDate = dissolve ? draft.dissolvedDate || localToday() : "";
     const body = {
       "department-code": draft.code.trim(),
       "department-name": draft.name.trim(),
@@ -505,7 +549,10 @@ export default function DiagramOrganization() {
     });
   };
 
-  const renderNodes = (nodes: TreeNode[], ancestors = new Set<number>()): ReactNode =>
+  const renderNodes = (
+    nodes: TreeNode[],
+    ancestors = new Set<number>(),
+  ): ReactNode =>
     nodes.map(({ department, children }) => {
       if (ancestors.has(department.id)) return null;
       const path = new Set(ancestors).add(department.id);
@@ -521,11 +568,13 @@ export default function DiagramOrganization() {
               onClick={() => toggleExpanded(department.code)}
               disabled={children.length === 0}
             >
-              {children.length > 0
-                ? expanded
-                  ? <ChevronDown size={15} aria-hidden="true" />
-                  : <ChevronRight size={15} aria-hidden="true" />
-                : null}
+              {children.length > 0 ? (
+                expanded ? (
+                  <ChevronDown size={15} aria-hidden="true" />
+                ) : (
+                  <ChevronRight size={15} aria-hidden="true" />
+                )
+              ) : null}
             </S.ExpandButton>
             <S.TreeNodeButton
               type="button"
@@ -555,7 +604,7 @@ export default function DiagramOrganization() {
               <S.Badge $inactive={Boolean(department.dissolvedDate)}>
                 {department.dissolvedDate
                   ? "Đã giải thể"
-                  : status?.status_name ?? "Đang hoạt động"}
+                  : (status?.status_name ?? "Đang hoạt động")}
               </S.Badge>
             </S.TreeNodeButton>
           </S.TreeRow>
@@ -611,7 +660,9 @@ export default function DiagramOrganization() {
       </S.Header>
 
       {(listError || statusError) && (
-        <S.Message $error role="alert">{listError || statusError}</S.Message>
+        <S.Message $error role="alert">
+          {listError || statusError}
+        </S.Message>
       )}
 
       <S.Workspace>
@@ -634,7 +685,9 @@ export default function DiagramOrganization() {
               <S.TreeList>{renderNodes(tree)}</S.TreeList>
             ) : (
               <S.EmptySelection>
-                {listError ? "Không tải được dữ liệu." : "Không có phòng ban phù hợp."}
+                {listError
+                  ? "Không tải được dữ liệu."
+                  : "Không có phòng ban phù hợp."}
               </S.EmptySelection>
             )}
           </S.TreeScroll>
@@ -659,7 +712,7 @@ export default function DiagramOrganization() {
                 ? "Phòng ban mới"
                 : mode === "edit"
                   ? "Chỉnh sửa phòng ban"
-                  : selected?.name ?? "Thông tin phòng ban"}
+                  : (selected?.name ?? "Thông tin phòng ban")}
             </h2>
             {selected && mode === "view" && <span>{selected.code}</span>}
           </S.PanelHeader>
@@ -676,7 +729,9 @@ export default function DiagramOrganization() {
                     value={draft.code}
                     maxLength={50}
                     disabled={mode === "view" || saving}
-                    onChange={(event) => setDraft({ ...draft, code: event.target.value })}
+                    onChange={(event) =>
+                      setDraft({ ...draft, code: event.target.value })
+                    }
                   />
                 </S.Field>
                 <S.Field>
@@ -685,7 +740,9 @@ export default function DiagramOrganization() {
                     value={draft.name}
                     maxLength={255}
                     disabled={mode === "view" || saving}
-                    onChange={(event) => setDraft({ ...draft, name: event.target.value })}
+                    onChange={(event) =>
+                      setDraft({ ...draft, name: event.target.value })
+                    }
                   />
                 </S.Field>
                 <S.Field>
@@ -694,14 +751,18 @@ export default function DiagramOrganization() {
                     value={draft.englishName}
                     maxLength={255}
                     disabled={mode === "view" || saving}
-                    onChange={(event) => setDraft({ ...draft, englishName: event.target.value })}
+                    onChange={(event) =>
+                      setDraft({ ...draft, englishName: event.target.value })
+                    }
                   />
                 </S.Field>
                 <S.Field>
                   Loại phòng ban
                   <select
                     value={draft.departmentTypeId ?? ""}
-                    disabled={mode === "view" || saving || Boolean(departmentTypeError)}
+                    disabled={
+                      mode === "view" || saving || Boolean(departmentTypeError)
+                    }
                     onChange={(event) =>
                       setDraft({
                         ...draft,
@@ -723,11 +784,15 @@ export default function DiagramOrganization() {
                   Người quản lý
                   <select
                     value={draft.managerId ?? ""}
-                    disabled={mode === "view" || saving || Boolean(employeeError)}
+                    disabled={
+                      mode === "view" || saving || Boolean(employeeError)
+                    }
                     onChange={(event) =>
                       setDraft({
                         ...draft,
-                        managerId: event.target.value ? Number(event.target.value) : null,
+                        managerId: event.target.value
+                          ? Number(event.target.value)
+                          : null,
                       })
                     }
                   >
@@ -745,15 +810,19 @@ export default function DiagramOrganization() {
                     value={draft.parentCode ?? ""}
                     disabled={mode === "view" || saving}
                     onChange={(event) =>
-                      setDraft({ ...draft, parentCode: event.target.value || null })
+                      setDraft({
+                        ...draft,
+                        parentCode: event.target.value || null,
+                      })
                     }
                   >
                     <option value="">Không có / cấp cao nhất</option>
                     {departments
-                      .filter((item) =>
-                        item.id !== selected?.id &&
-                        item.code !== draft.code.trim() &&
-                        !descendants.has(item.code),
+                      .filter(
+                        (item) =>
+                          item.id !== selected?.id &&
+                          item.code !== draft.code.trim() &&
+                          !descendants.has(item.code),
                       )
                       .map((item) => (
                         <option key={item.id} value={item.code}>
@@ -769,7 +838,10 @@ export default function DiagramOrganization() {
                     value={draft.establishedDate}
                     disabled={mode === "view" || saving}
                     onChange={(event) =>
-                      setDraft({ ...draft, establishedDate: event.target.value })
+                      setDraft({
+                        ...draft,
+                        establishedDate: event.target.value,
+                      })
                     }
                   />
                 </S.Field>
@@ -777,7 +849,11 @@ export default function DiagramOrganization() {
                   Ngày giải thể
                   <input
                     type="date"
-                    value={dissolve ? draft.dissolvedDate || localToday() : draft.dissolvedDate}
+                    value={
+                      dissolve
+                        ? draft.dissolvedDate || localToday()
+                        : draft.dissolvedDate
+                    }
                     disabled
                   />
                 </S.Field>
@@ -799,11 +875,21 @@ export default function DiagramOrganization() {
                   />
                   Giải thể phòng ban
                 </S.DissolveField>
-                {employeeError && <S.Message $error role="alert">{employeeError}</S.Message>}
-                {departmentTypeError && (
-                  <S.Message $error role="alert">{departmentTypeError}</S.Message>
+                {employeeError && (
+                  <S.Message $error role="alert">
+                    {employeeError}
+                  </S.Message>
                 )}
-                {saveError && <S.Message $error role="alert">{saveError}</S.Message>}
+                {departmentTypeError && (
+                  <S.Message $error role="alert">
+                    {departmentTypeError}
+                  </S.Message>
+                )}
+                {saveError && (
+                  <S.Message $error role="alert">
+                    {saveError}
+                  </S.Message>
+                )}
               </S.FormGrid>
             </S.FormScroll>
           )}

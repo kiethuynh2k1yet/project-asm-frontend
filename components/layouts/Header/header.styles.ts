@@ -6,7 +6,7 @@ export const HeaderWrapper = styled.header`
   height: 64px;
   min-height: 64px;
   flex-shrink: 0;
-  background-color: #1A365D;
+  background-color: #1a365d;
   border-bottom: 1px solid #e5e7eb;
   border-radius: 0 0 8px 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
@@ -94,8 +94,7 @@ export const MenuIcon = styled.span<{ $isOpen: boolean }>`
 
   &::before {
     top: ${({ $isOpen }) => ($isOpen ? "0" : "-6px")};
-    transform: ${({ $isOpen }) =>
-      $isOpen ? "rotate(45deg)" : "rotate(0deg)"};
+    transform: ${({ $isOpen }) => ($isOpen ? "rotate(45deg)" : "rotate(0deg)")};
   }
 
   &::after {

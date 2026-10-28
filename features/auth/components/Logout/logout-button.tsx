@@ -122,7 +122,7 @@ export default function LogoutButtonPage({ name, email }: AvatarMenuProps) {
           <UserName>{name || "Người dùng"}</UserName>
           <UserEmail>{email || "Chưa có email"}</UserEmail>
         </UserInfo>
-        
+
         <ContainerButton>
           <LogoutButton
             type="button"

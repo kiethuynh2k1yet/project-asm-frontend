@@ -63,11 +63,7 @@ export function itemRoutes(
 
     const body = await readBody(request);
     if (body instanceof NextResponse) return body;
-    return dashboardProxy(
-      `${backendPath}/${numericId}`,
-      method,
-      body,
-    );
+    return dashboardProxy(`${backendPath}/${numericId}`, method, body);
   };
 
   return {
@@ -86,10 +82,7 @@ export function itemRoutes(
           { status: 400 },
         );
       }
-      return dashboardProxy(
-        `${backendPath}/${numericId}`,
-        "DELETE",
-      );
+      return dashboardProxy(`${backendPath}/${numericId}`, "DELETE");
     },
   };
 }

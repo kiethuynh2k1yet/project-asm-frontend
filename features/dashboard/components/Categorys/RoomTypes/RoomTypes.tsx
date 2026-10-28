@@ -11,10 +11,7 @@ import {
 import { X } from "lucide-react";
 
 import TaskToolbar from "../components/TaskToolbar/TaskToolbar";
-import type {
-  JobFilters,
-  JobStatus,
-} from "../constants/jobStatuses";
+import type { JobFilters, JobStatus } from "../constants/jobStatuses";
 import * as S from "../styles/styles";
 import { ModalStyles as M } from "../styles/styles";
 
@@ -106,23 +103,26 @@ export default function RoomTypes() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
 
-  const loadItems = useCallback(async (signal?: AbortSignal) => {
-    const query = new URLSearchParams();
-    if (filters.keyword.trim()) query.set("keyword", filters.keyword.trim());
-    if (filters.statusId !== "") {
-      query.set("status_id", String(filters.statusId));
-    }
-    const queryString = query.toString();
-    const response = await fetch(
-      `/api/dashboard/master-data/room-types${queryString ? `?${queryString}` : ""}`,
-      { cache: "no-store", signal },
-    );
-    const data = await readJson(response);
-    if (!Array.isArray(data)) {
-      throw new Error("Danh sách loại phòng ban phải là một mảng.");
-    }
-    return data.map(toRoomType);
-  }, [filters]);
+  const loadItems = useCallback(
+    async (signal?: AbortSignal) => {
+      const query = new URLSearchParams();
+      if (filters.keyword.trim()) query.set("keyword", filters.keyword.trim());
+      if (filters.statusId !== "") {
+        query.set("status_id", String(filters.statusId));
+      }
+      const queryString = query.toString();
+      const response = await fetch(
+        `/api/dashboard/master-data/room-types${queryString ? `?${queryString}` : ""}`,
+        { cache: "no-store", signal },
+      );
+      const data = await readJson(response);
+      if (!Array.isArray(data)) {
+        throw new Error("Danh sách loại phòng ban phải là một mảng.");
+      }
+      return data.map(toRoomType);
+    },
+    [filters],
+  );
 
   useEffect(() => {
     const controller = new AbortController();
@@ -277,7 +277,9 @@ export default function RoomTypes() {
       await refreshItems();
     } catch (error) {
       setSaveError(
-        error instanceof Error ? error.message : "Không thể lưu loại phòng ban.",
+        error instanceof Error
+          ? error.message
+          : "Không thể lưu loại phòng ban.",
       );
     } finally {
       setSaving(false);
@@ -333,7 +335,9 @@ export default function RoomTypes() {
             setSelectedId(null);
           }}
         />
-        {statusError && <S.ErrorMessage role="alert">{statusError}</S.ErrorMessage>}
+        {statusError && (
+          <S.ErrorMessage role="alert">{statusError}</S.ErrorMessage>
+        )}
         {listError && <S.ErrorMessage role="alert">{listError}</S.ErrorMessage>}
       </S.ToolbarSection>
 
@@ -352,28 +356,34 @@ export default function RoomTypes() {
               </tr>
             </thead>
             <tbody>
-              {!loading && visibleItems.map((item, index) => {
-                const status = statuses.find((entry) => entry.id === item.status_id);
-                return (
-                  <S.TableRow
-                    key={item.id}
-                    $selected={selectedId === item.id}
-                    onClick={() => setSelectedId(item.id)}
-                  >
-                    <td>{(page - 1) * PAGE_SIZE + index + 1}</td>
-                    <td>{item.code}</td>
-                    <td title={item.name}>{item.name}</td>
-                    <td title={item.description}>{item.description}</td>
-                    <td>{item.sortOrder}</td>
-                    <td>{item.isFinalLevel ? "Có" : "Không"}</td>
-                    <td>
-                      <S.StatusBadge $active={status?.status_code === "IN_USE"}>
-                        {status?.status_name ?? `Trạng thái #${item.status_id}`}
-                      </S.StatusBadge>
-                    </td>
-                  </S.TableRow>
-                );
-              })}
+              {!loading &&
+                visibleItems.map((item, index) => {
+                  const status = statuses.find(
+                    (entry) => entry.id === item.status_id,
+                  );
+                  return (
+                    <S.TableRow
+                      key={item.id}
+                      $selected={selectedId === item.id}
+                      onClick={() => setSelectedId(item.id)}
+                    >
+                      <td>{(page - 1) * PAGE_SIZE + index + 1}</td>
+                      <td>{item.code}</td>
+                      <td title={item.name}>{item.name}</td>
+                      <td title={item.description}>{item.description}</td>
+                      <td>{item.sortOrder}</td>
+                      <td>{item.isFinalLevel ? "Có" : "Không"}</td>
+                      <td>
+                        <S.StatusBadge
+                          $active={status?.status_code === "IN_USE"}
+                        >
+                          {status?.status_name ??
+                            `Trạng thái #${item.status_id}`}
+                        </S.StatusBadge>
+                      </td>
+                    </S.TableRow>
+                  );
+                })}
               {(loading || visibleItems.length === 0) && (
                 <tr>
                   <S.EmptyCell colSpan={7}>
@@ -389,7 +399,9 @@ export default function RoomTypes() {
           </S.Table>
         </S.TableScroll>
         <S.TableFooter>
-          <S.Total>Tổng: <span>{items.length}</span> dòng</S.Total>
+          <S.Total>
+            Tổng: <span>{items.length}</span> dòng
+          </S.Total>
           <S.Pagination aria-label="Phân trang loại phòng ban">
             <S.PageButton
               type="button"
@@ -401,7 +413,9 @@ export default function RoomTypes() {
             >
               Trước
             </S.PageButton>
-            <S.PageInfo>Trang {page}/{totalPages}</S.PageInfo>
+            <S.PageInfo>
+              Trang {page}/{totalPages}
+            </S.PageInfo>
             <S.PageButton
               type="button"
               disabled={page === totalPages || loading}
@@ -455,12 +469,16 @@ function RoomTypeModal({
   const [code, setCode] = useState(item?.code ?? "");
   const [name, setName] = useState(item?.name ?? "");
   const [description, setDescription] = useState(item?.description ?? "");
-  const [sortOrder, setSortOrder] = useState<number | "">(item?.sortOrder ?? "");
+  const [sortOrder, setSortOrder] = useState<number | "">(
+    item?.sortOrder ?? "",
+  );
   const [isFinalLevel, setIsFinalLevel] = useState(item?.isFinalLevel ?? false);
   const [statusId, setStatusId] = useState<number | "">(item?.status_id ?? "");
   const [error, setError] = useState("");
-  const defaultStatus = statuses.find((entry) => entry.status_code === "IN_USE") ?? statuses[0];
-  const resolvedStatusId = statusId === "" ? (defaultStatus?.id ?? "") : statusId;
+  const defaultStatus =
+    statuses.find((entry) => entry.status_code === "IN_USE") ?? statuses[0];
+  const resolvedStatusId =
+    statusId === "" ? (defaultStatus?.id ?? "") : statusId;
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -468,7 +486,9 @@ function RoomTypeModal({
     return () => dialog?.close();
   }, []);
 
-  const handleSubmit: NonNullable<ComponentProps<"form">["onSubmit"]> = (event) => {
+  const handleSubmit: NonNullable<ComponentProps<"form">["onSubmit"]> = (
+    event,
+  ) => {
     event.preventDefault();
     setError("");
     if (saving) return;
@@ -513,7 +533,11 @@ function RoomTypeModal({
   };
 
   return (
-    <M.Dialog ref={dialogRef} aria-labelledby={`${id}-title`} onCancel={onClose}>
+    <M.Dialog
+      ref={dialogRef}
+      aria-labelledby={`${id}-title`}
+      onCancel={onClose}
+    >
       <M.Header>
         <M.Title id={`${id}-title`}>
           {item ? "Sửa loại phòng ban" : "Thêm loại phòng ban"}
@@ -572,12 +596,16 @@ function RoomTypeModal({
               value={sortOrder}
               required
               onChange={(event) =>
-                setSortOrder(event.target.value === "" ? "" : Number(event.target.value))
+                setSortOrder(
+                  event.target.value === "" ? "" : Number(event.target.value),
+                )
               }
             >
               <option value="">Chọn thứ tự cấp</option>
               {[1, 2, 3, 4].map((level) => (
-                <option key={level} value={level}>{level}</option>
+                <option key={level} value={level}>
+                  {level}
+                </option>
               ))}
             </M.Select>
           </M.Field>
@@ -599,12 +627,16 @@ function RoomTypeModal({
               value={resolvedStatusId}
               disabled={statusLoading || statuses.length === 0}
               onChange={(event) =>
-                setStatusId(event.target.value === "" ? "" : Number(event.target.value))
+                setStatusId(
+                  event.target.value === "" ? "" : Number(event.target.value),
+                )
               }
             >
               <option value="">Chọn trạng thái</option>
               {statuses.map((status) => (
-                <option key={status.id} value={status.id}>{status.status_name}</option>
+                <option key={status.id} value={status.id}>
+                  {status.status_name}
+                </option>
               ))}
             </M.Select>
           </M.Field>

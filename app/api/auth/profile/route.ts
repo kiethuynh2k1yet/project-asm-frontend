@@ -16,23 +16,17 @@ export async function GET() {
     const accessToken = cookieStore.get("access_token")?.value;
 
     if (!accessToken) {
-      return NextResponse.json(
-        { message: "Chưa đăng nhập." },
-        { status: 401 },
-      );
+      return NextResponse.json({ message: "Chưa đăng nhập." }, { status: 401 });
     }
 
-    const backendResponse = await fetch(
-      `${BACKEND_API_URL}/auth/profile`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          Accept: "application/json",
-        },
-        cache: "no-store",
+    const backendResponse = await fetch(`${BACKEND_API_URL}/auth/profile`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        Accept: "application/json",
       },
-    );
+      cache: "no-store",
+    });
 
     const data = await backendResponse.json();
 

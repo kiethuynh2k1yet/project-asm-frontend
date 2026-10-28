@@ -78,9 +78,9 @@ async function readJson(response: Response): Promise<unknown> {
       if (typeof data.message === "string") {
         message = data.message;
       } else if (Array.isArray(data.message)) {
-        message = data.message
-          .filter((item) => typeof item === "string")
-          .join(", ") || message;
+        message =
+          data.message.filter((item) => typeof item === "string").join(", ") ||
+          message;
       }
     }
     throw new Error(message);
@@ -140,7 +140,9 @@ function toEmployee(value: unknown): Employee {
         : null,
     position: value.position,
     position_plan_id:
-      typeof value.position_plan_id === "number" ? value.position_plan_id : null,
+      typeof value.position_plan_id === "number"
+        ? value.position_plan_id
+        : null,
     is_active: value.is_active === true || value.is_active === 1,
     password_changed_at:
       typeof value.password_changed_at === "string"
@@ -184,7 +186,9 @@ function toPositionPlanOption(value: unknown): PositionPlanOption {
 
 export default function Employees() {
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [departmentLevels, setDepartmentLevels] = useState<DepartmentLevel[]>([]);
+  const [departmentLevels, setDepartmentLevels] = useState<DepartmentLevel[]>(
+    [],
+  );
   const [departmentLevelsLoading, setDepartmentLevelsLoading] = useState(true);
   const [departmentLevelsError, setDepartmentLevelsError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -226,9 +230,7 @@ export default function Employees() {
         }
         const levels = data.map(toDepartmentLevel);
         if (active) {
-          setDepartmentLevels(
-            levels.filter((level) => level.name),
-          );
+          setDepartmentLevels(levels.filter((level) => level.name));
         }
       } catch (error) {
         if (active) {
@@ -254,25 +256,28 @@ export default function Employees() {
     };
   }, []);
 
-  const loadEmployees = useCallback(async (signal?: AbortSignal) => {
-    const query = new URLSearchParams();
-    if (filters.keyword.trim()) {
-      query.set("keyword", filters.keyword.trim());
-    }
-    if (filters.isActive !== "") {
-      query.set("is_active", filters.isActive);
-    }
-    const queryString = query.toString();
-    const response = await fetch(
-      `/api/dashboard/human-resources/employees${queryString ? `?${queryString}` : ""}`,
-      { cache: "no-store", signal },
-    );
-    const data = await readJson(response);
-    if (!Array.isArray(data)) {
-      throw new Error("Danh sách nhân viên phải là một mảng.");
-    }
-    return data.map(toEmployee);
-  }, [filters]);
+  const loadEmployees = useCallback(
+    async (signal?: AbortSignal) => {
+      const query = new URLSearchParams();
+      if (filters.keyword.trim()) {
+        query.set("keyword", filters.keyword.trim());
+      }
+      if (filters.isActive !== "") {
+        query.set("is_active", filters.isActive);
+      }
+      const queryString = query.toString();
+      const response = await fetch(
+        `/api/dashboard/human-resources/employees${queryString ? `?${queryString}` : ""}`,
+        { cache: "no-store", signal },
+      );
+      const data = await readJson(response);
+      if (!Array.isArray(data)) {
+        throw new Error("Danh sách nhân viên phải là một mảng.");
+      }
+      return data.map(toEmployee);
+    },
+    [filters],
+  );
 
   useEffect(() => {
     const controller = new AbortController();
@@ -317,9 +322,8 @@ export default function Employees() {
     (employee) => employee.id === selectedId,
   );
   const getDepartmentName = (employee: Employee) =>
-    departmentLevels.find(
-      (level) => level.id === employee.department_type_id,
-    )?.name ?? employee.department;
+    departmentLevels.find((level) => level.id === employee.department_type_id)
+      ?.name ?? employee.department;
   const totalPages = Math.max(1, Math.ceil(employees.length / PAGE_SIZE));
   const visibleEmployees = employees.slice(
     (page - 1) * PAGE_SIZE,
@@ -428,9 +432,7 @@ export default function Employees() {
   };
 
   const handleResetPassword = async () => {
-    if (
-      userRole !== "admin" || !selectedEmployee || saving
-    ) {
+    if (userRole !== "admin" || !selectedEmployee || saving) {
       return;
     }
     if (
@@ -450,10 +452,7 @@ export default function Employees() {
         { method: "POST" },
       );
       const data = await readJson(response);
-      if (
-        !isRecord(data) ||
-        typeof data.temporaryPassword !== "string"
-      ) {
+      if (!isRecord(data) || typeof data.temporaryPassword !== "string") {
         throw new Error("Dữ liệu tài khoản sau khi reset không hợp lệ.");
       }
       setCredentialNotice({
@@ -578,9 +577,13 @@ export default function Employees() {
                 id="employee-active-filter"
                 value={activeInput}
                 onChange={(event) => {
-                  const value = event.target.value as EmployeeFilters["isActive"];
+                  const value = event.target
+                    .value as EmployeeFilters["isActive"];
                   setActiveInput(value);
-                  applyFilters({ keyword: keywordInput.trim(), isActive: value });
+                  applyFilters({
+                    keyword: keywordInput.trim(),
+                    isActive: value,
+                  });
                 }}
               >
                 <option value="">Tất cả</option>
@@ -591,9 +594,7 @@ export default function Employees() {
           </T.Filters>
         </T.Toolbar>
 
-        {listError && (
-          <S.ErrorMessage role="alert">{listError}</S.ErrorMessage>
-        )}
+        {listError && <S.ErrorMessage role="alert">{listError}</S.ErrorMessage>}
         {accountError && (
           <S.ErrorMessage role="alert">{accountError}</S.ErrorMessage>
         )}
@@ -609,8 +610,7 @@ export default function Employees() {
             {credentialNotice.action === "created"
               ? "Mật khẩu khởi tạo"
               : "Mật khẩu mới"}{" "}
-            cho mã nhân viên{" "}
-            <strong>{credentialNotice.employeeCode}</strong>:{" "}
+            cho mã nhân viên <strong>{credentialNotice.employeeCode}</strong>:{" "}
             <strong>{credentialNotice.password}</strong>. Chỉ hiển thị lúc này;
             hãy gửi cho nhân viên và yêu cầu đổi sớm.
           </S.ErrorMessage>
@@ -635,9 +635,7 @@ export default function Employees() {
               <tr>
                 <th scope="col">#</th>
                 <th scope="col">Mã nhân viên</th>
-                {userRole === "admin" && (
-                  <th scope="col">Cập nhật mật khẩu</th>
-                )}
+                {userRole === "admin" && <th scope="col">Cập nhật mật khẩu</th>}
                 <th scope="col">Họ và tên</th>
                 <th scope="col">Email</th>
                 <th scope="col">Điện thoại</th>
@@ -673,12 +671,16 @@ export default function Employees() {
                     {userRole === "admin" && (
                       <td>
                         {employee.password_changed_at
-                          ? new Date(employee.password_changed_at).toLocaleString("vi-VN")
+                          ? new Date(
+                              employee.password_changed_at,
+                            ).toLocaleString("vi-VN")
                           : "Chưa có tài khoản"}
                       </td>
                     )}
                     <td title={employee.full_name}>{employee.full_name}</td>
-                    <td title={employee.email ?? ""}>{employee.email || "—"}</td>
+                    <td title={employee.email ?? ""}>
+                      {employee.email || "—"}
+                    </td>
                     <td>{employee.phone || "—"}</td>
                     <td title={getDepartmentName(employee) ?? ""}>
                       {getDepartmentName(employee) || "—"}
@@ -733,7 +735,9 @@ export default function Employees() {
                   <S.StatusBadge $active={employee.is_active}>
                     {employee.is_active ? "Đang làm việc" : "Đã nghỉ"}
                   </S.StatusBadge>
-                  <E.CardIndex>#{(page - 1) * PAGE_SIZE + index + 1}</E.CardIndex>
+                  <E.CardIndex>
+                    #{(page - 1) * PAGE_SIZE + index + 1}
+                  </E.CardIndex>
                 </E.CardHeader>
                 <E.CardName>{employee.full_name}</E.CardName>
                 <E.CardDetails>
@@ -742,7 +746,9 @@ export default function Employees() {
                       <E.CardLabel>Cập nhật mật khẩu</E.CardLabel>
                       <E.CardValue>
                         {employee.password_changed_at
-                          ? new Date(employee.password_changed_at).toLocaleString("vi-VN")
+                          ? new Date(
+                              employee.password_changed_at,
+                            ).toLocaleString("vi-VN")
                           : "Chưa có tài khoản"}
                       </E.CardValue>
                     </E.CardField>
@@ -842,7 +848,9 @@ function EmployeeModal({
 }: EmployeeModalProps) {
   const id = useId();
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const [employeeCode, setEmployeeCode] = useState(employee?.employee_code ?? "");
+  const [employeeCode, setEmployeeCode] = useState(
+    employee?.employee_code ?? "",
+  );
   const [fullName, setFullName] = useState(employee?.full_name ?? "");
   const [email, setEmail] = useState(employee?.email ?? "");
   const [phone, setPhone] = useState(employee?.phone ?? "");
@@ -900,9 +908,9 @@ function EmployeeModal({
     };
   }, []);
 
-  const handleSubmit: NonNullable<
-    ComponentProps<"form">["onSubmit"]
-  > = (event) => {
+  const handleSubmit: NonNullable<ComponentProps<"form">["onSubmit"]> = (
+    event,
+  ) => {
     event.preventDefault();
     setError("");
     if (saving) return;
@@ -981,7 +989,9 @@ function EmployeeModal({
             />
           </S.ModalStyles.Field>
           <S.ModalStyles.Field>
-            <S.ModalStyles.Label htmlFor={`${id}-email`}>Email</S.ModalStyles.Label>
+            <S.ModalStyles.Label htmlFor={`${id}-email`}>
+              Email
+            </S.ModalStyles.Label>
             <S.ModalStyles.Input
               id={`${id}-email`}
               type="email"
@@ -1010,7 +1020,11 @@ function EmployeeModal({
             <S.ModalStyles.Select
               id={`${id}-department`}
               value={departmentValue}
-              disabled={saving || departmentLevelsLoading || Boolean(departmentLevelsError)}
+              disabled={
+                saving ||
+                departmentLevelsLoading ||
+                Boolean(departmentLevelsError)
+              }
               onChange={(event) => setDepartment(event.target.value)}
             >
               <option value="">
@@ -1049,7 +1063,9 @@ function EmployeeModal({
             <S.ModalStyles.Select
               id={`${id}-position-plan`}
               value={positionPlanId}
-              disabled={saving || positionPlansLoading || Boolean(positionPlansError)}
+              disabled={
+                saving || positionPlansLoading || Boolean(positionPlansError)
+              }
               onChange={(event) => setPositionPlanId(event.target.value)}
             >
               <option value="">
@@ -1061,13 +1077,14 @@ function EmployeeModal({
                 <option
                   key={plan.id}
                   value={plan.id}
-                  disabled={plan.status_id !== 6 && plan.id !== employee?.position_plan_id}
+                  disabled={
+                    plan.status_id !== 6 &&
+                    plan.id !== employee?.position_plan_id
+                  }
                 >
-                  {[
-                    plan.work_name,
-                    plan.rank_name,
-                    plan.department_name,
-                  ].filter(Boolean).join(" - ") || `Vị trí #${plan.id}`}
+                  {[plan.work_name, plan.rank_name, plan.department_name]
+                    .filter(Boolean)
+                    .join(" - ") || `Vị trí #${plan.id}`}
                   {plan.status_id !== 6 ? " (Không sử dụng)" : ""}
                 </option>
               ))}

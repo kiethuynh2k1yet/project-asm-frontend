@@ -32,7 +32,9 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isNullableInteger(value: unknown): value is number | null {
-  return value === null || (typeof value === "number" && Number.isInteger(value));
+  return (
+    value === null || (typeof value === "number" && Number.isInteger(value))
+  );
 }
 
 async function readJson(response: Response): Promise<unknown> {
@@ -58,8 +60,10 @@ function toAssetGroup(value: unknown): AssetGroup {
     !isRecord(value) ||
     typeof value.id !== "number" ||
     !Number.isInteger(value.id) ||
-    !(value["asset-group_name"] === null ||
-      typeof value["asset-group_name"] === "string")
+    !(
+      value["asset-group_name"] === null ||
+      typeof value["asset-group_name"] === "string"
+    )
   ) {
     throw new Error("Dữ liệu nhóm tài sản không hợp lệ.");
   }
@@ -116,10 +120,12 @@ export default function MaintenanceCycles() {
   const [saveError, setSaveError] = useState("");
 
   const loadRows = useCallback(async (signal?: AbortSignal) => {
-    const data = await readJson(await fetch(
-      "/api/dashboard/master-data/maintenance-cycles",
-      { cache: "no-store", signal },
-    ));
+    const data = await readJson(
+      await fetch("/api/dashboard/master-data/maintenance-cycles", {
+        cache: "no-store",
+        signal,
+      }),
+    );
     if (!Array.isArray(data)) {
       throw new Error("Danh sách chu kỳ bảo dưỡng phải là một mảng.");
     }
@@ -167,10 +173,12 @@ export default function MaintenanceCycles() {
 
     void (async () => {
       try {
-        const data = await readJson(await fetch(
-          "/api/dashboard/master-data/asset-groups",
-          { cache: "no-store", signal: controller.signal },
-        ));
+        const data = await readJson(
+          await fetch("/api/dashboard/master-data/asset-groups", {
+            cache: "no-store",
+            signal: controller.signal,
+          }),
+        );
         if (!Array.isArray(data)) {
           throw new Error("Danh sách nhóm tài sản phải là một mảng.");
         }
@@ -191,10 +199,12 @@ export default function MaintenanceCycles() {
 
     void (async () => {
       try {
-        const data = await readJson(await fetch("/api/dashboard/statuses", {
-          cache: "no-store",
-          signal: controller.signal,
-        }));
+        const data = await readJson(
+          await fetch("/api/dashboard/statuses", {
+            cache: "no-store",
+            signal: controller.signal,
+          }),
+        );
         if (!Array.isArray(data)) {
           throw new Error("Danh sách trạng thái phải là một mảng.");
         }
@@ -250,9 +260,7 @@ export default function MaintenanceCycles() {
       return (
         (filters.statusId === "" || row.status_id === filters.statusId) &&
         (!keyword ||
-          values.some((value) =>
-            value.toLocaleLowerCase().includes(keyword),
-          ))
+          values.some((value) => value.toLocaleLowerCase().includes(keyword)))
       );
     });
   }, [assetGroups, filters, rows]);
@@ -314,10 +322,14 @@ export default function MaintenanceCycles() {
     setSaving(true);
     setError("");
     try {
-      toMaintenanceCycle(await readJson(await fetch(
-        `/api/dashboard/master-data/maintenance-cycles/${selected.id}`,
-        { method: "DELETE" },
-      )));
+      toMaintenanceCycle(
+        await readJson(
+          await fetch(
+            `/api/dashboard/master-data/maintenance-cycles/${selected.id}`,
+            { method: "DELETE" },
+          ),
+        ),
+      );
       await refreshRows();
     } catch (cause) {
       setError(
@@ -496,9 +508,15 @@ function MaintenanceCycleModal({
   const [assetGroupId, setAssetGroupId] = useState<number | "">(
     item?.assetGroupId ?? "",
   );
-  const [year, setYear] = useState(item?.year === null || item?.year === undefined ? "" : String(item.year));
-  const [month, setMonth] = useState(item?.month === null || item?.month === undefined ? "" : String(item.month));
-  const [date, setDate] = useState(item?.date === null || item?.date === undefined ? "" : String(item.date));
+  const [year, setYear] = useState(
+    item?.year === null || item?.year === undefined ? "" : String(item.year),
+  );
+  const [month, setMonth] = useState(
+    item?.month === null || item?.month === undefined ? "" : String(item.month),
+  );
+  const [date, setDate] = useState(
+    item?.date === null || item?.date === undefined ? "" : String(item.date),
+  );
   const [statusId, setStatusId] = useState<number | "">(item?.status_id ?? "");
   const [error, setError] = useState("");
   const activeStatuses = statuses.filter((status) => status.parent_id === 2);
@@ -517,7 +535,10 @@ function MaintenanceCycleModal({
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError("");
-    const parseOptionalInteger = (value: string, label: string): number | null => {
+    const parseOptionalInteger = (
+      value: string,
+      label: string,
+    ): number | null => {
       if (value.trim() === "") return null;
       const parsed = Number(value);
       if (!Number.isSafeInteger(parsed)) {
@@ -534,7 +555,11 @@ function MaintenanceCycleModal({
       parsedMonth = parseOptionalInteger(month, "Tháng");
       parsedDate = parseOptionalInteger(date, "Ngày");
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Năm, tháng, ngày không hợp lệ.");
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "Năm, tháng, ngày không hợp lệ.",
+      );
       return;
     }
     if (parsedYear === null && parsedMonth === null && parsedDate === null) {
@@ -595,11 +620,15 @@ function MaintenanceCycleModal({
               value={assetGroupId}
               disabled={saving || groupsLoading}
               onChange={(event) =>
-                setAssetGroupId(event.target.value ? Number(event.target.value) : "")
+                setAssetGroupId(
+                  event.target.value ? Number(event.target.value) : "",
+                )
               }
             >
               <option value="">
-                {groupsLoading ? "Đang tải nhóm tài sản..." : "Chọn nhóm tài sản"}
+                {groupsLoading
+                  ? "Đang tải nhóm tài sản..."
+                  : "Chọn nhóm tài sản"}
               </option>
               {assetGroups.map((group) => (
                 <option key={group.id} value={group.id}>
@@ -641,7 +670,9 @@ function MaintenanceCycleModal({
               onChange={(event) => setDate(event.target.value)}
             />
           </M.Field>
-          <M.Hint>Nhập ít nhất một trong ba trường năm, tháng hoặc ngày.</M.Hint>
+          <M.Hint>
+            Nhập ít nhất một trong ba trường năm, tháng hoặc ngày.
+          </M.Hint>
           <M.Field>
             <M.Label htmlFor="maintenance-cycle-status">
               Trạng thái <M.Required>*</M.Required>
@@ -650,7 +681,9 @@ function MaintenanceCycleModal({
               id="maintenance-cycle-status"
               value={resolvedStatusId}
               onChange={(event) =>
-                setStatusId(event.target.value ? Number(event.target.value) : "")
+                setStatusId(
+                  event.target.value ? Number(event.target.value) : "",
+                )
               }
               disabled={saving || statusLoading || activeStatuses.length === 0}
             >

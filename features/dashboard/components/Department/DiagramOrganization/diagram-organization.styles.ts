@@ -236,7 +236,8 @@ export const TreeNodeButton = styled.button<{ $selected: boolean }>`
   padding: 5px 9px;
   background: ${({ $selected }) => ($selected ? "#dbeafe" : "transparent")};
   color: #334155;
-  border: 1px solid ${({ $selected }) => ($selected ? "#93c5fd" : "transparent")};
+  border: 1px solid
+    ${({ $selected }) => ($selected ? "#93c5fd" : "transparent")};
   border-radius: 6px;
   text-align: left;
   cursor: pointer;

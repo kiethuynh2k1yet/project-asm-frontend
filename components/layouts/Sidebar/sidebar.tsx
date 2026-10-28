@@ -81,10 +81,7 @@ export default function Sidebar({
                 )}
               </MenuGroupButton>
 
-              <SubMenu
-                id={submenuId}
-                hidden={!isOpen || !isGroupOpen}
-              >
+              <SubMenu id={submenuId} hidden={!isOpen || !isGroupOpen}>
                 <SubMenuList>
                   {item.children?.map((child) => {
                     const ChildIcon = child.icon;
@@ -92,7 +89,7 @@ export default function Sidebar({
                     const isActive = Boolean(
                       child.href &&
                         (pathname === child.href ||
-                          pathname.startsWith(`${child.href}/`))
+                          pathname.startsWith(`${child.href}/`)),
                     );
 
                     return (
@@ -104,10 +101,7 @@ export default function Sidebar({
                             aria-current={isActive ? "page" : undefined}
                             onClick={onNavigate}
                           >
-                            <ChildIcon
-                              size={19}
-                              aria-hidden="true"
-                            />
+                            <ChildIcon size={19} aria-hidden="true" />
 
                             <span>{child.label}</span>
                           </SubMenuItemLink>
@@ -118,10 +112,7 @@ export default function Sidebar({
                             disabled
                             title="Chưa tạo trang"
                           >
-                            <ChildIcon
-                              size={19}
-                              aria-hidden="true"
-                            />
+                            <ChildIcon size={19} aria-hidden="true" />
 
                             <span>{child.label}</span>
                           </SubMenuItem>

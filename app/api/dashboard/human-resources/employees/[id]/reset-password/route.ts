@@ -17,8 +17,5 @@ export async function POST(_request: Request, context: RouteContext) {
     return NextResponse.json({ message: "ID không hợp lệ." }, { status: 400 });
   }
 
-  return dashboardProxy(
-    `/employee/${numericId}/reset-password`,
-    "POST",
-  );
+  return dashboardProxy(`/employee/${numericId}/reset-password`, "POST");
 }

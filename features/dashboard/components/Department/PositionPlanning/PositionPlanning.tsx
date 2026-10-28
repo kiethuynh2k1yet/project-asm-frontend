@@ -5,13 +5,7 @@ import AttachmentUploadPanel from "./components/AttachmentUploadPanel";
 import ImageAttachmentsPanel from "./components/ImageAttachmentsPanel";
 import DeviceRequirements from "./components/DeviceRequirements";
 import SoftwareLicenseRequirements from "./components/SoftwareLicenseRequirements";
-import {
-  Pencil,
-  Plus,
-  Search,
-  Trash2,
-  X,
-} from "lucide-react";
+import { Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import {
   ActionGroup,
   DangerButton,
@@ -220,7 +214,11 @@ function toOption(value: unknown): Option | null {
     id,
     code: String(value.code ?? value.work_code ?? value.rank_code ?? ""),
     name: String(
-      value.name ?? value.work_name ?? value.rank_name ?? value.standard_name ?? "",
+      value.name ??
+        value.work_name ??
+        value.rank_name ??
+        value.standard_name ??
+        "",
     ),
   };
 }
@@ -245,7 +243,8 @@ function toListRow(value: unknown): PlanRow | null {
     department_name:
       typeof value.department_name === "string" ? value.department_name : null,
     status_id: Number(value.status_id),
-    status_name: typeof value.status_name === "string" ? value.status_name : null,
+    status_name:
+      typeof value.status_name === "string" ? value.status_name : null,
     created_at: String(value.created_at ?? ""),
   };
 }
@@ -266,9 +265,12 @@ function toDevice(value: Record<string, unknown>): Device | null {
     quantity,
     standard_specification_id: standardId,
     status_id: Number(value.status_id ?? 6),
-    category_code: typeof value.category_code === "string" ? value.category_code : undefined,
-    category_name: typeof value.category_name === "string" ? value.category_name : undefined,
-    standard_name: typeof value.standard_name === "string" ? value.standard_name : undefined,
+    category_code:
+      typeof value.category_code === "string" ? value.category_code : undefined,
+    category_name:
+      typeof value.category_name === "string" ? value.category_name : undefined,
+    standard_name:
+      typeof value.standard_name === "string" ? value.standard_name : undefined,
     cpu_chip: typeof value.cpu_chip === "string" ? value.cpu_chip : null,
     ram: typeof value.ram === "string" ? value.ram : null,
     ssd: typeof value.ssd === "string" ? value.ssd : null,
@@ -277,7 +279,9 @@ function toDevice(value: Record<string, unknown>): Device | null {
   };
 }
 
-function toSoftwareLicense(value: Record<string, unknown>): SoftwareLicense | null {
+function toSoftwareLicense(
+  value: Record<string, unknown>,
+): SoftwareLicense | null {
   const id = Number(value.id);
   const softwareId = Number(value.software_asset_id);
   const licenseId = Number(value.asset_license_id);
@@ -295,10 +299,14 @@ function toSoftwareLicense(value: Record<string, unknown>): SoftwareLicense | nu
     asset_license_id: licenseId,
     quantity,
     status_id: Number(value.status_id ?? 6),
-    asset_code: typeof value.asset_code === "string" ? value.asset_code : undefined,
-    asset_name: typeof value.asset_name === "string" ? value.asset_name : undefined,
-    license_code: typeof value.license_code === "string" ? value.license_code : undefined,
-    license_name: typeof value.license_name === "string" ? value.license_name : undefined,
+    asset_code:
+      typeof value.asset_code === "string" ? value.asset_code : undefined,
+    asset_name:
+      typeof value.asset_name === "string" ? value.asset_name : undefined,
+    license_code:
+      typeof value.license_code === "string" ? value.license_code : undefined,
+    license_name:
+      typeof value.license_name === "string" ? value.license_name : undefined,
   };
 }
 
@@ -334,27 +342,32 @@ function readOptions(value: unknown): Options {
     ? value.departments.filter(isRecord).flatMap((item) => {
         const id = Number(item.id);
         if (!Number.isInteger(id)) return [];
-        return [{
-          id,
-          code: String(item.code ?? ""),
-          name: String(item.name ?? ""),
-          parent_code:
-            typeof item.parent_code === "string" ? item.parent_code : null,
-        }];
+        return [
+          {
+            id,
+            code: String(item.code ?? ""),
+            name: String(item.name ?? ""),
+            parent_code:
+              typeof item.parent_code === "string" ? item.parent_code : null,
+          },
+        ];
       })
     : [];
   const specifications: Specification[] = Array.isArray(value.specifications)
     ? value.specifications.filter(isRecord).flatMap((item) => {
         const option = toOption(item);
         return option
-          ? [{
-              ...option,
-              cpu_chip: typeof item.cpu_chip === "string" ? item.cpu_chip : null,
-              ram: typeof item.ram === "string" ? item.ram : null,
-              ssd: typeof item.ssd === "string" ? item.ssd : null,
-              gpu: typeof item.gpu === "string" ? item.gpu : null,
-              monitor: typeof item.monitor === "string" ? item.monitor : null,
-            }]
+          ? [
+              {
+                ...option,
+                cpu_chip:
+                  typeof item.cpu_chip === "string" ? item.cpu_chip : null,
+                ram: typeof item.ram === "string" ? item.ram : null,
+                ssd: typeof item.ssd === "string" ? item.ssd : null,
+                gpu: typeof item.gpu === "string" ? item.gpu : null,
+                monitor: typeof item.monitor === "string" ? item.monitor : null,
+              },
+            ]
           : [];
       })
     : [];
@@ -415,9 +428,7 @@ function emptyDraft(): Draft {
 function formatDate(value: string) {
   if (!value) return "—";
   const date = new Date(value);
-  return Number.isNaN(date.getTime())
-    ? "—"
-    : date.toLocaleDateString("vi-VN");
+  return Number.isNaN(date.getTime()) ? "—" : date.toLocaleDateString("vi-VN");
 }
 
 function formatSize(value: string | null) {
@@ -446,7 +457,9 @@ function DepartmentSelect({
   const byParent = useMemo(() => {
     const map = new Map<string | null, Department[]>();
     departments.forEach((department) => {
-      const parent = departments.some((item) => item.code === department.parent_code)
+      const parent = departments.some(
+        (item) => item.code === department.parent_code,
+      )
         ? department.parent_code
         : null;
       map.set(parent, [...(map.get(parent) ?? []), department]);
@@ -455,7 +468,11 @@ function DepartmentSelect({
   }, [departments]);
   const selected = departments.find((item) => item.code === value);
 
-  const renderNodes = (parent: string | null, depth: number, ancestry: Set<string>) =>
+  const renderNodes = (
+    parent: string | null,
+    depth: number,
+    ancestry: Set<string>,
+  ) =>
     (byParent.get(parent) ?? []).map((department) => {
       if (ancestry.has(department.code)) return null;
       const children = byParent.get(department.code) ?? [];
@@ -557,7 +574,8 @@ export default function PositionPlanning() {
   const [keyword, setKeyword] = useState("");
   const [mode, setMode] = useState<ModalMode | null>(null);
   const [section, setSection] = useState<Section>("general");
-  const [requirementTab, setRequirementTab] = useState<RequirementTab>("devices");
+  const [requirementTab, setRequirementTab] =
+    useState<RequirementTab>("devices");
   const [draft, setDraft] = useState<Draft>(emptyDraft);
   const [activePlanId, setActivePlanId] = useState<number | null>(null);
   const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
@@ -571,7 +589,10 @@ export default function PositionPlanning() {
         if (mounted) setOptions(readOptions(data));
       })
       .catch((error: unknown) => {
-        if (mounted) setPageError(error instanceof Error ? error.message : "Không tải được danh mục.");
+        if (mounted)
+          setPageError(
+            error instanceof Error ? error.message : "Không tải được danh mục.",
+          );
       })
       .finally(() => {
         if (mounted) setOptionsLoading(false);
@@ -581,40 +602,47 @@ export default function PositionPlanning() {
     };
   }, []);
 
-  const loadList = useCallback(async (signal?: AbortSignal) => {
-    const params = new URLSearchParams({
-      page: String(page),
-      limit: String(PAGE_SIZE),
-    });
-    if (filters.work) params.set("work_id", filters.work);
-    if (filters.rank) params.set("level_id", filters.rank);
-    if (filters.department) params.set("department_code", filters.department);
-    if (filters.status) params.set("status_id", filters.status);
-    if (keyword) params.set("keyword", keyword);
-    setListLoading(true);
-    try {
-      const data = await readJson(
-        await fetch(`${API}?${params}`, { cache: "no-store", signal }),
-      );
-      if (signal?.aborted) return;
-      if (!isRecord(data) || !Array.isArray(data.data)) {
-        throw new Error("Dữ liệu danh sách hoạch định không hợp lệ.");
-      }
-      const normalizedRows: PlanRow[] = data.data.map((item) => {
-        const row = toListRow(item);
-        if (!row) throw new Error("Có dòng hoạch định trả về dữ liệu không hợp lệ.");
-        return row;
+  const loadList = useCallback(
+    async (signal?: AbortSignal) => {
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(PAGE_SIZE),
       });
-      setRows(normalizedRows);
-      setTotal(Number(data.total ?? 0));
-      setPageError("");
-    } catch (error) {
-      if (error instanceof DOMException && error.name === "AbortError") return;
-      setPageError(error instanceof Error ? error.message : "Không tải được danh sách.");
-    } finally {
-      if (!signal?.aborted) setListLoading(false);
-    }
-  }, [filters, keyword, page]);
+      if (filters.work) params.set("work_id", filters.work);
+      if (filters.rank) params.set("level_id", filters.rank);
+      if (filters.department) params.set("department_code", filters.department);
+      if (filters.status) params.set("status_id", filters.status);
+      if (keyword) params.set("keyword", keyword);
+      setListLoading(true);
+      try {
+        const data = await readJson(
+          await fetch(`${API}?${params}`, { cache: "no-store", signal }),
+        );
+        if (signal?.aborted) return;
+        if (!isRecord(data) || !Array.isArray(data.data)) {
+          throw new Error("Dữ liệu danh sách hoạch định không hợp lệ.");
+        }
+        const normalizedRows: PlanRow[] = data.data.map((item) => {
+          const row = toListRow(item);
+          if (!row)
+            throw new Error("Có dòng hoạch định trả về dữ liệu không hợp lệ.");
+          return row;
+        });
+        setRows(normalizedRows);
+        setTotal(Number(data.total ?? 0));
+        setPageError("");
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError")
+          return;
+        setPageError(
+          error instanceof Error ? error.message : "Không tải được danh sách.",
+        );
+      } finally {
+        if (!signal?.aborted) setListLoading(false);
+      }
+    },
+    [filters, keyword, page],
+  );
 
   useEffect(() => {
     const controller = new AbortController();
@@ -626,18 +654,30 @@ export default function PositionPlanning() {
   }, [loadList]);
 
   const loadPlan = async (id: number): Promise<Plan> => {
-    const data = await readJson(await fetch(`${API}/${id}`, { cache: "no-store" }));
-    if (!isRecord(data)) throw new Error("Dữ liệu chi tiết hoạch định không hợp lệ.");
+    const data = await readJson(
+      await fetch(`${API}/${id}`, { cache: "no-store" }),
+    );
+    if (!isRecord(data))
+      throw new Error("Dữ liệu chi tiết hoạch định không hợp lệ.");
     const row = toListRow(data);
     if (!row) throw new Error("Dữ liệu chi tiết hoạch định không hợp lệ.");
     const devices = Array.isArray(data.devices)
-      ? data.devices.filter(isRecord).map(toDevice).filter((item): item is Device => item !== null)
+      ? data.devices
+          .filter(isRecord)
+          .map(toDevice)
+          .filter((item): item is Device => item !== null)
       : [];
     const softwareLicenses = Array.isArray(data.software_licenses)
-      ? data.software_licenses.filter(isRecord).map(toSoftwareLicense).filter((item): item is SoftwareLicense => item !== null)
+      ? data.software_licenses
+          .filter(isRecord)
+          .map(toSoftwareLicense)
+          .filter((item): item is SoftwareLicense => item !== null)
       : [];
     const attachments = Array.isArray(data.attachments)
-      ? data.attachments.filter(isRecord).map(toAttachment).filter((item): item is Attachment => item !== null)
+      ? data.attachments
+          .filter(isRecord)
+          .map(toAttachment)
+          .filter((item): item is Attachment => item !== null)
       : [];
     const plan: Plan = {
       ...row,
@@ -666,7 +706,9 @@ export default function PositionPlanning() {
       setRequirementTab("devices");
       setMode(nextMode);
     } catch (error) {
-      setPageError(error instanceof Error ? error.message : "Không tải được hoạch định.");
+      setPageError(
+        error instanceof Error ? error.message : "Không tải được hoạch định.",
+      );
     }
   };
 
@@ -701,13 +743,18 @@ export default function PositionPlanning() {
         setPageError("Vui lòng chọn chủng loại thiết bị");
         return;
       }
-      if (!Number.isInteger(Number(device.quantity)) || Number(device.quantity) < 1) {
+      if (
+        !Number.isInteger(Number(device.quantity)) ||
+        Number(device.quantity) < 1
+      ) {
         setPageError("Số lượng thiết bị phải là số nguyên lớn hơn 0");
         return;
       }
       const key = `${device.asset_category_id}:${device.standard_specification_id ?? "null"}`;
       if (duplicateDevices.has(key)) {
-        setPageError("Chủng loại và thông số chuẩn bị trùng trong danh sách thiết bị");
+        setPageError(
+          "Chủng loại và thông số chuẩn bị trùng trong danh sách thiết bị",
+        );
         return;
       }
       duplicateDevices.add(key);
@@ -718,7 +765,10 @@ export default function PositionPlanning() {
         setPageError("Vui lòng chọn phần mềm và license");
         return;
       }
-      if (!Number.isInteger(Number(license.quantity)) || Number(license.quantity) < 1) {
+      if (
+        !Number.isInteger(Number(license.quantity)) ||
+        Number(license.quantity) < 1
+      ) {
         setPageError("Số lượng license phải là số nguyên lớn hơn 0");
         return;
       }
@@ -741,18 +791,27 @@ export default function PositionPlanning() {
         status_id: draft.status_id,
         job_description: draft.job_description,
         recruitment_description: draft.recruitment_description,
-        devices: draft.devices.map(({ asset_category_id, quantity, standard_specification_id, status_id }) => ({
-          asset_category_id,
-          quantity: Number(quantity),
-          standard_specification_id,
-          status_id,
-        })),
-        software_licenses: draft.software_licenses.map(({ software_asset_id, asset_license_id, quantity, status_id }) => ({
-          software_asset_id,
-          asset_license_id,
-          quantity: Number(quantity),
-          status_id,
-        })),
+        devices: draft.devices.map(
+          ({
+            asset_category_id,
+            quantity,
+            standard_specification_id,
+            status_id,
+          }) => ({
+            asset_category_id,
+            quantity: Number(quantity),
+            standard_specification_id,
+            status_id,
+          }),
+        ),
+        software_licenses: draft.software_licenses.map(
+          ({ software_asset_id, asset_license_id, quantity, status_id }) => ({
+            software_asset_id,
+            asset_license_id,
+            quantity: Number(quantity),
+            status_id,
+          }),
+        ),
       };
       const response = await readJson(
         await fetch(mode === "create" ? API : `${API}/${activePlanId}`, {
@@ -803,7 +862,9 @@ export default function PositionPlanning() {
       if (mode === "create" && page !== 1) setPage(1);
       else await loadList();
     } catch (error) {
-      setPageError(error instanceof Error ? error.message : "Không thể lưu hoạch định.");
+      setPageError(
+        error instanceof Error ? error.message : "Không thể lưu hoạch định.",
+      );
     } finally {
       setSaving(false);
     }
@@ -815,23 +876,31 @@ export default function PositionPlanning() {
     const positionName = [selected?.work_name, selected?.rank_name]
       .filter(Boolean)
       .join(" - ");
-    const departmentName = selected?.department_name ?? selected?.organization_code ?? "";
+    const departmentName =
+      selected?.department_name ?? selected?.organization_code ?? "";
     if (
       !window.confirm(
         `Bạn có chắc muốn xóa hoạch định vị trí "${positionName}" của đơn vị "${departmentName}" không?`,
       )
-    ) return;
+    )
+      return;
     try {
       await readJson(await fetch(`${API}/${selectedId}`, { method: "DELETE" }));
       setSelectedId(null);
       setNotice("Xóa hoạch định vị trí thành công.");
       await loadList();
     } catch (error) {
-      setPageError(error instanceof Error ? error.message : "Không thể xóa hoạch định.");
+      setPageError(
+        error instanceof Error ? error.message : "Không thể xóa hoạch định.",
+      );
     }
   };
 
-  const uploadAttachment = async (file: File, type: "FILE" | "IMAGE", note: string): Promise<boolean> => {
+  const uploadAttachment = async (
+    file: File,
+    type: "FILE" | "IMAGE",
+    note: string,
+  ): Promise<boolean> => {
     if (!activePlanId) return false;
     const formData = new FormData();
     formData.set("file", file);
@@ -844,16 +913,22 @@ export default function PositionPlanning() {
           body: formData,
         }),
       );
-      if (!isRecord(data)) throw new Error("Thông tin tệp tải lên không hợp lệ.");
+      if (!isRecord(data))
+        throw new Error("Thông tin tệp tải lên không hợp lệ.");
       const nextAttachment: Attachment = {
         id: Number(data.id),
         attachment_type: type,
         original_name: String(data.original_name ?? file.name),
         file_path: String(data.file_path ?? ""),
-        file_size: data.file_size == null ? String(file.size) : String(data.file_size),
+        file_size:
+          data.file_size == null ? String(file.size) : String(data.file_size),
         note: typeof data.note === "string" ? data.note : null,
-        mime_type: typeof data.mime_type === "string" ? data.mime_type : file.type,
-        created_at: typeof data.created_at === "string" ? data.created_at : new Date().toISOString(),
+        mime_type:
+          typeof data.mime_type === "string" ? data.mime_type : file.type,
+        created_at:
+          typeof data.created_at === "string"
+            ? data.created_at
+            : new Date().toISOString(),
       };
       setDraft((current) => ({
         ...current,
@@ -862,7 +937,9 @@ export default function PositionPlanning() {
       setNotice("Tải tệp lên thành công.");
       return true;
     } catch (error) {
-      setPageError(error instanceof Error ? error.message : "Không thể tải tệp lên.");
+      setPageError(
+        error instanceof Error ? error.message : "Không thể tải tệp lên.",
+      );
       return false;
     }
   };
@@ -877,17 +954,23 @@ export default function PositionPlanning() {
       );
       setDraft((current) => ({
         ...current,
-        attachments: current.attachments.filter((item) => item.id !== attachment.id),
+        attachments: current.attachments.filter(
+          (item) => item.id !== attachment.id,
+        ),
       }));
       setNotice("Xóa tệp đính kèm thành công.");
     } catch (error) {
-      setPageError(error instanceof Error ? error.message : "Không thể xóa tệp.");
+      setPageError(
+        error instanceof Error ? error.message : "Không thể xóa tệp.",
+      );
     }
   };
 
   const maxPage = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const editable = mode !== "view";
-  const specById = new Map(options.specifications.map((item) => [item.id, item]));
+  const specById = new Map(
+    options.specifications.map((item) => [item.id, item]),
+  );
   const licensesForSoftware = (softwareId: number) =>
     options.licenses.filter((item) => item.asset_id === softwareId);
   const attachmentUrl = (attachmentId: number) =>
@@ -931,7 +1014,9 @@ export default function PositionPlanning() {
         <div>
           <Eyebrow>Quản lý tổ chức</Eyebrow>
           <PageTitle>Hoạch định vị trí</PageTitle>
-          <Subtitle>Quản lý vị trí công việc, thiết bị và license theo đơn vị.</Subtitle>
+          <Subtitle>
+            Quản lý vị trí công việc, thiết bị và license theo đơn vị.
+          </Subtitle>
         </div>
         <PrimaryButton type="button" onClick={startCreate}>
           <Plus size={17} /> Mới
@@ -939,9 +1024,25 @@ export default function PositionPlanning() {
       </PageHeading>
 
       {(notice || pageError) && (
-        <Notice data-variant={pageError ? "error" : notice.includes("Tệp chưa tải lên") ? "warning" : undefined} role="status">
+        <Notice
+          data-variant={
+            pageError
+              ? "error"
+              : notice.includes("Tệp chưa tải lên")
+                ? "warning"
+                : undefined
+          }
+          role="status"
+        >
           <span>{pageError || notice}</span>
-          <button type="button" aria-label="Đóng thông báo" onClick={() => { setNotice(""); setPageError(""); }}>
+          <button
+            type="button"
+            aria-label="Đóng thông báo"
+            onClick={() => {
+              setNotice("");
+              setPageError("");
+            }}
+          >
             <X size={16} />
           </button>
         </Notice>
@@ -954,10 +1055,21 @@ export default function PositionPlanning() {
             <select
               value={filters.work}
               disabled={optionsLoading}
-              onChange={(event) => { setFilters((current) => ({ ...current, work: event.target.value })); setPage(1); setSelectedId(null); }}
+              onChange={(event) => {
+                setFilters((current) => ({
+                  ...current,
+                  work: event.target.value,
+                }));
+                setPage(1);
+                setSelectedId(null);
+              }}
             >
               <option value="">Tất cả</option>
-              {options.works.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+              {options.works.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
             </select>
             <SelectChevron aria-hidden="true" />
           </SelectControl>
@@ -968,10 +1080,21 @@ export default function PositionPlanning() {
             <select
               value={filters.rank}
               disabled={optionsLoading}
-              onChange={(event) => { setFilters((current) => ({ ...current, rank: event.target.value })); setPage(1); setSelectedId(null); }}
+              onChange={(event) => {
+                setFilters((current) => ({
+                  ...current,
+                  rank: event.target.value,
+                }));
+                setPage(1);
+                setSelectedId(null);
+              }}
             >
               <option value="">Tất cả</option>
-              {options.ranks.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+              {options.ranks.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
             </select>
             <SelectChevron aria-hidden="true" />
           </SelectControl>
@@ -981,7 +1104,11 @@ export default function PositionPlanning() {
           <DepartmentSelect
             departments={options.departments}
             value={filters.department}
-            onChange={(department) => { setFilters((current) => ({ ...current, department })); setPage(1); setSelectedId(null); }}
+            onChange={(department) => {
+              setFilters((current) => ({ ...current, department }));
+              setPage(1);
+              setSelectedId(null);
+            }}
           />
         </Field>
         <Field>
@@ -990,21 +1117,44 @@ export default function PositionPlanning() {
             <select
               value={filters.status}
               disabled={optionsLoading}
-              onChange={(event) => { setFilters((current) => ({ ...current, status: event.target.value })); setPage(1); setSelectedId(null); }}
+              onChange={(event) => {
+                setFilters((current) => ({
+                  ...current,
+                  status: event.target.value,
+                }));
+                setPage(1);
+                setSelectedId(null);
+              }}
             >
               <option value="">Tất cả</option>
-              {options.statuses.map((item) => <option key={item.id} value={item.id}>{item.status_name}</option>)}
+              {options.statuses.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.status_name}
+                </option>
+              ))}
             </select>
             <SelectChevron aria-hidden="true" />
           </SelectControl>
         </Field>
         <SearchField
-          onSubmit={(event) => { event.preventDefault(); setKeyword(searchText.trim()); setPage(1); setSelectedId(null); }}
+          onSubmit={(event) => {
+            event.preventDefault();
+            setKeyword(searchText.trim());
+            setPage(1);
+            setSelectedId(null);
+          }}
         >
           <span>Tìm kiếm</span>
           <SearchControl>
-            <input value={searchText} onChange={(event) => setSearchText(event.target.value)} placeholder="Công việc, cấp bậc, đơn vị..." />
-            <button type="submit" aria-label="Tìm kiếm"><Search size={17} /><span>Tìm</span></button>
+            <input
+              value={searchText}
+              onChange={(event) => setSearchText(event.target.value)}
+              placeholder="Công việc, cấp bậc, đơn vị..."
+            />
+            <button type="submit" aria-label="Tìm kiếm">
+              <Search size={17} />
+              <span>Tìm</span>
+            </button>
           </SearchControl>
         </SearchField>
       </FilterCard>
@@ -1012,13 +1162,21 @@ export default function PositionPlanning() {
       <ListCard>
         <Toolbar>
           <ActionGroup>
-            <SecondaryButton type="button" onClick={() => {
-              if (selectedId) void openPlan(selectedId, "edit");
-              else setNotice("Vui lòng chọn một dòng cần chỉnh sửa");
-            }}>
+            <SecondaryButton
+              type="button"
+              onClick={() => {
+                if (selectedId) void openPlan(selectedId, "edit");
+                else setNotice("Vui lòng chọn một dòng cần chỉnh sửa");
+              }}
+            >
               <Pencil size={16} /> Sửa
             </SecondaryButton>
-            <DangerButton type="button" title={!selectedId ? "Chọn 1 dòng để xóa" : undefined} disabled={!selectedId} onClick={() => void removePlan()}>
+            <DangerButton
+              type="button"
+              title={!selectedId ? "Chọn 1 dòng để xóa" : undefined}
+              disabled={!selectedId}
+              onClick={() => void removePlan()}
+            >
               <Trash2 size={16} /> Xóa
             </DangerButton>
           </ActionGroup>
@@ -1027,113 +1185,244 @@ export default function PositionPlanning() {
         <TableScroll>
           <PlanTable>
             <thead>
-              <tr><th>#</th><th>Công việc</th><th>Cấp bậc</th><th>Đơn vị</th><th>Trạng thái</th><th>Ngày tạo</th></tr>
+              <tr>
+                <th>#</th>
+                <th>Công việc</th>
+                <th>Cấp bậc</th>
+                <th>Đơn vị</th>
+                <th>Trạng thái</th>
+                <th>Ngày tạo</th>
+              </tr>
             </thead>
             <tbody>
               {listLoading ? (
-                <tr><EmptyCell colSpan={6}>Đang tải dữ liệu...</EmptyCell></tr>
+                <tr>
+                  <EmptyCell colSpan={6}>Đang tải dữ liệu...</EmptyCell>
+                </tr>
               ) : rows.length === 0 ? (
-                <tr><EmptyCell colSpan={6}>Không có dữ liệu</EmptyCell></tr>
-              ) : rows.map((row, index) => (
-                <PlanRow
-                  key={row.id}
-                  $selected={selectedId === row.id}
-                  onClick={() => setSelectedId(row.id)}
-                  onDoubleClick={() => void openPlan(row.id, "view")}
-                  tabIndex={0}
-                  onKeyDown={(event) => { if (event.key === "Enter") void openPlan(row.id, "view"); }}
-                >
-                  <td>{(page - 1) * PAGE_SIZE + index + 1}</td>
-                  <td>{row.work_name ?? "—"}</td>
-                  <td>{row.rank_name ?? "—"}</td>
-                  <td>{row.department_name ?? row.organization_code}</td>
-                  <td><StatusBadge $active={row.status_id === 6}>{row.status_name ?? (row.status_id === 6 ? "Còn sử dụng" : "Không sử dụng")}</StatusBadge></td>
-                  <td>{formatDate(row.created_at)}</td>
-                </PlanRow>
-              ))}
+                <tr>
+                  <EmptyCell colSpan={6}>Không có dữ liệu</EmptyCell>
+                </tr>
+              ) : (
+                rows.map((row, index) => (
+                  <PlanRow
+                    key={row.id}
+                    $selected={selectedId === row.id}
+                    onClick={() => setSelectedId(row.id)}
+                    onDoubleClick={() => void openPlan(row.id, "view")}
+                    tabIndex={0}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") void openPlan(row.id, "view");
+                    }}
+                  >
+                    <td>{(page - 1) * PAGE_SIZE + index + 1}</td>
+                    <td>{row.work_name ?? "—"}</td>
+                    <td>{row.rank_name ?? "—"}</td>
+                    <td>{row.department_name ?? row.organization_code}</td>
+                    <td>
+                      <StatusBadge $active={row.status_id === 6}>
+                        {row.status_name ??
+                          (row.status_id === 6
+                            ? "Còn sử dụng"
+                            : "Không sử dụng")}
+                      </StatusBadge>
+                    </td>
+                    <td>{formatDate(row.created_at)}</td>
+                  </PlanRow>
+                ))
+              )}
             </tbody>
           </PlanTable>
         </TableScroll>
         <Pagination>
           <span>Tổng: {total} dòng</span>
           <PaginationControls>
-            <PaginationButton type="button" disabled={page <= 1 || listLoading} onClick={() => setPage((current) => Math.max(1, current - 1))}>Trước</PaginationButton>
-            <span>Trang {page}/{maxPage}</span>
-            <PaginationButton type="button" disabled={page >= maxPage || listLoading} onClick={() => setPage((current) => Math.min(maxPage, current + 1))}>Sau</PaginationButton>
+            <PaginationButton
+              type="button"
+              disabled={page <= 1 || listLoading}
+              onClick={() => setPage((current) => Math.max(1, current - 1))}
+            >
+              Trước
+            </PaginationButton>
+            <span>
+              Trang {page}/{maxPage}
+            </span>
+            <PaginationButton
+              type="button"
+              disabled={page >= maxPage || listLoading}
+              onClick={() =>
+                setPage((current) => Math.min(maxPage, current + 1))
+              }
+            >
+              Sau
+            </PaginationButton>
           </PaginationControls>
         </Pagination>
       </ListCard>
 
       {mode && (
         <ModalBackdrop role="presentation">
-          <Modal role="dialog" aria-modal="true" aria-labelledby="position-plan-title">
+          <Modal
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="position-plan-title"
+          >
             <ModalHeader>
               <div>
                 <Eyebrow>Quản lý tổ chức</Eyebrow>
                 <h2 id="position-plan-title">
-                  {mode === "create" ? "Thêm hoạch định vị trí" : mode === "edit" ? "Chỉnh sửa hoạch định vị trí" : "Chi tiết hoạch định vị trí"}
+                  {mode === "create"
+                    ? "Thêm hoạch định vị trí"
+                    : mode === "edit"
+                      ? "Chỉnh sửa hoạch định vị trí"
+                      : "Chi tiết hoạch định vị trí"}
                 </h2>
               </div>
-              <IconButton type="button" aria-label="Đóng" onClick={() => setMode(null)}><X size={20} /></IconButton>
+              <IconButton
+                type="button"
+                aria-label="Đóng"
+                onClick={() => setMode(null)}
+              >
+                <X size={20} />
+              </IconButton>
             </ModalHeader>
             {(pageError || notice) && (
-              <ModalAlert data-error={pageError ? "true" : undefined} role="status">
+              <ModalAlert
+                data-error={pageError ? "true" : undefined}
+                role="status"
+              >
                 <span>{pageError || notice}</span>
-                <button type="button" aria-label="Đóng thông báo" onClick={() => { setPageError(""); setNotice(""); }}>
+                <button
+                  type="button"
+                  aria-label="Đóng thông báo"
+                  onClick={() => {
+                    setPageError("");
+                    setNotice("");
+                  }}
+                >
                   <X size={15} />
                 </button>
               </ModalAlert>
             )}
             <ModalBody>
               <SectionNav aria-label="Thông tin hoạch định">
-                {([
-                  ["general", "Thông tin chung"],
-                  ["job", "Mô tả công việc"],
-                  ["recruitment", "Mô tả tuyển dụng"],
-                  ["requirements", "Yêu cầu MMTB / phần mềm"],
-                ] as Array<[Section, string]>).map(([key, title]) => (
-                  <NavButton key={key} type="button" $active={section === key} onClick={() => setSection(key)}>{title}</NavButton>
+                {(
+                  [
+                    ["general", "Thông tin chung"],
+                    ["job", "Mô tả công việc"],
+                    ["recruitment", "Mô tả tuyển dụng"],
+                    ["requirements", "Yêu cầu MMTB / phần mềm"],
+                  ] as Array<[Section, string]>
+                ).map(([key, title]) => (
+                  <NavButton
+                    key={key}
+                    type="button"
+                    $active={section === key}
+                    onClick={() => setSection(key)}
+                  >
+                    {title}
+                  </NavButton>
                 ))}
               </SectionNav>
               <ModalContent>
                 {section === "general" && (
                   <FormGrid>
                     <Field>
-                      <span>Công việc <b>*</b></span>
+                      <span>
+                        Công việc <b>*</b>
+                      </span>
                       <SelectControl>
-                        <select disabled={!editable || optionsLoading} value={draft.work_id} onChange={(event) => setDraft((current) => ({ ...current, work_id: event.target.value ? Number(event.target.value) : "" }))}>
+                        <select
+                          disabled={!editable || optionsLoading}
+                          value={draft.work_id}
+                          onChange={(event) =>
+                            setDraft((current) => ({
+                              ...current,
+                              work_id: event.target.value
+                                ? Number(event.target.value)
+                                : "",
+                            }))
+                          }
+                        >
                           <option value="">-- Chọn công việc --</option>
-                          {options.works.map((item) => <option key={item.id} value={item.id}>{item.code} - {item.name}</option>)}
+                          {options.works.map((item) => (
+                            <option key={item.id} value={item.id}>
+                              {item.code} - {item.name}
+                            </option>
+                          ))}
                         </select>
                         <SelectChevron aria-hidden="true" />
                       </SelectControl>
                     </Field>
                     <Field>
-                      <span>Cấp bậc <b>*</b></span>
+                      <span>
+                        Cấp bậc <b>*</b>
+                      </span>
                       <SelectControl>
-                        <select disabled={!editable || optionsLoading} value={draft.level_id} onChange={(event) => setDraft((current) => ({ ...current, level_id: event.target.value ? Number(event.target.value) : "" }))}>
+                        <select
+                          disabled={!editable || optionsLoading}
+                          value={draft.level_id}
+                          onChange={(event) =>
+                            setDraft((current) => ({
+                              ...current,
+                              level_id: event.target.value
+                                ? Number(event.target.value)
+                                : "",
+                            }))
+                          }
+                        >
                           <option value="">-- Chọn cấp bậc --</option>
-                          {options.ranks.map((item) => <option key={item.id} value={item.id}>{item.code ? `${item.code} - ` : ""}{item.name}</option>)}
+                          {options.ranks.map((item) => (
+                            <option key={item.id} value={item.id}>
+                              {item.code ? `${item.code} - ` : ""}
+                              {item.name}
+                            </option>
+                          ))}
                         </select>
                         <SelectChevron aria-hidden="true" />
                       </SelectControl>
                     </Field>
                     <Field>
-                      <span>Đơn vị <b>*</b></span>
+                      <span>
+                        Đơn vị <b>*</b>
+                      </span>
                       <DepartmentSelect
                         departments={options.departments}
                         value={draft.organization_code}
                         disabled={!editable}
                         label="-- Chọn đơn vị --"
-                        onChange={(organization_code) => setDraft((current) => ({ ...current, organization_code }))}
+                        onChange={(organization_code) =>
+                          setDraft((current) => ({
+                            ...current,
+                            organization_code,
+                          }))
+                        }
                       />
                     </Field>
                     <Field>
                       <span>Trạng thái</span>
                       <SelectControl>
-                        <select disabled={!editable} value={draft.status_id} onChange={(event) => setDraft((current) => ({ ...current, status_id: Number(event.target.value) }))}>
-                          {options.statuses.map((item) => <option key={item.id} value={item.id}>{item.status_name}</option>)}
-                          {options.statuses.length === 0 && <><option value={6}>Còn sử dụng</option><option value={5}>Không sử dụng</option></>}
+                        <select
+                          disabled={!editable}
+                          value={draft.status_id}
+                          onChange={(event) =>
+                            setDraft((current) => ({
+                              ...current,
+                              status_id: Number(event.target.value),
+                            }))
+                          }
+                        >
+                          {options.statuses.map((item) => (
+                            <option key={item.id} value={item.id}>
+                              {item.status_name}
+                            </option>
+                          ))}
+                          {options.statuses.length === 0 && (
+                            <>
+                              <option value={6}>Còn sử dụng</option>
+                              <option value={5}>Không sử dụng</option>
+                            </>
+                          )}
                         </select>
                         <SelectChevron aria-hidden="true" />
                       </SelectControl>
@@ -1143,25 +1432,56 @@ export default function PositionPlanning() {
                 {section === "job" && (
                   <Field>
                     <span>Mô tả công việc</span>
-                    <textarea rows={12} value={draft.job_description} disabled={!editable} onChange={(event) => setDraft((current) => ({ ...current, job_description: event.target.value }))} placeholder="Nhập mô tả công việc..." />
+                    <textarea
+                      rows={12}
+                      value={draft.job_description}
+                      disabled={!editable}
+                      onChange={(event) =>
+                        setDraft((current) => ({
+                          ...current,
+                          job_description: event.target.value,
+                        }))
+                      }
+                      placeholder="Nhập mô tả công việc..."
+                    />
                   </Field>
                 )}
                 {section === "recruitment" && (
                   <Field>
                     <span>Mô tả tuyển dụng</span>
-                    <textarea rows={12} value={draft.recruitment_description} disabled={!editable} onChange={(event) => setDraft((current) => ({ ...current, recruitment_description: event.target.value }))} placeholder="Nhập mô tả tuyển dụng..." />
+                    <textarea
+                      rows={12}
+                      value={draft.recruitment_description}
+                      disabled={!editable}
+                      onChange={(event) =>
+                        setDraft((current) => ({
+                          ...current,
+                          recruitment_description: event.target.value,
+                        }))
+                      }
+                      placeholder="Nhập mô tả tuyển dụng..."
+                    />
                   </Field>
                 )}
                 {section === "requirements" && (
                   <div>
                     <InnerTabs>
-                      {([
-                        ["devices", "Thiết bị theo thông số chuẩn"],
-                        ["licenses", "License phần mềm"],
-                        ["files", "Tệp đính kèm"],
-                        ["images", "Khác / Hình ảnh"],
-                      ] as Array<[RequirementTab, string]>).map(([key, title]) => (
-                        <TabButton key={key} type="button" $active={requirementTab === key} onClick={() => setRequirementTab(key)}>{title}</TabButton>
+                      {(
+                        [
+                          ["devices", "Thiết bị theo thông số chuẩn"],
+                          ["licenses", "License phần mềm"],
+                          ["files", "Tệp đính kèm"],
+                          ["images", "Khác / Hình ảnh"],
+                        ] as Array<[RequirementTab, string]>
+                      ).map(([key, title]) => (
+                        <TabButton
+                          key={key}
+                          type="button"
+                          $active={requirementTab === key}
+                          onClick={() => setRequirementTab(key)}
+                        >
+                          {title}
+                        </TabButton>
                       ))}
                     </InnerTabs>
                     {requirementTab === "devices" && (
@@ -1171,14 +1491,24 @@ export default function PositionPlanning() {
                         specifications={options.specifications}
                         editable={editable}
                         onAdd={addDevice}
-                        onUpdate={(index, changes) => setDraft((current) => ({
-                          ...current,
-                          devices: current.devices.map((device, rowIndex) => rowIndex === index ? { ...device, ...changes } : device),
-                        }))}
-                        onRemove={(index) => setDraft((current) => ({
-                          ...current,
-                          devices: current.devices.filter((_, rowIndex) => rowIndex !== index),
-                        }))}
+                        onUpdate={(index, changes) =>
+                          setDraft((current) => ({
+                            ...current,
+                            devices: current.devices.map((device, rowIndex) =>
+                              rowIndex === index
+                                ? { ...device, ...changes }
+                                : device,
+                            ),
+                          }))
+                        }
+                        onRemove={(index) =>
+                          setDraft((current) => ({
+                            ...current,
+                            devices: current.devices.filter(
+                              (_, rowIndex) => rowIndex !== index,
+                            ),
+                          }))
+                        }
                       />
                     )}
                     {requirementTab === "licenses" && (
@@ -1188,14 +1518,25 @@ export default function PositionPlanning() {
                         editable={editable}
                         onAdd={addSoftwareLicense}
                         licensesForSoftware={licensesForSoftware}
-                        onUpdate={(index, changes) => setDraft((current) => ({
-                          ...current,
-                          software_licenses: current.software_licenses.map((row, rowIndex) => rowIndex === index ? { ...row, ...changes } : row),
-                        }))}
-                        onRemove={(index) => setDraft((current) => ({
-                          ...current,
-                          software_licenses: current.software_licenses.filter((_, rowIndex) => rowIndex !== index),
-                        }))}
+                        onUpdate={(index, changes) =>
+                          setDraft((current) => ({
+                            ...current,
+                            software_licenses: current.software_licenses.map(
+                              (row, rowIndex) =>
+                                rowIndex === index
+                                  ? { ...row, ...changes }
+                                  : row,
+                            ),
+                          }))
+                        }
+                        onRemove={(index) =>
+                          setDraft((current) => ({
+                            ...current,
+                            software_licenses: current.software_licenses.filter(
+                              (_, rowIndex) => rowIndex !== index,
+                            ),
+                          }))
+                        }
                       />
                     )}
                     {requirementTab === "files" && (
@@ -1203,23 +1544,46 @@ export default function PositionPlanning() {
                         type="FILE"
                         editable={editable}
                         isCreate={mode === "create"}
-                        attachments={draft.attachments.filter((item) => item.attachment_type === "FILE")}
+                        attachments={draft.attachments.filter(
+                          (item) => item.attachment_type === "FILE",
+                        )}
                         pendingFiles={pendingFiles}
                         formatSize={formatSize}
                         formatDate={formatDate}
-                        onRemove={(attachment) => void removeAttachment(attachment)}
-                        onRemovePending={(index) => setPendingFiles((current) => current.filter((_, itemIndex) => itemIndex !== index))}
+                        onRemove={(attachment) =>
+                          void removeAttachment(attachment)
+                        }
+                        onRemovePending={(index) =>
+                          setPendingFiles((current) =>
+                            current.filter(
+                              (_, itemIndex) => itemIndex !== index,
+                            ),
+                          )
+                        }
                         onUpload={async (files, note) => {
                           const type: "FILE" | "IMAGE" = "FILE";
-                          const validFiles = files.filter((file) => file.size <= 20 * 1024 * 1024);
-                          const failedFiles = files.filter((file) => !validFiles.includes(file));
-                          if (validFiles.length !== files.length) setPageError("Mỗi tệp tối đa 20 MB.");
+                          const validFiles = files.filter(
+                            (file) => file.size <= 20 * 1024 * 1024,
+                          );
+                          const failedFiles = files.filter(
+                            (file) => !validFiles.includes(file),
+                          );
+                          if (validFiles.length !== files.length)
+                            setPageError("Mỗi tệp tối đa 20 MB.");
                           if (!validFiles.length) return failedFiles;
                           if (mode === "create") {
-                            setPendingFiles((current) => [...current, ...validFiles.map((file) => ({ file, attachmentType: type, note }))]);
+                            setPendingFiles((current) => [
+                              ...current,
+                              ...validFiles.map((file) => ({
+                                file,
+                                attachmentType: type,
+                                note,
+                              })),
+                            ]);
                           } else {
                             for (const file of validFiles) {
-                              if (!(await uploadAttachment(file, type, note))) failedFiles.push(file);
+                              if (!(await uploadAttachment(file, type, note)))
+                                failedFiles.push(file);
                             }
                           }
                           return failedFiles;
@@ -1230,23 +1594,50 @@ export default function PositionPlanning() {
                       <ImageAttachmentsPanel
                         editable={editable}
                         isCreate={mode === "create"}
-                        attachments={draft.attachments.filter((item) => item.attachment_type === "IMAGE")}
+                        attachments={draft.attachments.filter(
+                          (item) => item.attachment_type === "IMAGE",
+                        )}
                         pendingFiles={pendingFiles}
                         attachmentUrl={attachmentUrl}
                         formatSize={formatSize}
-                        onRemove={(attachment) => void removeAttachment(attachment)}
-                        onRemovePending={(index) => setPendingFiles((current) => current.filter((_, itemIndex) => itemIndex !== index))}
+                        onRemove={(attachment) =>
+                          void removeAttachment(attachment)
+                        }
+                        onRemovePending={(index) =>
+                          setPendingFiles((current) =>
+                            current.filter(
+                              (_, itemIndex) => itemIndex !== index,
+                            ),
+                          )
+                        }
                         onUpload={async (files, note) => {
                           const type: "FILE" | "IMAGE" = "IMAGE";
-                          const validFiles = files.filter((file) => file.size <= 20 * 1024 * 1024 && file.type.startsWith("image/"));
-                          const failedFiles = files.filter((file) => !validFiles.includes(file));
-                          if (validFiles.length !== files.length) setPageError("Mục Khác chỉ nhận tệp hình ảnh tối đa 20 MB.");
+                          const validFiles = files.filter(
+                            (file) =>
+                              file.size <= 20 * 1024 * 1024 &&
+                              file.type.startsWith("image/"),
+                          );
+                          const failedFiles = files.filter(
+                            (file) => !validFiles.includes(file),
+                          );
+                          if (validFiles.length !== files.length)
+                            setPageError(
+                              "Mục Khác chỉ nhận tệp hình ảnh tối đa 20 MB.",
+                            );
                           if (!validFiles.length) return failedFiles;
                           if (mode === "create") {
-                            setPendingFiles((current) => [...current, ...validFiles.map((file) => ({ file, attachmentType: type, note }))]);
+                            setPendingFiles((current) => [
+                              ...current,
+                              ...validFiles.map((file) => ({
+                                file,
+                                attachmentType: type,
+                                note,
+                              })),
+                            ]);
                           } else {
                             for (const file of validFiles) {
-                              if (!(await uploadAttachment(file, type, note))) failedFiles.push(file);
+                              if (!(await uploadAttachment(file, type, note)))
+                                failedFiles.push(file);
                             }
                           }
                           return failedFiles;
@@ -1258,11 +1649,33 @@ export default function PositionPlanning() {
               </ModalContent>
             </ModalBody>
             <ModalFooter>
-              <span>{mode === "view" ? "Chế độ xem chi tiết" : "Các trường có dấu * là bắt buộc"}</span>
+              <span>
+                {mode === "view"
+                  ? "Chế độ xem chi tiết"
+                  : "Các trường có dấu * là bắt buộc"}
+              </span>
               <FooterActions>
-                <SecondaryButton type="button" onClick={() => setMode(null)}>{mode === "view" ? "Đóng" : "Hủy"}</SecondaryButton>
-                {mode === "view" && <PrimaryButton type="button" onClick={() => setMode("edit")}>Chỉnh sửa</PrimaryButton>}
-                {editable && <PrimaryButton type="button" disabled={saving || optionsLoading} onClick={() => void savePlan()}>{saving ? "Đang lưu..." : mode === "create" ? "Thêm" : "Cập nhật"}</PrimaryButton>}
+                <SecondaryButton type="button" onClick={() => setMode(null)}>
+                  {mode === "view" ? "Đóng" : "Hủy"}
+                </SecondaryButton>
+                {mode === "view" && (
+                  <PrimaryButton type="button" onClick={() => setMode("edit")}>
+                    Chỉnh sửa
+                  </PrimaryButton>
+                )}
+                {editable && (
+                  <PrimaryButton
+                    type="button"
+                    disabled={saving || optionsLoading}
+                    onClick={() => void savePlan()}
+                  >
+                    {saving
+                      ? "Đang lưu..."
+                      : mode === "create"
+                        ? "Thêm"
+                        : "Cập nhật"}
+                  </PrimaryButton>
+                )}
               </FooterActions>
             </ModalFooter>
           </Modal>

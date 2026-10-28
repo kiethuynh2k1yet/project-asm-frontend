@@ -17,10 +17,7 @@ export async function dashboardProxy(
     const cookieStore = await cookies();
     const token = cookieStore.get("access_token")?.value;
     if (!token) {
-      return NextResponse.json(
-        { message: "Chưa đăng nhập." },
-        { status: 401 },
-      );
+      return NextResponse.json({ message: "Chưa đăng nhập." }, { status: 401 });
     }
 
     let requestBody: BodyInit | undefined;
@@ -84,10 +81,7 @@ export async function dashboardFileProxy(path: string) {
     const cookieStore = await cookies();
     const token = cookieStore.get("access_token")?.value;
     if (!token) {
-      return NextResponse.json(
-        { message: "Chưa đăng nhập." },
-        { status: 401 },
-      );
+      return NextResponse.json({ message: "Chưa đăng nhập." }, { status: 401 });
     }
     const response = await fetch(`${baseUrl.replace(/\/+$/, "")}${path}`, {
       headers: { Authorization: "Bearer " + token },
@@ -100,7 +94,8 @@ export async function dashboardFileProxy(path: string) {
     const contentType = response.headers.get("content-type");
     const contentDisposition = response.headers.get("content-disposition");
     if (contentType) headers.set("Content-Type", contentType);
-    if (contentDisposition) headers.set("Content-Disposition", contentDisposition);
+    if (contentDisposition)
+      headers.set("Content-Disposition", contentDisposition);
     return new NextResponse(await response.arrayBuffer(), {
       status: response.status,
       headers,
