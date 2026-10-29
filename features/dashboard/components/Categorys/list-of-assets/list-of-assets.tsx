@@ -69,7 +69,7 @@ export type Asset = {
   note: string | null;
   quantity: number | null;
 };
-export type Lookup = { id: number; name: string };
+export type Lookup = { id: number; name: string; symbol?: string };
 export type Status = { id: number; status_name: string; status_code: string };
 export type Lookups = {
   types: Lookup[];
@@ -116,6 +116,24 @@ function lookupMap(items: Lookup[]) {
 }
 function text(value: unknown) {
   return value === null || value === undefined ? "" : String(value);
+}
+
+function assetStatusTone(status: Status | undefined) {
+  const code = status?.status_code.toLocaleUpperCase() ?? "";
+  const name = (status?.status_name ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase();
+
+  if (code === "NOT_IN_USE" || name.includes("khong su dung")) return "gray";
+  if (code.includes("REPAIR") || name.includes("sua chua")) return "red";
+  if (
+    code.includes("WAREHOUSE") ||
+    code.includes("IN_STOCK") ||
+    name.includes("nhap kho")
+  ) return "blue";
+  if (code === "IN_USE" || name.includes("dang su dung")) return "green";
+  return "blue";
 }
 
 export default function AssetList() {
@@ -193,18 +211,27 @@ export default function AssetList() {
         ]) => {
           const rowsOf = (v: unknown) => (Array.isArray(v) ? v : []);
           setLookups({
-            types: rowsOf(types).map((v) =>
-              asLookup(v, "asset-type_code", "asset-types_name"),
-            ),
+            types: rowsOf(types).map((v) => {
+              const row = v as Record<string, unknown>;
+              return {
+                id: Number(row.id),
+                name: `${String(row["asset-type_code"] ?? "").trim()} - ${String(row["asset-types_name"] ?? "").trim()}`,
+              };
+            }),
             groups: rowsOf(groups).map((v) =>
               asLookup(v, "asset-group_code", "asset-group_name"),
             ),
             categories: rowsOf(categories).map((v) =>
               asLookup(v, "asset-category_code", "asset-category_name"),
             ),
-            units: rowsOf(units).map((v) =>
-              asLookup(v, "unit_code", "unit-types_name"),
-            ),
+            units: rowsOf(units).map((v) => {
+              const row = v as Record<string, unknown>;
+              return {
+                id: Number(row.id),
+                name: `${String(row["unit-0f-measure_code"] ?? "").trim()} - ${String(row["unit-0f-measure_name"] ?? "").trim()}`,
+                symbol: String(row.symbol ?? "").trim(),
+              };
+            }),
             licenses: rowsOf(licenses).map((v) =>
               asLookup(v, "license_code", "license-types_name"),
             ),
@@ -235,6 +262,10 @@ export default function AssetList() {
     [lookups.categories],
   );
   const unitNames = useMemo(() => lookupMap(lookups.units), [lookups.units]);
+  const unitSymbols = useMemo(
+    () => new Map(lookups.units.map((unit) => [unit.id, unit.symbol ?? ""])),
+    [lookups.units],
+  );
   const licenseNames = useMemo(
     () => lookupMap(lookups.licenses),
     [lookups.licenses],
@@ -242,6 +273,10 @@ export default function AssetList() {
   const statusNames = useMemo(
     () =>
       new Map(lookups.assetStatuses.map((item) => [item.id, item.status_name])),
+    [lookups.assetStatuses],
+  );
+  const assetStatusesById = useMemo(
+    () => new Map(lookups.assetStatuses.map((status) => [status.id, status])),
     [lookups.assetStatuses],
   );
   const filtered = useMemo(
@@ -280,7 +315,13 @@ export default function AssetList() {
       String(data.get(key) ?? "").trim() || null;
     const number = (key: string) => {
       const value = String(data.get(key) ?? "").trim();
-      return value ? Number(value) : null;
+      if (!value) return null;
+      const normalized =
+        key === "original_price"
+          ? value.replace(/\./g, "").replace(",", ".")
+          : value;
+      const parsed = Number(normalized);
+      return Number.isFinite(parsed) ? parsed : null;
     };
     const payload: Partial<AssetPayload> = {
       asset_code: nullable("asset_code"),
@@ -426,18 +467,14 @@ export default function AssetList() {
             <FileSpreadsheet size={14} />
             Xuất Excel
           </Button>
-          <Chosen>
-            {selected ? (
-              <>
-                Đang chọn:{" "}
-                <b>
-                  {selected.asset_code} - {selected.asset_name}
-                </b>
-              </>
-            ) : (
-              "Chưa chọn tài sản"
-            )}
-          </Chosen>
+          {selected && (
+            <Chosen>
+              Đang chọn:{" "}
+              <b>
+                {selected.asset_code} - {selected.asset_name}
+              </b>
+            </Chosen>
+          )}
         </Actions>
         <Filters>
           <Filter>
@@ -579,7 +616,6 @@ export default function AssetList() {
                 <th>Loại license</th>
                 <th>Model</th>
                 <th>Serial</th>
-                <th>Đơn vị</th>
                 <th>Số lượng</th>
                 <th>Nguyên giá</th>
               </tr>
@@ -587,7 +623,7 @@ export default function AssetList() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={16} className="empty">
+                  <td colSpan={15} className="empty">
                     Đang tải danh sách tài sản...
                   </td>
                 </tr>
@@ -626,7 +662,11 @@ export default function AssetList() {
                     <td>{row.asset_code}</td>
                     <td>{row.asset_name}</td>
                     <td>
-                      <Badge>
+                      <Badge
+                        $tone={assetStatusTone(
+                          assetStatusesById.get(row.asset_status_id ?? -1),
+                        )}
+                      >
                         {statusNames.get(row.asset_status_id ?? -1) ??
                           text(row.asset_status_id)}
                       </Badge>
@@ -638,9 +678,12 @@ export default function AssetList() {
                     <td>{licenseNames.get(row.license_type_id ?? -1)}</td>
                     <td>{row.model}</td>
                     <td>{row.serial}</td>
-                    <td>{unitNames.get(row.unit_id ?? -1)}</td>
                     <td>{row.quantity}</td>
-                    <td>{row.original_price?.toLocaleString("vi-VN")}</td>
+                    <td>
+                      {row.original_price === null
+                        ? ""
+                        : `${(row.original_price * (row.quantity ?? 1)).toLocaleString("vi-VN")} ${unitSymbols.get(row.unit_id ?? -1) ?? ""}`.trim()}
+                    </td>
                   </tr>
                 ))
               )}
@@ -828,13 +871,16 @@ export default function AssetList() {
                 />
               </FormField>
               <FormField>
-                Nguyên giá
+                Nguyên giá (VNĐ)
                 <Input
                   name="original_price"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  defaultValue={text(editing?.original_price)}
+                  type="text"
+                  inputMode="numeric"
+                  defaultValue={
+                    editing?.original_price == null
+                      ? ""
+                      : editing.original_price.toLocaleString("vi-VN")
+                  }
                 />
               </FormField>
               <FormField>

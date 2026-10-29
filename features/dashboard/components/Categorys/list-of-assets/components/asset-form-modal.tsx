@@ -6,13 +6,14 @@ import {
   useState,
   type ChangeEvent,
   type Dispatch,
-  type FormEvent,
   type SetStateAction,
+  type SubmitEvent,
 } from "react";
 import { FilePlus2, ImagePlus, Plus, Trash2, Upload, X } from "lucide-react";
 import type { Asset, Lookups } from "../list-of-assets";
 import {
   AssetModalBody,
+  AssetModalAddButton,
   AssetModalButton,
   AssetModalClose,
   AssetModalControl,
@@ -21,6 +22,7 @@ import {
   AssetModalFooter,
   AssetModalGrid,
   AssetModalHint,
+  AssetModalInputWithSuffix,
   AssetModalPanel,
   AssetModalPanelActions,
   AssetModalPanelTitle,
@@ -60,7 +62,7 @@ type AssetFormModalProps = {
   busy: boolean;
   formError: string;
   onClose: () => void;
-  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  onSubmit: (event: SubmitEvent<HTMLFormElement>) => void;
 };
 
 type StandardSpecification = {
@@ -72,6 +74,38 @@ type StandardSpecification = {
   ssd: string;
   gpu: string;
   monitor: string;
+};
+
+type LicenseRow = {
+  rowId: number;
+  licenseId: number | "";
+  code: string;
+  name: string;
+  statusId: number | "";
+};
+
+type LicenseOption = {
+  id: number;
+  code: string;
+  name: string;
+};
+
+type PartAssetOption = {
+  id: number;
+  code: string;
+  name: string;
+  unitId: number | null;
+  unitName: string;
+};
+
+type PartRow = {
+  rowId: number;
+  assetId: number | "";
+  code: string;
+  name: string;
+  unitName: string;
+  quantity: string;
+  note: string;
 };
 
 const value = (input: string | number | null | undefined) =>
@@ -86,6 +120,9 @@ export default function AssetFormModal({
   onSubmit,
 }: AssetFormModalProps) {
   const [activeTab, setActiveTab] = useState("general");
+  const [selectedUnitId, setSelectedUnitId] = useState(
+    value(editing?.unit_id),
+  );
   const [attachments, setAttachments] = useState<File[]>([]);
   const [otherImages, setOtherImages] = useState<File[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -103,6 +140,13 @@ export default function AssetFormModal({
     gpu: "",
     monitor: "",
   });
+  const [licenseRows, setLicenseRows] = useState<LicenseRow[]>([]);
+  const [licenseOptions, setLicenseOptions] = useState<LicenseOption[]>([]);
+  const [licenseStatuses, setLicenseStatuses] = useState<
+    Array<{ id: number; name: string }>
+  >([]);
+  const [partOptions, setPartOptions] = useState<PartAssetOption[]>([]);
+  const [partRows, setPartRows] = useState<PartRow[]>([]);
   const fileInput = useRef<HTMLInputElement>(null);
   const imageInput = useRef<HTMLInputElement>(null);
 
@@ -145,6 +189,97 @@ export default function AssetFormModal({
     };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    const partsGroup = lookups.groups.find(
+      (group) => {
+        const groupName = group.name.trim().toLocaleLowerCase("vi-VN");
+        return groupName.includes("linh kiện") && groupName.includes("máy");
+      },
+    );
+    if (!partsGroup) return;
+    void fetch("/api/dashboard/master-data/assets", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((data: unknown) => {
+        if (cancelled || !Array.isArray(data)) return;
+        const options = data
+          .filter(
+            (item): item is Record<string, unknown> =>
+              typeof item === "object" && item !== null,
+          )
+          .filter((item) => Number(item.asset_group_id) === partsGroup.id)
+          .map((item) => {
+            const unitId = Number(item.unit_id);
+            const unit = lookups.units.find((candidate) => candidate.id === unitId);
+            return {
+              id: Number(item.id),
+              code: String(item.asset_code ?? ""),
+              name: String(item.asset_name ?? ""),
+              unitId: Number.isFinite(unitId) ? unitId : null,
+              unitName: unit?.name ?? "",
+            };
+          });
+        setPartOptions(options);
+      })
+      .catch(() => {
+        if (!cancelled) setPartOptions([]);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [lookups.groups, lookups.units]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void Promise.all([
+      fetch("/api/dashboard/master-data/licenses", { cache: "no-store" }),
+      fetch("/api/dashboard/statuses", { cache: "no-store" }),
+    ])
+      .then(async ([licensesResponse, statusesResponse]) => {
+        const licenses: unknown = await licensesResponse.json();
+        const statuses: unknown = await statusesResponse.json();
+        if (cancelled || !Array.isArray(licenses)) return;
+
+        const statusOptions = (Array.isArray(statuses) ? statuses : [])
+          .filter(
+            (item): item is Record<string, unknown> =>
+              typeof item === "object" &&
+              item !== null &&
+              Number(item.parent_id) === 2,
+          )
+          .map((item) => ({
+            id: Number(item.id),
+            name: String(item.status_name ?? ""),
+          }));
+
+        setLicenseOptions(
+          licenses
+            .filter(
+              (item): item is Record<string, unknown> =>
+                typeof item === "object" && item !== null,
+            )
+            .map((item) => ({
+              id: Number(item.id),
+              code: String(item.license_code ?? ""),
+              name: String(item["license-types_name"] ?? ""),
+            })),
+        );
+        setLicenseStatuses(statusOptions);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setLicenseOptions([]);
+          setLicenseStatuses([]);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const selectStandard = (id: string) => {
     setSelectedStandardId(id);
     const specification = standardSpecifications.find(
@@ -158,6 +293,67 @@ export default function AssetFormModal({
       gpu: specification?.gpu ?? "",
       monitor: specification?.monitor ?? "",
     });
+  };
+
+  const addLicenseRow = () => {
+    setLicenseRows((current) => [
+      ...current,
+      {
+        rowId: Date.now() + current.length,
+        licenseId: "",
+        code: "",
+        name: "",
+        statusId: "",
+      },
+    ]);
+  };
+
+  const selectLicense = (rowId: number, licenseId: string) => {
+    const option = licenseOptions.find((item) => String(item.id) === licenseId);
+    setLicenseRows((current) =>
+      current.map((row) =>
+        row.rowId === rowId
+          ? {
+              ...row,
+              licenseId: option?.id ?? "",
+              code: option?.code ?? "",
+              name: option?.name ?? "",
+            }
+          : row,
+      ),
+    );
+  };
+
+  const addPartRow = () => {
+    setPartRows((current) => [
+      ...current,
+      {
+        rowId: Date.now() + current.length,
+        assetId: "",
+        code: "",
+        name: "",
+        unitName: "",
+        quantity: "1",
+        note: "",
+      },
+    ]);
+  };
+
+  const selectPart = (rowId: number, assetId: string) => {
+    const option = partOptions.find((part) => String(part.id) === assetId);
+    setPartRows((current) =>
+      current.map((row) =>
+        row.rowId === rowId
+          ? {
+              ...row,
+              assetId: option?.id ?? "",
+              code: option?.code ?? "",
+              name: option?.name ?? "",
+              unitName: option?.unitName ?? "",
+            }
+          : row,
+      ),
+    );
   };
 
   const tabs = [
@@ -267,13 +463,23 @@ export default function AssetFormModal({
               </AssetModalField>
               <AssetModalField>
                 Nguyên giá
-                <AssetModalControl
-                  name="original_price"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  defaultValue={value(editing?.original_price)}
-                />
+                <AssetModalInputWithSuffix>
+                  <AssetModalControl
+                    name="original_price"
+                    type="text"
+                    inputMode="numeric"
+                    defaultValue={
+                      editing?.original_price == null
+                        ? ""
+                        : editing.original_price.toLocaleString("vi-VN")
+                    }
+                  />
+                  <span>
+                    {lookups.units.find(
+                      (unit) => String(unit.id) === selectedUnitId,
+                    )?.symbol ?? ""}
+                  </span>
+                </AssetModalInputWithSuffix>
               </AssetModalField>
               <AssetModalField>
                 Số lượng
@@ -328,7 +534,8 @@ export default function AssetFormModal({
                 Đơn vị tính <b>*</b>
                 <AssetModalSelect
                   name="unit_id"
-                  defaultValue={value(editing?.unit_id)}
+                  value={selectedUnitId}
+                  onChange={(event) => setSelectedUnitId(event.target.value)}
                 >
                   <option value="">-- Chọn đơn vị --</option>
                   {lookups.units.map((item) => (
@@ -423,31 +630,98 @@ export default function AssetFormModal({
           </AssetModalSection>
           {activeTab === "license" && (
             <AssetModalPanel>
-              <AssetModalPanelTitle>Thông tin loại license</AssetModalPanelTitle>
-              <AssetModalGrid>
-                <AssetModalField>
-                  Loại license
-                  <AssetModalSelect
-                    name="license_type_id"
-                    defaultValue={value(editing?.license_type_id)}
-                  >
-                    <option value="">-- Chọn license --</option>
-                    {lookups.licenses.map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.name}
-                      </option>
+              <AssetModalPanelTitle>Thông tin license</AssetModalPanelTitle>
+              <AssetModalPanelActions>
+                <span />
+                <AssetModalAddButton type="button" onClick={addLicenseRow}>
+                  <Plus size={15} />
+                  Thêm
+                </AssetModalAddButton>
+              </AssetModalPanelActions>
+              <AttachmentTableScroll>
+                <AttachmentTable>
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Mã loại license</th>
+                      <th>Tên loại license</th>
+                      <th>Trạng thái</th>
+                      <th>Thao tác</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {licenseRows.map((license, index) => (
+                      <tr key={license.rowId}>
+                        <td>{index + 1}</td>
+                        <td>{license.code}</td>
+                        <td>
+                          <AssetModalSelect
+                            name={index === 0 ? "license_type_id" : undefined}
+                            value={license.licenseId}
+                            onChange={(event) =>
+                              selectLicense(license.rowId, event.target.value)
+                            }
+                          >
+                            <option value="">-- Chọn loại license --</option>
+                            {licenseOptions.map((option) => (
+                              <option key={option.id} value={option.id}>
+                                {option.name}
+                              </option>
+                            ))}
+                          </AssetModalSelect>
+                        </td>
+                        <td>
+                          <AssetModalSelect
+                            name={`license_status_id_${license.rowId}`}
+                            value={license.statusId}
+                            onChange={(event) =>
+                              setLicenseRows((current) =>
+                                current.map((row) =>
+                                  row.rowId === license.rowId
+                                    ? {
+                                        ...row,
+                                        statusId: event.target.value
+                                          ? Number(event.target.value)
+                                          : "",
+                                      }
+                                    : row,
+                                ),
+                              )
+                            }
+                          >
+                            <option value="">-- Chọn trạng thái --</option>
+                            {licenseStatuses.map((status) => (
+                              <option key={status.id} value={status.id}>
+                                {status.name}
+                              </option>
+                            ))}
+                          </AssetModalSelect>
+                        </td>
+                        <td>
+                          <button
+                            type="button"
+                            aria-label="Xóa license"
+                            onClick={() =>
+                              setLicenseRows((current) =>
+                                current.filter(
+                                  (item) => item.rowId !== license.rowId,
+                                ),
+                              )
+                            }
+                          >
+                            Xóa
+                          </button>
+                        </td>
+                      </tr>
                     ))}
-                  </AssetModalSelect>
-                </AssetModalField>
-                <AssetModalField>
-                  Ghi chú license
-                  <AssetModalTextarea
-                    name="license_note"
-                    placeholder="Nhập thông tin license"
-                    rows={2}
-                  />
-                </AssetModalField>
-              </AssetModalGrid>
+                    {licenseRows.length === 0 && (
+                      <tr>
+                        <td colSpan={5}>Chưa có thông tin license.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </AttachmentTable>
+              </AttachmentTableScroll>
             </AssetModalPanel>
           )}
           {activeTab === "technical" && (
@@ -539,22 +813,126 @@ export default function AssetFormModal({
               </AssetModalTechnicalGrid>
             </AssetModalPanel>
           )}
-          {[
-            ["parts", "Phụ tùng linh kiện"],
-            ["maintenance", "Bảo dưỡng định kì"],
-            ["repair", "Sửa chữa kế hoạch"],
-            ["network", "Thông tin mạng"],
-          ].some(([id]) => activeTab === id) && (
+          {activeTab === "parts" && (
+            <AssetModalPanel>
+              <AssetModalPanelTitle>Phụ tùng linh kiện kèm theo</AssetModalPanelTitle>
+              <AssetModalPanelActions>
+                <span />
+                <AssetModalAddButton type="button" onClick={addPartRow}>
+                  <Plus size={15} />
+                  Thêm dòng
+                </AssetModalAddButton>
+              </AssetModalPanelActions>
+              <AttachmentTableScroll>
+                <AttachmentTable>
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Mã phụ tùng</th>
+                      <th>Tên phụ tùng</th>
+                      <th>Đơn vị tính</th>
+                      <th>Số lượng</th>
+                      <th>Ghi chú</th>
+                      <th>Thao tác</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {partRows.map((part, index) => (
+                      <tr key={part.rowId}>
+                        <td>{index + 1}</td>
+                        <td>
+                          <strong>{part.code}</strong>
+                        </td>
+                        <td>
+                          <AssetModalSelect
+                            name={`part_asset_id_${part.rowId}`}
+                            value={part.assetId}
+                            onChange={(event) =>
+                              selectPart(part.rowId, event.target.value)
+                            }
+                          >
+                            <option value="">-- Chọn tên phụ tùng --</option>
+                            {partOptions.map((option) => (
+                              <option key={option.id} value={option.id}>
+                                {option.name}
+                              </option>
+                            ))}
+                          </AssetModalSelect>
+                        </td>
+                        <td>{part.unitName}</td>
+                        <td>
+                          <AssetModalControl
+                            name={`part_quantity_${part.rowId}`}
+                            type="number"
+                            min={1}
+                            value={part.quantity}
+                            onChange={(event) =>
+                              setPartRows((current) =>
+                                current.map((row) =>
+                                  row.rowId === part.rowId
+                                    ? { ...row, quantity: event.target.value }
+                                    : row,
+                                ),
+                              )
+                            }
+                          />
+                        </td>
+                        <td>
+                          <AssetModalControl
+                            name={`part_note_${part.rowId}`}
+                            value={part.note}
+                            onChange={(event) =>
+                              setPartRows((current) =>
+                                current.map((row) =>
+                                  row.rowId === part.rowId
+                                    ? { ...row, note: event.target.value }
+                                    : row,
+                                ),
+                              )
+                            }
+                          />
+                        </td>
+                        <td>
+                          <button
+                            type="button"
+                            aria-label="Xóa phụ tùng"
+                            onClick={() =>
+                              setPartRows((current) =>
+                                current.filter((row) => row.rowId !== part.rowId),
+                              )
+                            }
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {partRows.length === 0 && (
+                      <tr>
+                        <td colSpan={7}>Chưa có phụ tùng linh kiện.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </AttachmentTable>
+              </AttachmentTableScroll>
+              {partOptions.length === 0 && (
+                <p style={{ margin: "10px 16px 14px", fontSize: 12 }}>
+                  Chưa có tài sản thuộc nhóm “Linh kiện máy”.
+                </p>
+              )}
+            </AssetModalPanel>
+          )}
+          {["maintenance", "repair", "network"].includes(activeTab) && (
             <AssetModalPanel>
               <AssetModalPanelTitle>
                 {tabs.find((tab) => tab.id === activeTab)?.label}
               </AssetModalPanelTitle>
               <AssetModalPanelActions>
                 <span>Chưa có thông tin.</span>
-                <AssetModalButton type="button" $primary>
+                <AssetModalAddButton type="button">
                   <Plus size={15} />
                   Thêm
-                </AssetModalButton>
+                </AssetModalAddButton>
               </AssetModalPanelActions>
             </AssetModalPanel>
           )}
@@ -581,7 +959,9 @@ export default function AssetFormModal({
                         Chọn tệp
                       </FilePickerButton>
                       <FilePickerName
-                        title={selectedFiles.map((file) => file.name).join(", ")}
+                        title={selectedFiles
+                          .map((file) => file.name)
+                          .join(", ")}
                       >
                         {selectedFiles.map((file) => file.name).join(", ") ||
                           "Chưa chọn tệp"}
@@ -590,7 +970,9 @@ export default function AssetFormModal({
                         ref={fileInput}
                         type="file"
                         multiple
-                        onChange={(event) => selectFiles(event, setSelectedFiles)}
+                        onChange={(event) =>
+                          selectFiles(event, setSelectedFiles)
+                        }
                       />
                     </FilePicker>
                   </UploadField>
@@ -598,7 +980,9 @@ export default function AssetFormModal({
                     <span>Ghi chú</span>
                     <input
                       value={attachmentNote}
-                      onChange={(event) => setAttachmentNote(event.target.value)}
+                      onChange={(event) =>
+                        setAttachmentNote(event.target.value)
+                      }
                       placeholder="Nhập ghi chú..."
                     />
                   </UploadField>
@@ -688,7 +1072,9 @@ export default function AssetFormModal({
                         Chọn tệp
                       </FilePickerButton>
                       <FilePickerName
-                        title={selectedImages.map((file) => file.name).join(", ")}
+                        title={selectedImages
+                          .map((file) => file.name)
+                          .join(", ")}
                       >
                         {selectedImages.map((file) => file.name).join(", ") ||
                           "Chưa chọn tệp"}
@@ -698,7 +1084,9 @@ export default function AssetFormModal({
                         type="file"
                         accept="image/*"
                         multiple
-                        onChange={(event) => selectFiles(event, setSelectedImages)}
+                        onChange={(event) =>
+                          selectFiles(event, setSelectedImages)
+                        }
                       />
                     </FilePicker>
                   </UploadField>

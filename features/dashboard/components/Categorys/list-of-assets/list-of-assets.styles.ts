@@ -50,9 +50,9 @@ export const Page = styled.main`
 `;
 export const Toolbar = styled.section`
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 24px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
   width: 100%;
   padding: 16px;
   background: #fff;
@@ -60,17 +60,13 @@ export const Toolbar = styled.section`
   border-radius: 10px;
   box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
 
-  @media (max-width: 900px) {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 16px;
-  }
 `;
 export const Actions = styled.div`
   display: flex;
   align-items: center;
-  flex-shrink: 0;
+  justify-content: flex-start;
   gap: 8px;
+  width: 100%;
   flex-wrap: wrap;
 `;
 export const Button = styled.button<{
@@ -125,7 +121,7 @@ export const Button = styled.button<{
   }
 `;
 export const Spacer = styled.div`
-  flex: 1;
+  display: none;
 `;
 export const Chosen = styled.div`
   margin-left: auto;
@@ -140,14 +136,15 @@ export const Chosen = styled.div`
 `;
 export const Filters = styled.div`
   display: grid;
-  grid-template-columns: repeat(4, minmax(110px, 1fr)) minmax(220px, 1.6fr);
-  gap: 14px;
+  grid-template-columns: repeat(4, minmax(125px, 1fr)) minmax(210px, 1.5fr);
+  gap: 12px;
   flex: 1;
+  width: 100%;
   min-width: 0;
   max-width: 100%;
 
   @media (max-width: 1200px) {
-    grid-template-columns: repeat(3, minmax(110px, 1fr)) minmax(220px, 1.5fr);
+    grid-template-columns: repeat(3, minmax(120px, 1fr)) minmax(200px, 1.4fr);
   }
 
   @media (max-width: 900px) {
@@ -312,12 +309,24 @@ export const Table = styled.table`
     background: #dbeafe;
   }
 `;
-export const Badge = styled.span`
+export const Badge = styled.span<{ $tone?: "blue" | "red" | "gray" | "green" }>`
   display: inline-block;
   padding: 4px 10px;
   border-radius: 20px;
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: ${({ $tone = "blue" }) =>
+    ({
+      blue: "#dbeafe",
+      red: "#fee2e2",
+      gray: "#e5e7eb",
+      green: "#16a34a",
+    })[$tone]};
+  color: ${({ $tone = "blue" }) =>
+    ({
+      blue: "#1d4ed8",
+      red: "#b91c1c",
+      gray: "#4b5563",
+      green: "#ffffff",
+    })[$tone]};
   font-size: 11px;
   font-weight: 600;
 `;
@@ -685,6 +694,25 @@ export const AssetModalControl = styled.input`
   ${assetModalControlStyles}
 `;
 
+export const AssetModalInputWithSuffix = styled.div`
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+
+  > input {
+    flex: 1;
+    min-width: 0;
+  }
+
+  > span {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    font-weight: 400;
+  }
+`;
+
 export const AssetModalSelect = styled.select`
   ${assetModalControlStyles}
   appearance: auto;
@@ -762,5 +790,38 @@ export const AssetModalButton = styled.button<{ $primary?: boolean }>`
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+`;
+
+export const AssetModalAddButton = styled(AssetModalButton)`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 6px;
+  border-color: #2563eb;
+  background: #2563eb;
+  color: #fff;
+  font-size: 13px;
+  line-height: 1;
+  box-shadow: 0 2px 5px rgba(37, 99, 235, 0.16);
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+
+  &:hover:not(:disabled) {
+    border-color: #1d4ed8;
+    background: #1d4ed8;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.22);
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled) {
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.16);
+    transform: translateY(0);
   }
 `;

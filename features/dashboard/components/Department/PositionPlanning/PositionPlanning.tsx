@@ -379,6 +379,21 @@ function readOptions(value: unknown): Options {
         license_name: String(item.license_name ?? ""),
       }))
     : [];
+  const software = Array.isArray(value.software)
+    ? value.software
+        .filter(
+          (item): item is Record<string, unknown> =>
+            isRecord(item) &&
+            String(item.asset_group_code ?? "").trim().toUpperCase() ===
+              "SOFTWARE",
+        )
+        .flatMap((item) => {
+          const id = Number(item.id);
+          const name = String(item.asset_name ?? "").trim();
+          if (!Number.isInteger(id) || !name) return [];
+          return [{ id, code: String(item.code ?? ""), name }];
+        })
+    : [];
   return {
     works: toOptions(value.works),
     ranks: toOptions(value.ranks),
@@ -386,7 +401,7 @@ function readOptions(value: unknown): Options {
     statuses,
     categories: toOptions(value.categories),
     specifications,
-    software: toOptions(value.software),
+    software,
     licenses,
   };
 }
@@ -990,23 +1005,50 @@ export default function PositionPlanning() {
       ],
     }));
 
-  const addSoftwareLicense = () =>
-    setDraft((current) => {
-      const softwareId = options.software[0]?.id ?? 0;
-      const licenseId = licensesForSoftware(softwareId)[0]?.id ?? 0;
-      return {
-        ...current,
-        software_licenses: [
-          ...current.software_licenses,
-          {
-            software_asset_id: softwareId,
-            asset_license_id: licenseId,
-            quantity: 1,
-            status_id: 6,
-          },
-        ],
-      };
-    });
+  const addSoftwareLicenses = (softwareId: number) => {
+    const licenses = licensesForSoftware(softwareId);
+    if (licenses.length === 0) {
+      setPageError("Phần mềm này chưa có license nào.");
+      setNotice("");
+      return;
+    }
+
+    const existingLicenseIds = new Set(
+      draft.software_licenses
+        .filter((row) => row.software_asset_id === softwareId)
+        .map((row) => row.asset_license_id),
+    );
+    const newLicenses = licenses.filter(
+      (license) => !existingLicenseIds.has(license.id),
+    );
+
+    if (newLicenses.length === 0) {
+      setPageError("License của phần mềm này đã có trong bảng.");
+      setNotice("");
+      return;
+    }
+
+    setPageError("");
+    setNotice(
+      newLicenses.length < licenses.length
+        ? "Đã bỏ qua license đã có trong bảng."
+        : "",
+    );
+    setDraft((current) => ({
+      ...current,
+      software_licenses: [
+        ...current.software_licenses,
+        ...newLicenses.map((license) => ({
+          software_asset_id: softwareId,
+          asset_license_id: license.id,
+          quantity: 1,
+          status_id: 6,
+          license_code: license.license_code,
+          license_name: license.license_name,
+        })),
+      ],
+    }));
+  };
 
   return (
     <Page>
@@ -1516,7 +1558,7 @@ export default function PositionPlanning() {
                         rows={draft.software_licenses}
                         software={options.software}
                         editable={editable}
-                        onAdd={addSoftwareLicense}
+                        onSelectSoftware={addSoftwareLicenses}
                         licensesForSoftware={licensesForSoftware}
                         onUpdate={(index, changes) =>
                           setDraft((current) => ({

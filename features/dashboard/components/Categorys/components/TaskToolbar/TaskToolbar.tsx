@@ -20,6 +20,7 @@ type TaskToolbarProps = {
   onSearch?: (filters: JobFilters) => void;
   editDisabled?: boolean;
   deleteDisabled?: boolean;
+  showStatus?: boolean;
 };
 
 export default function TaskToolbar({
@@ -33,6 +34,7 @@ export default function TaskToolbar({
   onSearch,
   editDisabled = false,
   deleteDisabled = false,
+  showStatus = true,
 }: TaskToolbarProps) {
   const id = useId();
   const { role, error: roleError } = useAuthRole();
@@ -135,7 +137,7 @@ export default function TaskToolbar({
             </S.SearchGroup>
           </S.SearchField>
 
-          <S.StatusField>
+          {showStatus && <S.StatusField>
             <S.Label htmlFor={`${id}-status`}>Trạng thái</S.Label>
 
             <S.Select
@@ -160,7 +162,7 @@ export default function TaskToolbar({
                 </option>
               ))}
             </S.Select>
-          </S.StatusField>
+          </S.StatusField>}
         </S.Filters>
       </S.Toolbar>
       {roleError && (

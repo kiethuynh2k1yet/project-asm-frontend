@@ -11,7 +11,7 @@ import {
 } from "react";
 import { X } from "lucide-react";
 import TaskToolbar from "../components/TaskToolbar/TaskToolbar";
-import type { JobFilters, JobStatus } from "../constants/jobStatuses";
+import type { JobFilters } from "../constants/jobStatuses";
 type MasterDataField = {
   key: string;
   label: string;
@@ -22,7 +22,6 @@ import { ModalStyles as M } from "../styles/styles";
 
 type MasterDataRow = {
   id: number;
-  status_id: number;
   values: Record<string, string>;
 };
 
@@ -56,9 +55,7 @@ function toRow(value: unknown, fields: MasterDataField[]): MasterDataRow {
   if (
     !isRecord(value) ||
     typeof value.id !== "number" ||
-    !Number.isInteger(value.id) ||
-    typeof value.status_id !== "number" ||
-    !Number.isInteger(value.status_id)
+    !Number.isInteger(value.id)
   ) {
     throw new Error("Dữ liệu danh mục không hợp lệ.");
   }
@@ -66,22 +63,32 @@ function toRow(value: unknown, fields: MasterDataField[]): MasterDataRow {
   const values: FormValues = {};
   for (const field of fields) {
     const fieldValue = value[field.key];
-    if (fieldValue !== null && typeof fieldValue !== "string") {
+    if (
+      fieldValue !== null &&
+      typeof fieldValue !== "string" &&
+      typeof fieldValue !== "number"
+    ) {
       throw new Error(`Dữ liệu ${field.label} không hợp lệ.`);
     }
-    values[field.key] = fieldValue ?? "";
+    values[field.key] =
+      fieldValue === null || fieldValue === undefined
+        ? ""
+        : String(fieldValue);
   }
-  return { id: value.id, status_id: value.status_id, values };
+  return { id: value.id, values };
 }
 
 const config = {
   resource: "units",
   title: "đơn vị tính",
-  searchPlaceholder: "Nhập mã, tên hoặc tên khác...",
+  searchPlaceholder: "Nhập mã, tên, loại hoặc ký hiệu...",
   fields: [
-    { key: "unit_code", label: "Mã đơn vị tính", required: true },
-    { key: "unit-types_name", label: "Tên đơn vị tính", required: true },
-    { key: "unit_name_other", label: "Tên khác" },
+    { key: "type", label: "Loại đơn vị", required: true },
+    { key: "unit-0f-measure_code", label: "Mã đơn vị tính" },
+    { key: "unit-0f-measure_name", label: "Tên đơn vị tính" },
+    { key: "symbol", label: "Ký hiệu" },
+    { key: "exchange_rate", label: "Tỷ giá quy đổi" },
+    { key: "base_currency", label: "Mã tiền tệ cơ sở" },
   ],
 };
 
@@ -90,9 +97,6 @@ export default function Units() {
   const [rows, setRows] = useState<MasterDataRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [dataError, setDataError] = useState("");
-  const [statuses, setStatuses] = useState<JobStatus[]>([]);
-  const [statusLoading, setStatusLoading] = useState(true);
-  const [statusError, setStatusError] = useState("");
   const [filters, setFilters] = useState<JobFilters>({
     keyword: "",
     statusId: "",
@@ -102,7 +106,6 @@ export default function Units() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingRow, setEditingRow] = useState<MasterDataRow>();
   const [formValues, setFormValues] = useState<FormValues>({});
-  const [formStatusId, setFormStatusId] = useState<number | "">("");
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -140,62 +143,6 @@ export default function Units() {
   useEffect(() => {
     const controller = new AbortController();
     let active = true;
-
-    async function loadStatuses() {
-      try {
-        const data = await readJson(
-          await fetch("/api/dashboard/statuses", {
-            cache: "no-store",
-            signal: controller.signal,
-          }),
-        );
-        if (!Array.isArray(data)) {
-          throw new Error("Danh sách trạng thái phải là một mảng.");
-        }
-        const parsed = data.map((item: unknown): JobStatus => {
-          if (
-            !isRecord(item) ||
-            !Number.isInteger(Number(item.id)) ||
-            Number(item.parent_id) !== 2 ||
-            (item.status_code !== "IN_USE" &&
-              item.status_code !== "NOT_IN_USE") ||
-            typeof item.status_name !== "string"
-          ) {
-            throw new Error("Dữ liệu trạng thái không hợp lệ.");
-          }
-          return {
-            id: Number(item.id),
-            parent_id: 2,
-            status_code: item.status_code,
-            status_name: item.status_name,
-          };
-        });
-        if (active) setStatuses(parsed);
-      } catch (error) {
-        if (active) {
-          setStatusError(
-            controller.signal.aborted
-              ? "Tải trạng thái đã bị hủy."
-              : error instanceof Error
-                ? error.message
-                : "Không tải được trạng thái.",
-          );
-        }
-      } finally {
-        if (active) setStatusLoading(false);
-      }
-    }
-
-    void loadStatuses();
-    return () => {
-      active = false;
-      controller.abort();
-    };
-  }, []);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    let active = true;
     void loadRows(controller.signal)
       .then((data) => {
         if (active) {
@@ -229,14 +176,12 @@ export default function Units() {
   const filteredRows = useMemo(() => {
     const keyword = filters.keyword.trim().toLocaleLowerCase();
     return rows.filter((row) => {
-      const matchesStatus =
-        filters.statusId === "" || row.status_id === filters.statusId;
       const matchesKeyword =
         !keyword ||
         config.fields.some((field) =>
           row.values[field.key].toLocaleLowerCase().includes(keyword),
         );
-      return matchesStatus && matchesKeyword;
+      return matchesKeyword;
     });
   }, [filters.keyword, filters.statusId, rows]);
 
@@ -255,7 +200,6 @@ export default function Units() {
         config.fields.map((field) => [field.key, row?.values[field.key] ?? ""]),
       ),
     );
-    setFormStatusId(row?.status_id ?? "");
     setSaveError("");
     setModalOpen(true);
   };
@@ -270,18 +214,6 @@ export default function Units() {
   const handleSave = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (saving) return;
-    const activeStatuses = statuses.filter((item) => item.parent_id === 2);
-    const defaultStatus =
-      activeStatuses.find((item) => item.status_code === "IN_USE") ??
-      activeStatuses[0];
-    const statusId = formStatusId === "" ? defaultStatus?.id : formStatusId;
-    if (
-      typeof statusId !== "number" ||
-      !activeStatuses.some((item) => item.id === statusId)
-    ) {
-      setSaveError("Vui lòng chọn trạng thái hợp lệ.");
-      return;
-    }
     for (const field of config.fields) {
       if (field.required && !formValues[field.key]?.trim()) {
         setSaveError(`Vui lòng nhập ${field.label.toLocaleLowerCase()}.`);
@@ -292,18 +224,21 @@ export default function Units() {
     setSaving(true);
     setSaveError("");
     try {
-      const body = Object.fromEntries(
+      const body: Record<string, unknown> = Object.fromEntries(
         config.fields.map((field) => [
           field.key,
           formValues[field.key]?.trim() || (field.required ? "" : null),
         ]),
       );
+      body.exchange_rate = body.exchange_rate
+        ? Number(body.exchange_rate)
+        : null;
       const response = await fetch(
         editingRow ? `${apiPath}/${editingRow.id}` : apiPath,
         {
           method: editingRow ? "PUT" : "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...body, status_id: statusId }),
+          body: JSON.stringify(body),
         },
       );
       toRow(await readJson(response), config.fields);
@@ -344,20 +279,12 @@ export default function Units() {
     }
   };
 
-  const activeStatuses = statuses.filter((item) => item.parent_id === 2);
-  const defaultStatus =
-    activeStatuses.find((item) => item.status_code === "IN_USE") ??
-    activeStatuses[0];
-  const selectedStatus =
-    formStatusId === "" ? (defaultStatus?.id ?? "") : formStatusId;
-
   return (
     <S.Page>
       <S.ToolbarSection>
         <TaskToolbar
-          statuses={statuses}
-          statusLoading={statusLoading}
-          statusError={statusError}
+          statuses={[]}
+          showStatus={false}
           searchPlaceholder={config.searchPlaceholder}
           editDisabled={!selectedRow || loading || saving}
           deleteDisabled={!selectedRow || loading || saving}
@@ -370,9 +297,6 @@ export default function Units() {
             setSelectedId(null);
           }}
         />
-        {statusError && (
-          <S.ErrorMessage role="alert">{statusError}</S.ErrorMessage>
-        )}
         {dataError && <S.ErrorMessage role="alert">{dataError}</S.ErrorMessage>}
       </S.ToolbarSection>
 
@@ -387,15 +311,11 @@ export default function Units() {
                     {field.label}
                   </th>
                 ))}
-                <th scope="col">Trạng thái</th>
               </tr>
             </thead>
             <tbody>
               {!loading &&
                 visibleRows.map((row, index) => {
-                  const status = activeStatuses.find(
-                    (item) => item.id === row.status_id,
-                  );
                   return (
                     <S.TableRow
                       key={row.id}
@@ -408,20 +328,12 @@ export default function Units() {
                           {row.values[field.key]}
                         </td>
                       ))}
-                      <td>
-                        <S.StatusBadge
-                          $active={status?.status_code === "IN_USE"}
-                        >
-                          {status?.status_name ??
-                            `Trạng thái #${row.status_id}`}
-                        </S.StatusBadge>
-                      </td>
                     </S.TableRow>
                   );
                 })}
               {(loading || visibleRows.length === 0) && (
                 <tr>
-                  <S.EmptyCell colSpan={config.fields.length + 2}>
+                  <S.EmptyCell colSpan={config.fields.length + 1}>
                     {loading
                       ? `Đang tải ${config.title}...`
                       : dataError
@@ -498,7 +410,15 @@ export default function Units() {
                   <M.Input
                     id={`${id}-${index}`}
                     value={formValues[field.key] ?? ""}
-                    maxLength={field.key.endsWith("code") ? 30 : 255}
+                    maxLength={field.key.endsWith("code") ? 20 : 255}
+                    type={
+                      field.key === "parent_id" ||
+                      field.key === "exchange_rate"
+                        ? "number"
+                        : "text"
+                    }
+                    min={field.key === "parent_id" ? 1 : undefined}
+                    step={field.key === "exchange_rate" ? "any" : undefined}
                     disabled={saving}
                     onChange={(event) => {
                       setFormValues((current) => ({
@@ -512,31 +432,6 @@ export default function Units() {
                   />
                 </M.Field>
               ))}
-              <M.Field>
-                <M.Label htmlFor={`${id}-status`}>Trạng thái</M.Label>
-                <M.Select
-                  id={`${id}-status`}
-                  value={selectedStatus}
-                  disabled={
-                    saving || statusLoading || activeStatuses.length === 0
-                  }
-                  onChange={(event) =>
-                    setFormStatusId(Number(event.target.value))
-                  }
-                  required
-                >
-                  {activeStatuses.length === 0 && (
-                    <option value="">
-                      {statusLoading ? "Đang tải..." : "Không có trạng thái"}
-                    </option>
-                  )}
-                  {activeStatuses.map((status) => (
-                    <option key={status.id} value={status.id}>
-                      {status.status_name}
-                    </option>
-                  ))}
-                </M.Select>
-              </M.Field>
               {saveError && <M.Error role="alert">{saveError}</M.Error>}
             </M.Body>
             <M.Footer>
@@ -549,9 +444,7 @@ export default function Units() {
               </M.CancelButton>
               <M.SaveButton
                 type="submit"
-                disabled={
-                  saving || statusLoading || activeStatuses.length === 0
-                }
+                disabled={saving}
               >
                 {saving ? "Đang lưu..." : "Lưu"}
               </M.SaveButton>
